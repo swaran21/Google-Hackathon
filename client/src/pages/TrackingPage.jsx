@@ -5,12 +5,23 @@ import {
   getAllAmbulances,
   getAllHospitals,
   getUserVisibleAmbulances,
+  cancelEmergencyRequest,
 } from "../services/api";
 import socket from "../services/socket";
 import { useSocket } from "../hooks/useSocket";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { Activity, Navigation, Shield, User } from "lucide-react";
+import {
+  Activity,
+  Navigation,
+  Shield,
+  User,
+  MessageSquare,
+  PhoneCall,
+  Send,
+  X,
+  XCircle,
+} from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
 const createIcon = (emoji, size = 32, glowing = false) =>
@@ -50,6 +61,19 @@ export default function TrackingPage() {
   const isUserViewer = isAuthenticated && user?.role === "user";
   const assignedAmbulanceId =
     activeEmergency?.assignedAmbulance?._id?.toString();
+  const [showDispatchPanel, setShowDispatchPanel] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLog, setChatLog] = useState([]);
+
+  const dispatchedAmbulance = useMemo(() => {
+    if (!assignedAmbulanceId) return null;
+    return (
+      ambulances.find((amb) => amb._id?.toString() === assignedAmbulanceId) ||
+      null
+    );
+  }, [ambulances, assignedAmbulanceId]);
+
+  const assignedHospital = activeEmergency?.assignedHospital || null;
 
   const fetchData = useCallback(async () => {
     try {
@@ -99,6 +123,68 @@ export default function TrackingPage() {
 
     return () => clearInterval(intervalId);
   }, [fetchData]);
+
+  useEffect(() => {
+    if (!showDispatchPanel || !dispatchedAmbulance) {
+      setChatLog([]);
+      return;
+    }
+
+    setChatLog([
+      {
+        id: `system-${dispatchedAmbulance._id}`,
+        from: "system",
+        text: `${dispatchedAmbulance.driverName || "Driver"} connected. You can chat, call, or cancel from here.`,
+      },
+    ]);
+  }, [showDispatchPanel, dispatchedAmbulance]);
+
+  useEffect(() => {
+    if (!assignedAmbulanceId) {
+      setShowDispatchPanel(false);
+    }
+  }, [assignedAmbulanceId]);
+
+  const openDispatchPanel = useCallback(
+    (ambulanceId) => {
+      if (!isUserViewer || !assignedAmbulanceId) return;
+      if (ambulanceId?.toString() !== assignedAmbulanceId) return;
+      setShowDispatchPanel(true);
+    },
+    [assignedAmbulanceId, isUserViewer],
+  );
+
+  const handleSendChat = useCallback(() => {
+    const text = chatInput.trim();
+    if (!text) return;
+
+    const ts = Date.now();
+    setChatLog((prev) => [...prev, { id: `user-${ts}`, from: "user", text }]);
+    setChatInput("");
+
+    window.setTimeout(() => {
+      setChatLog((prev) => [
+        ...prev,
+        {
+          id: `driver-${Date.now()}`,
+          from: "system",
+          text: "Driver acknowledged. Ambulance is en route.",
+        },
+      ]);
+    }, 400);
+  }, [chatInput]);
+
+  const handleCancelDispatch = useCallback(async () => {
+    if (!activeEmergency?._id) return;
+
+    try {
+      await cancelEmergencyRequest(activeEmergency._id);
+      setShowDispatchPanel(false);
+      await fetchData();
+    } catch (err) {
+      console.error("Cancel dispatch failed:", err);
+    }
+  }, [activeEmergency, fetchData]);
 
   const isVisibleForUser = useCallback(
     (ambulanceId, status) => {
@@ -505,6 +591,30 @@ export default function TrackingPage() {
                           <Shield size={12} />{" "}
                           {amb.equipmentLevel?.replace("_", " ")}
                         </div>
+
+                        {isUserViewer && amb._id === assignedAmbulanceId && (
+                          <button
+                            onClick={() => openDispatchPanel(amb._id)}
+                            className="cursor-pointer"
+                            style={{
+                              marginTop: "8px",
+                              border: "none",
+                              borderRadius: "8px",
+                              padding: "8px 10px",
+                              background: "#1d4ed8",
+                              color: "#fff",
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "6px",
+                              fontFamily: "var(--font-family)",
+                            }}
+                          >
+                            <MessageSquare size={12} /> Dispatch Interface
+                          </button>
+                        )}
                       </div>
                     </div>
                   </Popup>
@@ -696,86 +806,100 @@ export default function TrackingPage() {
                   paddingRight: "4px",
                 }}
               >
-                {filteredAmbulances.map((amb) => (
-                  <div
-                    key={amb._id}
-                    className="glass-card glass-card-hover"
-                    style={{
-                      padding: "14px",
-                      borderRadius: "14px",
-                      background: "var(--bg-glass)",
-                    }}
-                  >
+                {filteredAmbulances.map((amb) => {
+                  const isAssignedToUser =
+                    assignedAmbulanceId && amb._id === assignedAmbulanceId;
+
+                  return (
                     <div
+                      key={amb._id}
+                      className="glass-card glass-card-hover"
+                      onClick={
+                        isAssignedToUser
+                          ? () => openDispatchPanel(amb._id)
+                          : undefined
+                      }
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                        marginBottom: "10px",
+                        padding: "14px",
+                        borderRadius: "14px",
+                        background: "var(--bg-glass)",
+                        cursor: isAssignedToUser ? "pointer" : "default",
+                        border: isAssignedToUser
+                          ? "1px solid rgba(37,99,235,0.35)"
+                          : "1px solid var(--border-glass)",
                       }}
                     >
-                      <div>
-                        <p
-                          style={{
-                            fontSize: "0.875rem",
-                            fontWeight: 900,
-                            fontFamily: "monospace",
-                          }}
-                        >
-                          {amb.vehicleNumber}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: "10px",
-                            color: "var(--text-muted)",
-                            fontWeight: 500,
-                          }}
-                        >
-                          DRIVER: {amb.driverName.toUpperCase()}
-                        </p>
-                      </div>
                       <div
                         style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          background:
-                            amb.status === "available" ? "#22c55e" : "#ef4444",
-                          boxShadow: `0 0 8px ${amb.status === "available" ? "#22c55e" : "#ef4444"}`,
-                        }}
-                      />
-                    </div>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <span
-                        style={{
-                          fontSize: "9px",
-                          fontWeight: 700,
-                          padding: "4px 8px",
-                          borderRadius: "6px",
-                          background: "var(--bg-badge)",
-                          color: "var(--text-secondary)",
-                          textTransform: "uppercase",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          marginBottom: "10px",
                         }}
                       >
-                        {amb.equipmentLevel?.replace("_", " ")}
-                      </span>
-                      {amb.status !== "available" && (
+                        <div>
+                          <p
+                            style={{
+                              fontSize: "0.875rem",
+                              fontWeight: 900,
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            {amb.vehicleNumber}
+                          </p>
+                          <p
+                            style={{
+                              fontSize: "10px",
+                              color: "var(--text-muted)",
+                              fontWeight: 500,
+                            }}
+                          >
+                            DRIVER: {amb.driverName.toUpperCase()}
+                          </p>
+                        </div>
+                        <div
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background:
+                              amb.status === "available"
+                                ? "#22c55e"
+                                : "#ef4444",
+                            boxShadow: `0 0 8px ${amb.status === "available" ? "#22c55e" : "#ef4444"}`,
+                          }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: "6px" }}>
                         <span
                           style={{
                             fontSize: "9px",
                             fontWeight: 700,
                             padding: "4px 8px",
                             borderRadius: "6px",
-                            background: "rgba(239,68,68,0.1)",
-                            color: "#ef4444",
-                            animation: "pulse-glow 2s ease-in-out infinite",
+                            background: "var(--bg-badge)",
+                            color: "var(--text-secondary)",
+                            textTransform: "uppercase",
                           }}
                         >
-                          ON MISSION
+                          {amb.equipmentLevel?.replace("_", " ")}
                         </span>
-                      )}
-                      {assignedAmbulanceId &&
-                        amb._id === assignedAmbulanceId && (
+                        {amb.status !== "available" && (
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              fontWeight: 700,
+                              padding: "4px 8px",
+                              borderRadius: "6px",
+                              background: "rgba(239,68,68,0.1)",
+                              color: "#ef4444",
+                              animation: "pulse-glow 2s ease-in-out infinite",
+                            }}
+                          >
+                            ON MISSION
+                          </span>
+                        )}
+                        {isAssignedToUser && (
                           <span
                             style={{
                               fontSize: "9px",
@@ -790,9 +914,25 @@ export default function TrackingPage() {
                             Your Dispatch
                           </span>
                         )}
+                      </div>
+
+                      {isAssignedToUser && (
+                        <p
+                          style={{
+                            marginTop: "8px",
+                            fontSize: "10px",
+                            fontWeight: 800,
+                            color: "#93c5fd",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.1em",
+                          }}
+                        >
+                          Tap to open chat/call/cancel
+                        </p>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <div
@@ -844,6 +984,239 @@ export default function TrackingPage() {
             </div>
           </div>
         </div>
+
+        {showDispatchPanel && dispatchedAmbulance && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(2,6,23,0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+              zIndex: 70,
+            }}
+          >
+            <div
+              className="glass-card"
+              style={{
+                width: "100%",
+                maxWidth: "560px",
+                borderRadius: "24px",
+                padding: "24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+                maxHeight: "82vh",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>
+                    Dispatch Interface
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--text-muted)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Unit {dispatchedAmbulance.vehicleNumber} •{" "}
+                    {dispatchedAmbulance.driverName}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDispatchPanel(false)}
+                  className="cursor-pointer"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "9999px",
+                    border: "1px solid var(--border-glass)",
+                    background: "var(--bg-glass)",
+                    color: "var(--text-secondary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {dispatchedAmbulance.driverPhone && (
+                  <a
+                    href={`tel:${dispatchedAmbulance.driverPhone}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <button
+                      className="cursor-pointer"
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: "10px",
+                        border: "1px solid rgba(34,197,94,0.4)",
+                        background: "rgba(34,197,94,0.12)",
+                        color: "#86efac",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontFamily: "var(--font-family)",
+                      }}
+                    >
+                      <PhoneCall size={14} /> Call Ambulance
+                    </button>
+                  </a>
+                )}
+                {assignedHospital?.phone && (
+                  <a
+                    href={`tel:${assignedHospital.phone}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <button
+                      className="cursor-pointer"
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: "10px",
+                        border: "1px solid rgba(59,130,246,0.4)",
+                        background: "rgba(59,130,246,0.12)",
+                        color: "#93c5fd",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontFamily: "var(--font-family)",
+                      }}
+                    >
+                      <PhoneCall size={14} /> Call Hospital
+                    </button>
+                  </a>
+                )}
+              </div>
+
+              <div
+                style={{
+                  border: "1px solid var(--border-glass)",
+                  borderRadius: "14px",
+                  padding: "12px",
+                  background: "var(--bg-glass)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  minHeight: "200px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  Dispatch Chat
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  {chatLog.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        alignSelf:
+                          item.from === "user" ? "flex-end" : "flex-start",
+                        maxWidth: "85%",
+                        padding: "8px 10px",
+                        borderRadius: "10px",
+                        background:
+                          item.from === "user"
+                            ? "rgba(37,99,235,0.18)"
+                            : "rgba(148,163,184,0.12)",
+                        color:
+                          item.from === "user"
+                            ? "#bfdbfe"
+                            : "var(--text-secondary)",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {item.text}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Type a message to dispatch crew"
+                    style={{
+                      flex: 1,
+                      borderRadius: "10px",
+                      border: "1px solid var(--border-glass)",
+                      background: "var(--bg-input)",
+                      color: "var(--text-primary)",
+                      padding: "10px 12px",
+                      fontFamily: "var(--font-family)",
+                    }}
+                  />
+                  <button
+                    onClick={handleSendChat}
+                    className="cursor-pointer"
+                    style={{
+                      borderRadius: "10px",
+                      border: "none",
+                      background: "#2563eb",
+                      color: "#fff",
+                      padding: "10px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Send size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCancelDispatch}
+                className="cursor-pointer"
+                style={{
+                  borderRadius: "12px",
+                  border: "1px solid rgba(239,68,68,0.4)",
+                  background: "rgba(239,68,68,0.12)",
+                  color: "#fca5a5",
+                  padding: "12px 14px",
+                  fontWeight: 800,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  fontFamily: "var(--font-family)",
+                }}
+              >
+                <XCircle size={14} /> Cancel Ambulance + Hospital Request
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

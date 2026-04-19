@@ -188,6 +188,11 @@ export default function SOSResult({
     setShowDispatchPanel(false);
   };
 
+  const openDispatchControls = () => {
+    if (!ambulance) return;
+    setShowDispatchPanel(true);
+  };
+
   return (
     <div
       className="page-enter"
@@ -304,6 +309,66 @@ export default function SOSResult({
         >
           {cancellationMessage}
         </div>
+      )}
+
+      {ambulance && (
+        <button
+          onClick={openDispatchControls}
+          className="glass-card cursor-pointer"
+          style={{
+            width: "100%",
+            padding: "14px 16px",
+            borderRadius: "18px",
+            border: "1px solid rgba(37,99,235,0.35)",
+            background: "rgba(37,99,235,0.08)",
+            color: "#bfdbfe",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            fontFamily: "var(--font-family)",
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: "4px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#93c5fd",
+              }}
+            >
+              Booked Ambulance
+            </span>
+            <span
+              style={{
+                fontSize: "0.95rem",
+                fontWeight: 800,
+                fontFamily: "monospace",
+              }}
+            >
+              {ambulance.vehicleNumber}
+            </span>
+          </span>
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+            }}
+          >
+            Tap to Chat / Call / Cancel
+          </span>
+        </button>
       )}
 
       {requiresHospitalSelection && (
@@ -424,8 +489,8 @@ export default function SOSResult({
                 color: "var(--text-secondary)",
               }}
             >
-              No active emergency hospitals found within 5km of the patient
-              location.
+              No hospitals in 5km matched the selected emergency problem
+              category. Try another emergency type or update location.
             </div>
           ) : (
             <div
@@ -811,114 +876,121 @@ export default function SOSResult({
             <div
               style={{ display: "flex", flexDirection: "column", gap: "14px" }}
             >
-              <div
+              <button
+                onClick={openDispatchControls}
+                className="cursor-pointer"
                 style={{
+                  width: "100%",
+                  border: "1px solid var(--border-glass)",
+                  borderRadius: "14px",
+                  background: "var(--bg-glass)",
+                  padding: "14px",
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-end",
-                  paddingBottom: "14px",
-                  borderBottom: "1px solid var(--border-glass)",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "var(--text-muted)",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Fleet Unit
-                </span>
-                <span
-                  style={{
-                    fontSize: "1.25rem",
-                    fontFamily: "monospace",
-                    fontWeight: 900,
-                  }}
-                >
-                  {ambulance.vehicleNumber}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  flexDirection: "column",
                   gap: "12px",
                 }}
               >
                 <div
                   style={{
-                    padding: "14px",
-                    background: "var(--bg-glass)",
-                    borderRadius: "14px",
-                    textAlign: "center",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                    paddingBottom: "10px",
+                    borderBottom: "1px solid var(--border-glass)",
                   }}
                 >
-                  <p
+                  <span
                     style={{
-                      fontSize: "10px",
-                      fontWeight: 800,
+                      fontSize: "11px",
                       color: "var(--text-muted)",
+                      fontWeight: 700,
                       textTransform: "uppercase",
-                      marginBottom: "4px",
                     }}
                   >
-                    ETA
-                  </p>
-                  <p
+                    Fleet Unit
+                  </span>
+                  <span
                     style={{
-                      fontSize: "1.5rem",
+                      fontSize: "1.25rem",
+                      fontFamily: "monospace",
                       fontWeight: 900,
-                      color: "#22c55e",
                     }}
                   >
-                    {ambulance.eta}m
-                  </p>
+                    {ambulance.vehicleNumber}
+                  </span>
                 </div>
                 <div
                   style={{
-                    padding: "14px",
-                    background: "var(--bg-glass)",
-                    borderRadius: "14px",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "14px",
+                      background: "var(--bg-glass)",
+                      borderRadius: "14px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "var(--text-muted)",
+                        textTransform: "uppercase",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      ETA
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: 900,
+                        color: "#22c55e",
+                      }}
+                    >
+                      {ambulance.eta}m
+                    </p>
+                  </div>
+                  <div
+                    style={{
+                      padding: "14px",
+                      background: "var(--bg-glass)",
+                      borderRadius: "14px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "var(--text-muted)",
+                        textTransform: "uppercase",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Dist
+                    </p>
+                    <p style={{ fontSize: "1.5rem", fontWeight: 900 }}>
+                      {ambulance.distance}km
+                    </p>
+                  </div>
+                </div>
+                <p
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    color: "#93c5fd",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
                     textAlign: "center",
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 800,
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Dist
-                  </p>
-                  <p style={{ fontSize: "1.5rem", fontWeight: 900 }}>
-                    {ambulance.distance}km
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowDispatchPanel(true)}
-                className="cursor-pointer"
-                style={{
-                  marginTop: "4px",
-                  border: "1px solid rgba(37,99,235,0.3)",
-                  background: "rgba(37,99,235,0.08)",
-                  color: "#93c5fd",
-                  borderRadius: "12px",
-                  padding: "10px 14px",
-                  fontWeight: 700,
-                  fontFamily: "var(--font-family)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                }}
-              >
-                <MessageSquare size={15} /> Open Dispatch Controls
+                  Tap This Ambulance Card For Chat / Call / Cancel
+                </p>
               </button>
             </div>
           ) : (

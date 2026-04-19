@@ -66,6 +66,13 @@ const getMatchingTreatments = (treatments = [], type = "other") =>
       notes: treatment.notes || "",
     }));
 
+const hospitalMatchesEmergencyCategory = (hospital, type = "other") => {
+  const matchingTreatments = getMatchingTreatments(hospital.treatments, type);
+  const specialtyMatch = hasSpecialtyMatch(hospital.specialties, type);
+
+  return specialtyMatch || matchingTreatments.length > 0;
+};
+
 /**
  * Suggest the best hospitals for an emergency based on a composite score.
  *
@@ -92,6 +99,7 @@ const getMatchingTreatments = (treatments = [], type = "other") =>
  * @returns {Array} Ranked hospitals with scores and distances
  */
 const suggestHospitals = async (lat, lng, type = "other", options = {}) => {
+  const emergencyType = normalize(type || "other");
   const radiusKm =
     typeof options.radiusKm === "number" ? options.radiusKm : null;
   const limit = typeof options.limit === "number" ? options.limit : 3;
@@ -112,7 +120,13 @@ const suggestHospitals = async (lat, lng, type = "other", options = {}) => {
 
   if (scopedHospitals.length === 0) return [];
 
-  const scored = scopedHospitals
+  const categoryMatchedHospitals = scopedHospitals.filter((hospital) =>
+    hospitalMatchesEmergencyCategory(hospital, emergencyType),
+  );
+
+  if (categoryMatchedHospitals.length === 0) return [];
+
+  const scored = categoryMatchedHospitals
     .map((hospital) => {
       const [hLng, hLat] = hospital.location.coordinates;
       const distance = haversine(lat, lng, hLat, hLng);
@@ -130,13 +144,16 @@ const suggestHospitals = async (lat, lng, type = "other", options = {}) => {
       const icuScore =
         hospital.icuTotal > 0 ? hospital.icuAvailable / hospital.icuTotal : 0;
 
-      const specialtyScore = hasSpecialtyMatch(hospital.specialties, type)
+      const specialtyScore = hasSpecialtyMatch(
+        hospital.specialties,
+        emergencyType,
+      )
         ? 1
         : 0;
 
       const matchingTreatments = getMatchingTreatments(
         hospital.treatments,
-        type,
+        emergencyType,
       );
       const treatmentScore = matchingTreatments.length > 0 ? 1 : 0;
 
