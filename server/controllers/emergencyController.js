@@ -1,4 +1,5 @@
 const Emergency = require("../models/Emergency");
+const Ambulance = require("../models/Ambulance");
 const {
   findBestAmbulanceForTransfer,
   assignAmbulance,
@@ -11,6 +12,12 @@ const { ApiError } = require("../middleware/errorHandler");
 
 const HOSPITAL_RADIUS_KM = 5;
 const HOSPITAL_LIMIT = 10;
+const ACTIVE_USER_STATUSES = ["pending", "dispatched", "en_route", "at_scene"];
+
+const isEmergencyOwner = (emergency, userId) => {
+  if (!emergency?.reportedBy || !userId) return false;
+  return emergency.reportedBy.toString() === userId.toString();
+};
 
 const buildTriageSummary = (emergency) => ({
   severity: emergency.severity,
@@ -124,6 +131,10 @@ const selectHospitalAndDispatch = async (req, res, next) => {
     const emergency = await Emergency.findById(req.params.id);
     if (!emergency) {
       throw new ApiError(404, "Emergency not found");
+    }
+
+    if (!isEmergencyOwner(emergency, req.user?._id)) {
+      throw new ApiError(403, "You can only dispatch your own emergency");
     }
 
     if (["resolved", "cancelled"].includes(emergency.status)) {
@@ -281,6 +292,102 @@ const selectHospitalAndDispatch = async (req, res, next) => {
 };
 
 /**
+ * @desc    Get current user's latest active emergency
+ * @route   GET /api/emergency/mine/active
+ */
+const getMyActiveEmergency = async (req, res, next) => {
+  try {
+    const emergency = await Emergency.findOne({
+      reportedBy: req.user._id,
+      status: { $in: ACTIVE_USER_STATUSES },
+    })
+      .sort({ createdAt: -1 })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    res.json({ success: true, data: emergency });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Cancel current user's emergency and release assigned ambulance
+ * @route   POST /api/emergency/:id/cancel
+ */
+const cancelEmergencyRequest = async (req, res, next) => {
+  try {
+    const emergency = await Emergency.findById(req.params.id)
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    if (!emergency) {
+      throw new ApiError(404, "Emergency not found");
+    }
+
+    if (!isEmergencyOwner(emergency, req.user?._id)) {
+      throw new ApiError(403, "You can only cancel your own emergency");
+    }
+
+    if (["resolved", "cancelled"].includes(emergency.status)) {
+      throw new ApiError(
+        400,
+        `Emergency is already ${emergency.status} and cannot be cancelled`,
+      );
+    }
+
+    let releasedAmbulance = null;
+    if (emergency.assignedAmbulance?._id) {
+      releasedAmbulance = await Ambulance.findByIdAndUpdate(
+        emergency.assignedAmbulance._id,
+        {
+          status: "available",
+          currentEmergency: null,
+        },
+        { new: true },
+      );
+    }
+
+    emergency.status = "cancelled";
+    emergency.assignedAmbulance = null;
+    emergency.assignedHospital = null;
+    emergency.eta = null;
+    await emergency.save();
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("emergency:status-change", {
+        emergencyId: emergency._id,
+        status: emergency.status,
+      });
+
+      if (releasedAmbulance) {
+        io.emit("ambulance:status-change", {
+          ambulanceId: releasedAmbulance._id,
+          status: releasedAmbulance.status,
+        });
+      }
+
+      io.emit("emergency:cancelled", {
+        emergencyId: emergency._id,
+        releasedAmbulanceId: releasedAmbulance?._id || null,
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        emergency,
+        releasedAmbulance,
+      },
+      message: "Emergency request cancelled successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Get emergency by ID
  * @route   GET /api/emergency/:id
  */
@@ -291,6 +398,13 @@ const getEmergency = async (req, res, next) => {
       .populate("assignedHospital");
 
     if (!emergency) throw new ApiError(404, "Emergency not found");
+
+    if (
+      req.user?.role === "user" &&
+      !isEmergencyOwner(emergency, req.user._id)
+    ) {
+      throw new ApiError(403, "You can only view your own emergency");
+    }
 
     res.json({ success: true, data: emergency });
   } catch (error) {
@@ -321,6 +435,16 @@ const updateStatus = async (req, res, next) => {
       );
     }
 
+    const existingEmergency = await Emergency.findById(req.params.id);
+    if (!existingEmergency) throw new ApiError(404, "Emergency not found");
+
+    if (
+      req.user?.role === "user" &&
+      !isEmergencyOwner(existingEmergency, req.user._id)
+    ) {
+      throw new ApiError(403, "You can only update your own emergency");
+    }
+
     const emergency = await Emergency.findByIdAndUpdate(
       req.params.id,
       { status },
@@ -328,8 +452,6 @@ const updateStatus = async (req, res, next) => {
     )
       .populate("assignedAmbulance")
       .populate("assignedHospital");
-
-    if (!emergency) throw new ApiError(404, "Emergency not found");
 
     const io = req.app.get("io");
     if (io) {
@@ -348,6 +470,8 @@ const updateStatus = async (req, res, next) => {
 module.exports = {
   createEmergency,
   selectHospitalAndDispatch,
+  getMyActiveEmergency,
+  cancelEmergencyRequest,
   getEmergency,
   updateStatus,
 };

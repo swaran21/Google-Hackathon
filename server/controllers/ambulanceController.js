@@ -1,6 +1,9 @@
-const Ambulance = require('../models/Ambulance');
-const { findNearestAmbulance } = require('../services/dispatchService');
-const { ApiError } = require('../middleware/errorHandler');
+const Ambulance = require("../models/Ambulance");
+const Emergency = require("../models/Emergency");
+const { findNearestAmbulance } = require("../services/dispatchService");
+const { ApiError } = require("../middleware/errorHandler");
+
+const USER_ACTIVE_STATUSES = ["pending", "dispatched", "en_route", "at_scene"];
 
 /**
  * @desc    Get nearest available ambulance to coordinates
@@ -11,7 +14,7 @@ const getNearestAmbulance = async (req, res, next) => {
     const { lat, lng } = req.query;
 
     if (!lat || !lng) {
-      throw new ApiError(400, 'Query params lat and lng are required');
+      throw new ApiError(400, "Query params lat and lng are required");
     }
 
     const result = await findNearestAmbulance(parseFloat(lat), parseFloat(lng));
@@ -20,7 +23,7 @@ const getNearestAmbulance = async (req, res, next) => {
       return res.json({
         success: true,
         data: null,
-        message: 'No ambulances currently available',
+        message: "No ambulances currently available",
       });
     }
 
@@ -45,9 +48,57 @@ const getAllAmbulances = async (req, res, next) => {
   try {
     const { status } = req.query;
     const filter = status ? { status } : {};
-    const ambulances = await Ambulance.find(filter).populate('currentEmergency');
+    const ambulances =
+      await Ambulance.find(filter).populate("currentEmergency");
 
     res.json({ success: true, count: ambulances.length, data: ambulances });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get ambulances visible to logged-in user
+ *          Includes all available ambulances + ambulance assigned to this user's active SOS
+ * @route   GET /api/ambulance/visible
+ */
+const getUserVisibleAmbulances = async (req, res, next) => {
+  try {
+    const availableAmbulances = await Ambulance.find({
+      status: "available",
+      isActive: true,
+    }).populate("currentEmergency");
+
+    const activeEmergency = await Emergency.findOne({
+      reportedBy: req.user._id,
+      status: { $in: USER_ACTIVE_STATUSES },
+    })
+      .sort({ createdAt: -1 })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    const visibleById = new Map();
+    availableAmbulances.forEach((amb) => {
+      visibleById.set(amb._id.toString(), amb);
+    });
+
+    if (activeEmergency?.assignedAmbulance?._id) {
+      visibleById.set(
+        activeEmergency.assignedAmbulance._id.toString(),
+        activeEmergency.assignedAmbulance,
+      );
+    }
+
+    const visibleAmbulances = Array.from(visibleById.values());
+
+    res.json({
+      success: true,
+      count: visibleAmbulances.length,
+      data: {
+        ambulances: visibleAmbulances,
+        activeEmergency,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -62,28 +113,28 @@ const updateLocation = async (req, res, next) => {
     const { latitude, longitude } = req.body;
 
     if (!latitude || !longitude) {
-      throw new ApiError(400, 'latitude and longitude are required');
+      throw new ApiError(400, "latitude and longitude are required");
     }
 
     const ambulance = await Ambulance.findByIdAndUpdate(
       req.params.id,
       {
         location: {
-          type: 'Point',
+          type: "Point",
           coordinates: [parseFloat(longitude), parseFloat(latitude)],
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!ambulance) {
-      throw new ApiError(404, 'Ambulance not found');
+      throw new ApiError(404, "Ambulance not found");
     }
 
     // Broadcast location update in real-time
-    const io = req.app.get('io');
+    const io = req.app.get("io");
     if (io) {
-      io.emit('ambulance:location-update', {
+      io.emit("ambulance:location-update", {
         ambulanceId: ambulance._id,
         location: ambulance.location,
         status: ambulance.status,
@@ -103,27 +154,38 @@ const updateLocation = async (req, res, next) => {
 const updateAmbulanceStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['available', 'dispatched', 'en_route', 'at_scene', 'returning'];
+    const validStatuses = [
+      "available",
+      "dispatched",
+      "en_route",
+      "at_scene",
+      "returning",
+    ];
 
     if (!validStatuses.includes(status)) {
-      throw new ApiError(400, `Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      throw new ApiError(
+        400,
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      );
     }
 
     const update = { status };
     // Clear emergency reference when ambulance becomes available
-    if (status === 'available') {
+    if (status === "available") {
       update.currentEmergency = null;
     }
 
-    const ambulance = await Ambulance.findByIdAndUpdate(req.params.id, update, { new: true });
+    const ambulance = await Ambulance.findByIdAndUpdate(req.params.id, update, {
+      new: true,
+    });
 
     if (!ambulance) {
-      throw new ApiError(404, 'Ambulance not found');
+      throw new ApiError(404, "Ambulance not found");
     }
 
-    const io = req.app.get('io');
+    const io = req.app.get("io");
     if (io) {
-      io.emit('ambulance:status-change', {
+      io.emit("ambulance:status-change", {
         ambulanceId: ambulance._id,
         status: ambulance.status,
       });
@@ -135,4 +197,10 @@ const updateAmbulanceStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { getNearestAmbulance, getAllAmbulances, updateLocation, updateAmbulanceStatus };
+module.exports = {
+  getNearestAmbulance,
+  getAllAmbulances,
+  getUserVisibleAmbulances,
+  updateLocation,
+  updateAmbulanceStatus,
+};
