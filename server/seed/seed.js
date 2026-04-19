@@ -5,7 +5,7 @@
  *
  * Run: npm run seed
  */
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const Ambulance = require('../models/Ambulance');
 const Hospital = require('../models/Hospital');
@@ -219,6 +219,18 @@ const seedDB = async () => {
     }
 
     console.log(`👤 Seeded ${users.length} user accounts`);
+
+    // ─── Link drivers back to ambulances (assignedDriver) ────────
+    const driverUsers = await User.find({ role: 'driver' });
+    for (const driver of driverUsers) {
+      if (driver.assignedAmbulance) {
+        await Ambulance.findByIdAndUpdate(driver.assignedAmbulance, {
+          assignedDriver: driver._id,
+        });
+      }
+    }
+    console.log('🔗 Linked driver users to ambulances');
+
     console.log('\n📋 Default Login Credentials:');
     console.log('   Admin:    admin@resqnet.ai / admin123');
     console.log('   Driver:   driver1@resqnet.ai / driver123');

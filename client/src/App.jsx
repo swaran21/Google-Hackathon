@@ -10,6 +10,9 @@ import TrackingPage from './pages/TrackingPage';
 import AdminDashboard from './pages/AdminDashboard';
 import DriverPage from './pages/DriverPage';
 import HospitalPage from './pages/HospitalPage';
+import HospitalSignupPage from './pages/HospitalSignupPage';
+import UserLoginPage from './pages/UserLoginPage';
+import DriverLoginPage from './pages/DriverLoginPage';
 
 export default function App() {
   return (
@@ -28,6 +31,9 @@ export default function App() {
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/driver" element={<DriverPage />} />
                   <Route path="/hospital" element={<HospitalPage />} />
+                  <Route path="/hospital-login" element={<HospitalSignupPage />} />
+                  <Route path="/user-login" element={<UserLoginPage />} />
+                  <Route path="/driver-login" element={<DriverLoginPage />} />
                 </Routes>
               </main>
             </div>

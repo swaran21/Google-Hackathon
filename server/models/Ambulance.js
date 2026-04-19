@@ -41,6 +41,16 @@ const ambulanceSchema = new mongoose.Schema(
       enum: ['basic', 'advanced', 'critical_care'],
       default: 'basic',
     },
+    // Link to the User account for this driver
+    assignedDriver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

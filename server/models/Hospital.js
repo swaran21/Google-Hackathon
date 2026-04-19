@@ -7,6 +7,12 @@ const hospitalSchema = new mongoose.Schema(
       required: [true, 'Hospital name is required'],
       trim: true,
     },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: '',
+    },
     address: {
       type: String,
       required: [true, 'Hospital address is required'],
@@ -49,6 +55,10 @@ const hospitalSchema = new mongoose.Schema(
       default: [],
     },
     emergencyDepartment: {
+      type: Boolean,
+      default: true,
+    },
+    isActive: {
       type: Boolean,
       default: true,
     },

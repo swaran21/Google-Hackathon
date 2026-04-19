@@ -18,11 +18,12 @@ const findNearestAmbulance = async (lat, lng, recommendedEquipment = 'basic') =>
   let availableAmbulances = await Ambulance.find({
     status: 'available',
     equipmentLevel: recommendedEquipment,
+    isActive: true,
   });
 
   // Fallback: if no ambulances of the recommended type, get any available
   if (availableAmbulances.length === 0) {
-    availableAmbulances = await Ambulance.find({ status: 'available' });
+    availableAmbulances = await Ambulance.find({ status: 'available', isActive: true });
   }
 
   if (availableAmbulances.length === 0) return null;

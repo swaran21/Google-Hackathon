@@ -13,6 +13,8 @@ const api = axios.create({
 // ─── Auth APIs ───────────────────────────────────────────────────
 export const loginUser = (data) => api.post('/auth/login', data);
 export const registerUser = (data) => api.post('/auth/register', data);
+export const registerHospital = (data) => api.post('/auth/register-hospital', data);
+export const registerAmbulance = (data) => api.post('/auth/register-ambulance', data);
 export const getMe = () => api.get('/auth/me');
 
 // ─── Emergency APIs ──────────────────────────────────────────────

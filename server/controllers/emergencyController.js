@@ -32,6 +32,16 @@ const createEmergency = async (req, res, next) => {
       patientName,
       patientPhone,
       severity: triage.severity,
+      reportedBy: req.user ? req.user.id : null,
+      triageResult: {
+        severityLabel: triage.severityLabel,
+        confidence: triage.confidence,
+        reasoning: triage.reasoning,
+        recommendedEquipment: triage.recommendedEquipment,
+        responseLevel: triage.responseLevel,
+        matchedIndicators: triage.matchedIndicators || [],
+        aiModel: triage.aiModel || '',
+      },
     });
 
     // ── Step 3: Find nearest ambulance (severity-aware) ────────────

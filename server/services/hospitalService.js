@@ -17,7 +17,7 @@ const { haversine } = require('../utils/haversine');
  * @returns {Array} Ranked hospitals with scores and distances
  */
 const suggestHospitals = async (lat, lng, limit = 3) => {
-  const hospitals = await Hospital.find({ emergencyDepartment: true });
+  const hospitals = await Hospital.find({ emergencyDepartment: true, isActive: true });
 
   if (hospitals.length === 0) return [];
 

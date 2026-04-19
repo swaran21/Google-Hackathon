@@ -10,9 +10,10 @@ const connectDB = async () => {
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB connection error: ${error.message}`);
-    // Retry after 5 seconds
     console.log('🔄 Retrying connection in 5 seconds...');
-    setTimeout(connectDB, 5000);
+    // Wait 5 seconds, then try again, recursively blocking resolution until connected
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    return connectDB();
   }
 };
 

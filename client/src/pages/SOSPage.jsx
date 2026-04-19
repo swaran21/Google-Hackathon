@@ -143,7 +143,7 @@ export default function SOSPage() {
 
       {step === 'form' && selectedType && (
         <div style={{ width: '100%', maxWidth: '520px' }} className="page-enter">
-          <EmergencyForm type={selectedType} typeInfo={EMERGENCY_TYPES.find((t) => t.value === selectedType)} onSubmit={handleSubmit} onBack={() => setSelectedType(null)} error={error} />
+          <EmergencyForm type={selectedType} typeInfo={EMERGENCY_TYPES.find((t) => t.value === selectedType)} geo={geo} onSubmit={handleSubmit} onBack={() => setSelectedType(null)} error={error} />
         </div>
       )}
 
