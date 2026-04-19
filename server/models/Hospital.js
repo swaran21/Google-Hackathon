@@ -1,30 +1,30 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const hospitalSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Hospital name is required'],
+      required: [true, "Hospital name is required"],
       trim: true,
     },
     email: {
       type: String,
       trim: true,
       lowercase: true,
-      default: '',
+      default: "",
     },
     address: {
       type: String,
-      required: [true, 'Hospital address is required'],
+      required: [true, "Hospital address is required"],
       trim: true,
     },
     phone: {
       type: String,
-      required: [true, 'Hospital phone is required'],
+      required: [true, "Hospital phone is required"],
       trim: true,
     },
     location: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
+      type: { type: String, enum: ["Point"], default: "Point" },
       coordinates: {
         type: [Number], // [longitude, latitude]
         required: true,
@@ -54,6 +54,52 @@ const hospitalSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    treatments: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          emergencyTypes: {
+            type: [String],
+            enum: [
+              "accident",
+              "cardiac",
+              "fire",
+              "flood",
+              "breathing",
+              "stroke",
+              "other",
+            ],
+            default: ["other"],
+          },
+          costMin: {
+            type: Number,
+            required: true,
+            min: 0,
+          },
+          costMax: {
+            type: Number,
+            required: true,
+            min: 0,
+          },
+          currency: {
+            type: String,
+            default: "INR",
+            trim: true,
+            uppercase: true,
+          },
+          notes: {
+            type: String,
+            default: "",
+            trim: true,
+          },
+        },
+      ],
+      default: [],
+    },
     emergencyDepartment: {
       type: Boolean,
       default: true,
@@ -65,10 +111,10 @@ const hospitalSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Geospatial index for nearby hospital queries
-hospitalSchema.index({ location: '2dsphere' });
+hospitalSchema.index({ location: "2dsphere" });
 
-module.exports = mongoose.model('Hospital', hospitalSchema);
+module.exports = mongoose.model("Hospital", hospitalSchema);

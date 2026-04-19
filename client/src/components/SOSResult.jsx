@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CheckCircle2,
@@ -75,6 +75,8 @@ export default function SOSResult({
   const [showDispatchPanel, setShowDispatchPanel] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatLog, setChatLog] = useState([]);
+  const [sortField, setSortField] = useState("score");
+  const [sortDirection, setSortDirection] = useState("desc");
 
   const sev = SEV[triage?.severity] || SEV[3];
 
@@ -90,6 +92,59 @@ export default function SOSResult({
       return "Coordinates unavailable";
     return `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
   };
+
+  const formatCost = (currency, amount) => {
+    if (!Number.isFinite(amount)) return "N/A";
+
+    try {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: currency || "INR",
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `${currency || "INR"} ${amount}`;
+    }
+  };
+
+  const sortedHospitals = useMemo(() => {
+    const entries = [...suggestedHospitals];
+    const directionFactor = sortDirection === "asc" ? 1 : -1;
+
+    const getCost = (entry) => {
+      if (Number.isFinite(entry?.cheapestTreatmentCost)) {
+        return entry.cheapestTreatmentCost;
+      }
+
+      const mins = (entry?.matchingTreatments || [])
+        .map((treatment) => Number(treatment.costMin))
+        .filter((value) => Number.isFinite(value));
+
+      if (mins.length === 0) return Number.POSITIVE_INFINITY;
+      return Math.min(...mins);
+    };
+
+    entries.sort((a, b) => {
+      let aValue = 0;
+      let bValue = 0;
+
+      if (sortField === "distance") {
+        aValue = Number(a.distance) || 0;
+        bValue = Number(b.distance) || 0;
+      } else if (sortField === "cost") {
+        aValue = getCost(a);
+        bValue = getCost(b);
+      } else {
+        aValue = Number(a.score) || 0;
+        bValue = Number(b.score) || 0;
+      }
+
+      if (aValue === bValue) return 0;
+      return aValue > bValue ? directionFactor : -directionFactor;
+    });
+
+    return entries;
+  }, [suggestedHospitals, sortDirection, sortField]);
 
   useEffect(() => {
     if (!ambulance) {
@@ -301,7 +356,66 @@ export default function SOSResult({
             )}
           </div>
 
-          {suggestedHospitals.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              flexWrap: "wrap",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "var(--text-muted)",
+              }}
+            >
+              Sort Hospitals
+            </span>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              style={{
+                borderRadius: "10px",
+                border: "1px solid var(--border-glass)",
+                background: "var(--bg-input)",
+                color: "var(--text-primary)",
+                padding: "8px 10px",
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: "var(--font-family)",
+              }}
+            >
+              <option value="score">Recommended Score</option>
+              <option value="distance">Distance</option>
+              <option value="cost">Treatment Cost</option>
+            </select>
+            <button
+              onClick={() =>
+                setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+              }
+              className="cursor-pointer"
+              style={{
+                borderRadius: "10px",
+                border: "1px solid var(--border-glass)",
+                background: "var(--bg-glass)",
+                color: "var(--text-secondary)",
+                padding: "8px 12px",
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontFamily: "var(--font-family)",
+              }}
+            >
+              {sortDirection === "asc" ? "Asc ↑" : "Desc ↓"}
+            </button>
+          </div>
+
+          {sortedHospitals.length === 0 ? (
             <div
               style={{
                 padding: "16px",
@@ -317,9 +431,19 @@ export default function SOSResult({
             <div
               style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
-              {suggestedHospitals.map((entry) => {
+              {sortedHospitals.map((entry) => {
                 const hospital = entry.hospital;
                 const isSelecting = selectingHospitalId === hospital._id;
+                const treatmentPreview = (entry.matchingTreatments || []).slice(
+                  0,
+                  3,
+                );
+                const lowestCost = Number.isFinite(entry.cheapestTreatmentCost)
+                  ? formatCost(
+                      treatmentPreview[0]?.currency || "INR",
+                      entry.cheapestTreatmentCost,
+                    )
+                  : null;
 
                 return (
                   <div
@@ -392,6 +516,58 @@ export default function SOSResult({
                         >
                           Lat/Lng: {renderHospitalCoordinates(entry)}
                         </span>
+                        {treatmentPreview.length > 0 ? (
+                          <div
+                            style={{
+                              marginTop: "6px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "6px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "10px",
+                                color: "var(--text-muted)",
+                                fontWeight: 800,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.1em",
+                              }}
+                            >
+                              Matching Treatments
+                            </span>
+                            {treatmentPreview.map((treatment) => (
+                              <div
+                                key={`${hospital._id}-${treatment.name}`}
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: "10px",
+                                  fontSize: "11px",
+                                  color: "var(--text-secondary)",
+                                }}
+                              >
+                                <span>{treatment.name}</span>
+                                <span style={{ fontWeight: 700 }}>
+                                  {formatCost(
+                                    treatment.currency,
+                                    treatment.costMin,
+                                  )}{" "}
+                                  -{" "}
+                                  {formatCost(
+                                    treatment.currency,
+                                    treatment.costMax,
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: "11px", color: "#fca5a5" }}>
+                            No mapped treatment-cost package for this emergency
+                            type.
+                          </span>
+                        )}
                       </div>
 
                       <div
@@ -410,6 +586,17 @@ export default function SOSResult({
                           }}
                         >
                           {entry.distance} km
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            color: lowestCost ? "#22c55e" : "var(--text-muted)",
+                          }}
+                        >
+                          {lowestCost
+                            ? `From ${lowestCost}`
+                            : "Cost unavailable"}
                         </span>
                         <button
                           onClick={() =>
