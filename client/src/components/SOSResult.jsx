@@ -9,11 +9,24 @@ const SEV = {
   5: { color: '#fca5a5', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)', label: 'EXTREME' },
 };
 
-export default function SOSResult({ result, onReset }) {
+export default function SOSResult({ result, onReset, onSelectHospital, selectingHospitalId, actionError }) {
   const navigate = useNavigate();
-  const { emergency, triage, ambulance, suggestedHospitals, notifications } = result;
-  const topHospital = suggestedHospitals?.[0]?.hospital;
+  const { emergency, triage, ambulance, suggestedHospitals = [], notifications } = result;
+
+  const selectedHospital = result?.selectedHospital?.hospital || null;
+  const recommendedHospitalEntry = suggestedHospitals.find((h) => h.recommended) || suggestedHospitals[0];
+  const topHospital = selectedHospital || recommendedHospitalEntry?.hospital;
+  const requiresHospitalSelection = !!result?.requiresHospitalSelection && !ambulance;
+
   const sev = SEV[triage?.severity] || SEV[3];
+
+  const renderHospitalCoordinates = (entry) => {
+    const lat = entry?.coordinates?.latitude ?? entry?.hospital?.location?.coordinates?.[1];
+    const lng = entry?.coordinates?.longitude ?? entry?.hospital?.location?.coordinates?.[0];
+
+    if (lat === undefined || lng === undefined) return 'Coordinates unavailable';
+    return `${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+  };
 
   return (
     <div className="page-enter" style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -22,12 +35,91 @@ export default function SOSResult({ result, onReset }) {
         <div style={{ width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 20px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(16,185,129,0.12)' }}>
           <CheckCircle2 size={36} style={{ color: '#22c55e' }} />
         </div>
-        <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '8px' }}>Response Active</h2>
+        <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '8px' }}>
+          {requiresHospitalSelection ? 'Select Receiving Hospital' : 'Response Active'}
+        </h2>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
           <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.2em', textTransform: 'uppercase', transition: 'color 0.3s' }}>Emergency ID</span>
           <span style={{ padding: '4px 12px', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '8px', color: '#ef4444', fontFamily: 'monospace', fontSize: '0.875rem', fontWeight: 900, textTransform: 'uppercase' }}>{emergency._id.slice(-8)}</span>
         </div>
       </div>
+
+      {actionError && (
+        <div className="glass-card" style={{ padding: '16px 20px', borderRadius: '18px', border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.08)', color: '#fecaca', fontWeight: 700 }}>
+          {actionError}
+        </div>
+      )}
+
+      {requiresHospitalSelection && (
+        <div className="glass-card" style={{ padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#22c55e' }}>
+              Hospitals Within 5km Radius
+            </h3>
+            {recommendedHospitalEntry && (
+              <span style={{ padding: '6px 12px', borderRadius: '9999px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#22c55e', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                Recommended: {recommendedHospitalEntry.hospital.name}
+              </span>
+            )}
+          </div>
+
+          {suggestedHospitals.length === 0 ? (
+            <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(239,68,68,0.06)', color: 'var(--text-secondary)' }}>
+              No active emergency hospitals found within 5km of the patient location.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {suggestedHospitals.map((entry) => {
+                const hospital = entry.hospital;
+                const isSelecting = selectingHospitalId === hospital._id;
+
+                return (
+                  <div key={hospital._id} style={{ padding: '16px', borderRadius: '16px', border: `1px solid ${entry.recommended ? 'rgba(34,197,94,0.35)' : 'var(--border-glass)'}`, background: entry.recommended ? 'rgba(34,197,94,0.05)' : 'var(--bg-glass)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 800 }}>{hospital.name}</span>
+                          {entry.recommended && (
+                            <span style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', padding: '3px 8px', borderRadius: '9999px', background: 'rgba(34,197,94,0.14)', color: '#22c55e' }}>
+                              Best Match
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{hospital.address}</span>
+                        <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--text-muted)' }}>
+                          Lat/Lng: {renderHospitalCoordinates(entry)}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: '#3b82f6' }}>{entry.distance} km</span>
+                        <button
+                          onClick={() => onSelectHospital && onSelectHospital(hospital._id)}
+                          disabled={!!selectingHospitalId}
+                          className="cursor-pointer"
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: '#2563eb',
+                            color: '#fff',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            opacity: selectingHospitalId ? 0.7 : 1,
+                            fontFamily: 'var(--font-family)',
+                          }}
+                        >
+                          {isSelecting ? 'Assigning...' : 'Select Hospital'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* AI Triage */}
       <div style={{ position: 'relative', overflow: 'hidden', padding: '32px', background: 'var(--bg-glass)', border: `1px solid ${sev.border}`, borderRadius: '28px' }}>
@@ -85,7 +177,12 @@ export default function SOSResult({ result, onReset }) {
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', background: 'rgba(249,115,22,0.06)', borderRadius: '14px', color: '#f97316' }}>
-              <ShieldAlert size={20} /><p style={{ fontSize: '12px', fontWeight: 700 }}>Queueing for available fleet...</p>
+              <ShieldAlert size={20} />
+              <p style={{ fontSize: '12px', fontWeight: 700 }}>
+                {requiresHospitalSelection
+                  ? 'Choose a hospital to continue dispatch.'
+                  : 'Queueing for available fleet...'}
+              </p>
             </div>
           )}
         </div>
@@ -135,14 +232,12 @@ export default function SOSResult({ result, onReset }) {
 
       {/* Actions */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', paddingTop: '16px' }}>
-        <button onClick={() => navigate('/tracking')} className="cursor-pointer" style={{ padding: '14px 28px', background: '#2563eb', color: '#fff', borderRadius: '16px', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(37,99,235,0.25)', transition: 'all 0.3s', fontFamily: 'var(--font-family)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-        ><MapIcon size={18} /> Satellite Track</button>
-        <button onClick={() => navigate('/driver')} className="cursor-pointer" style={{ padding: '14px 28px', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '16px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s', fontFamily: 'var(--font-family)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-glass-hover)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-glass)'; }}
-        ><Navigation size={18} /> Driver Dashboard</button>
+        {ambulance && (
+          <button onClick={() => navigate('/tracking')} className="cursor-pointer" style={{ padding: '14px 28px', background: '#2563eb', color: '#fff', borderRadius: '16px', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(37,99,235,0.25)', transition: 'all 0.3s', fontFamily: 'var(--font-family)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+          ><MapIcon size={18} /> Satellite Track</button>
+        )}
         <button onClick={onReset} className="cursor-pointer" style={{ padding: '14px 28px', background: 'transparent', color: 'var(--text-muted)', borderRadius: '16px', fontWeight: 700, border: 'none', transition: 'color 0.2s', fontFamily: 'var(--font-family)' }}
           onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}

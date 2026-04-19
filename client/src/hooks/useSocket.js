@@ -19,8 +19,8 @@ export const useSocket = (socket, event, callback) => {
  */
 export const useGeolocation = () => {
   const [location, setLocation] = useState({
-    latitude: 17.385,    // Hyderabad fallback
-    longitude: 78.4867,
+    latitude: 17.314347,
+    longitude: 78.533894,
     loading: true,
     error: null,
   });
@@ -41,7 +41,7 @@ export const useGeolocation = () => {
         });
       },
       (err) => {
-        console.warn('Geolocation error, using Hyderabad fallback:', err.message);
+        console.warn('Geolocation error, using fallback test coordinates:', err.message);
         setLocation((prev) => ({ ...prev, loading: false, error: err.message }));
       },
       { enableHighAccuracy: true, timeout: 10000 }

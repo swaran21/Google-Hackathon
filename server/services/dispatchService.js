@@ -1,6 +1,23 @@
-const Ambulance = require('../models/Ambulance');
-const Emergency = require('../models/Emergency');
-const { haversine, calculateETA } = require('../utils/haversine');
+const Ambulance = require("../models/Ambulance");
+const Emergency = require("../models/Emergency");
+const { haversine, calculateETA } = require("../utils/haversine");
+
+const getAvailableAmbulances = async (recommendedEquipment = "basic") => {
+  let availableAmbulances = await Ambulance.find({
+    status: "available",
+    equipmentLevel: recommendedEquipment,
+    isActive: true,
+  });
+
+  if (availableAmbulances.length === 0) {
+    availableAmbulances = await Ambulance.find({
+      status: "available",
+      isActive: true,
+    });
+  }
+
+  return availableAmbulances;
+};
 
 /**
  * Find the nearest available ambulance, with severity-aware equipment matching.
@@ -13,18 +30,13 @@ const { haversine, calculateETA } = require('../utils/haversine');
  * @param {string} recommendedEquipment - 'basic', 'advanced', or 'critical_care'
  * @returns {Object} { ambulance, distance, eta } or null
  */
-const findNearestAmbulance = async (lat, lng, recommendedEquipment = 'basic') => {
-  // First try to find ambulances matching the recommended equipment level
-  let availableAmbulances = await Ambulance.find({
-    status: 'available',
-    equipmentLevel: recommendedEquipment,
-    isActive: true,
-  });
-
-  // Fallback: if no ambulances of the recommended type, get any available
-  if (availableAmbulances.length === 0) {
-    availableAmbulances = await Ambulance.find({ status: 'available', isActive: true });
-  }
+const findNearestAmbulance = async (
+  lat,
+  lng,
+  recommendedEquipment = "basic",
+) => {
+  const availableAmbulances =
+    await getAvailableAmbulances(recommendedEquipment);
 
   if (availableAmbulances.length === 0) return null;
 
@@ -34,9 +46,65 @@ const findNearestAmbulance = async (lat, lng, recommendedEquipment = 'basic') =>
       const [ambLng, ambLat] = amb.location.coordinates;
       const distance = haversine(lat, lng, ambLat, ambLng);
       const eta = calculateETA(distance);
-      return { ambulance: amb, distance: Math.round(distance * 100) / 100, eta };
+      return {
+        ambulance: amb,
+        distance: Math.round(distance * 100) / 100,
+        eta,
+      };
     })
     .sort((a, b) => a.distance - b.distance);
+
+  return ranked[0];
+};
+
+/**
+ * Rank ambulances by full mission distance:
+ * ambulance -> patient + patient -> selected hospital.
+ */
+const findBestAmbulanceForTransfer = async (
+  patientLat,
+  patientLng,
+  hospitalLat,
+  hospitalLng,
+  recommendedEquipment = "basic",
+) => {
+  const availableAmbulances =
+    await getAvailableAmbulances(recommendedEquipment);
+  if (availableAmbulances.length === 0) return null;
+
+  const patientToHospitalDistance = haversine(
+    patientLat,
+    patientLng,
+    hospitalLat,
+    hospitalLng,
+  );
+
+  const ranked = availableAmbulances
+    .map((amb) => {
+      const [ambLng, ambLat] = amb.location.coordinates;
+      const distanceToPatient = haversine(
+        patientLat,
+        patientLng,
+        ambLat,
+        ambLng,
+      );
+      const totalDistance = distanceToPatient + patientToHospitalDistance;
+
+      return {
+        ambulance: amb,
+        distanceToPatient: Math.round(distanceToPatient * 100) / 100,
+        distancePatientToHospital:
+          Math.round(patientToHospitalDistance * 100) / 100,
+        totalDistance: Math.round(totalDistance * 100) / 100,
+        eta: calculateETA(distanceToPatient),
+      };
+    })
+    .sort((a, b) => {
+      if (a.totalDistance !== b.totalDistance) {
+        return a.totalDistance - b.totalDistance;
+      }
+      return a.distanceToPatient - b.distanceToPatient;
+    });
 
   return ranked[0];
 };
@@ -46,17 +114,21 @@ const findNearestAmbulance = async (lat, lng, recommendedEquipment = 'basic') =>
  */
 const assignAmbulance = async (emergencyId, ambulanceId, eta) => {
   await Ambulance.findByIdAndUpdate(ambulanceId, {
-    status: 'dispatched',
+    status: "dispatched",
     currentEmergency: emergencyId,
   });
 
   const updated = await Emergency.findByIdAndUpdate(
     emergencyId,
-    { assignedAmbulance: ambulanceId, status: 'dispatched', eta },
-    { new: true }
-  ).populate('assignedAmbulance');
+    { assignedAmbulance: ambulanceId, status: "dispatched", eta },
+    { new: true },
+  ).populate("assignedAmbulance");
 
   return updated;
 };
 
-module.exports = { findNearestAmbulance, assignAmbulance };
+module.exports = {
+  findNearestAmbulance,
+  findBestAmbulanceForTransfer,
+  assignAmbulance,
+};

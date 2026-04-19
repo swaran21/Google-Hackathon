@@ -9,7 +9,7 @@ import {
 
 const NAV_LINKS = [
   { path: '/', label: 'Home', Icon: Home, public: true },
-  { path: '/sos', label: 'SOS', Icon: AlertCircle, public: true },
+  { path: '/sos', label: 'SOS', Icon: AlertCircle, roles: ['user'] },
   { path: '/tracking', label: 'Live Track', Icon: Navigation, public: true },
   { path: '/driver', label: 'Driver', Icon: Activity, roles: ['driver', 'admin'] },
   { path: '/hospital', label: 'Hospital', Icon: Building2, roles: ['hospital', 'admin'] },
@@ -21,7 +21,17 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  const demoLinks = isAuthenticated ? NAV_LINKS : NAV_LINKS.filter((l) => l.public);
+  const demoLinks = NAV_LINKS.filter((link) => {
+    if (!isAuthenticated) {
+      return !!link.public;
+    }
+
+    if (link.roles) {
+      return link.roles.includes(user?.role);
+    }
+
+    return true;
+  });
 
   return (
     <nav style={{

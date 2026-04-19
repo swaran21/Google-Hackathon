@@ -37,7 +37,7 @@ export default function DriverPage() {
     setSimulating(true); showToast('GPS Stream Active: Unit in motion', 'info');
     simRef.current = setInterval(async () => {
       try { const res = await api.post('/driver/simulate-move', { ambulanceId: selectedAmb._id }); const { arrived } = res.data.data; fetchDriverStatus(selectedAmb._id); refreshAmbulances(); if (arrived) { clearInterval(simRef.current); setSimulating(false); showToast('Arrival Confirmed: Unit at scene', 'success'); } } catch { stopSimulation(); }
-    }, 1500);
+    }, 5000);
   };
   const stopSimulation = () => { clearInterval(simRef.current); setSimulating(false); showToast('GPS Stream Paused', 'warning'); };
   const refreshAmbulances = () => { api.get('/ambulance').then((res) => setAmbulances(res.data.data)).catch(console.error); };

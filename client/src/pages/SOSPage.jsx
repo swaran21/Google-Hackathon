@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGeolocation } from '../hooks/useSocket';
-import { createEmergency } from '../services/api';
+import { createEmergency, selectHospitalForEmergency } from '../services/api';
 import EmergencyForm from '../components/EmergencyForm';
 import SOSResult from '../components/SOSResult';
 import {
@@ -28,21 +28,62 @@ export default function SOSPage() {
   const [selectedType, setSelectedType] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [resultError, setResultError] = useState('');
+  const [loadingText, setLoadingText] = useState('Querying nearest fleets...');
+  const [selectingHospitalId, setSelectingHospitalId] = useState(null);
 
-  const handleSOS = () => { setStep('form'); setError(''); };
+  const handleSOS = () => {
+    setStep('form');
+    setError('');
+    setResultError('');
+  };
 
   const handleSubmit = async (formData) => {
-    setStep('submitting'); setError('');
+    setStep('submitting');
+    setError('');
+    setResultError('');
+    setLoadingText('Analyzing emergency and scanning nearby hospitals...');
+
     try {
       const payload = { ...formData, type: selectedType, latitude: geo.latitude, longitude: geo.longitude };
       const res = await createEmergency(payload);
-      setResult(res.data.data); setStep('result');
+      setResult(res.data.data);
+      setStep('result');
     } catch (err) {
-      setError(err.response?.data?.message || 'Dispatch system timeout. Retrying...'); setStep('form');
+      setError(err.response?.data?.message || 'Dispatch system timeout. Retrying...');
+      setStep('form');
     }
   };
 
-  const handleReset = () => { setStep('idle'); setSelectedType(null); setResult(null); setError(''); };
+  const handleHospitalSelect = async (hospitalId) => {
+    if (!result?.emergency?._id || !hospitalId) return;
+
+    setSelectingHospitalId(hospitalId);
+    setResultError('');
+    setStep('submitting');
+    setLoadingText('Assigning nearest ambulance and computing live route...');
+
+    try {
+      const res = await selectHospitalForEmergency(result.emergency._id, hospitalId);
+      setResult(res.data.data);
+      setStep('result');
+    } catch (err) {
+      setResultError(err.response?.data?.message || 'Failed to assign hospital. Please try another one.');
+      setStep('result');
+    } finally {
+      setSelectingHospitalId(null);
+    }
+  };
+
+  const handleReset = () => {
+    setStep('idle');
+    setSelectedType(null);
+    setResult(null);
+    setError('');
+    setResultError('');
+    setSelectingHospitalId(null);
+    setLoadingText('Querying nearest fleets...');
+  };
 
   return (
     <div className="page-enter" style={{
@@ -158,7 +199,7 @@ export default function SOSPage() {
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-0.02em', marginBottom: '12px' }}>Calculating Optimal Response</h2>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-              <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Querying nearest fleets...
+              <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> {loadingText}
             </div>
           </div>
         </div>
@@ -166,7 +207,13 @@ export default function SOSPage() {
 
       {step === 'result' && result && (
         <div style={{ width: '100%', maxWidth: '800px' }} className="page-enter">
-          <SOSResult result={result} onReset={handleReset} />
+          <SOSResult
+            result={result}
+            onReset={handleReset}
+            onSelectHospital={handleHospitalSelect}
+            selectingHospitalId={selectingHospitalId}
+            actionError={resultError}
+          />
         </div>
       )}
     </div>

@@ -1,18 +1,42 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import ToastProvider from './components/Toast';
-import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import SOSPage from './pages/SOSPage';
-import TrackingPage from './pages/TrackingPage';
-import AdminDashboard from './pages/AdminDashboard';
-import DriverPage from './pages/DriverPage';
-import HospitalPage from './pages/HospitalPage';
-import HospitalSignupPage from './pages/HospitalSignupPage';
-import UserLoginPage from './pages/UserLoginPage';
-import DriverLoginPage from './pages/DriverLoginPage';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import ToastProvider from "./components/Toast";
+import Navbar from "./components/Navbar";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import SOSPage from "./pages/SOSPage";
+import TrackingPage from "./pages/TrackingPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import DriverPage from "./pages/DriverPage";
+import HospitalPage from "./pages/HospitalPage";
+import HospitalSignupPage from "./pages/HospitalSignupPage";
+import UserLoginPage from "./pages/UserLoginPage";
+import DriverLoginPage from "./pages/DriverLoginPage";
+
+function UserOnlyRoute({ children }) {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) return null;
+  if (!isAuthenticated) return <Navigate to="/user-login" replace />;
+
+  if (user?.role !== "user") {
+    const roleHome = {
+      admin: "/admin",
+      driver: "/driver",
+      hospital: "/hospital",
+    };
+    return <Navigate to={roleHome[user?.role] || "/"} replace />;
+  }
+
+  return children;
+}
 
 export default function App() {
   return (
@@ -20,18 +44,35 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
-            <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', transition: 'background 0.3s, color 0.3s' }}>
+            <div
+              style={{
+                minHeight: "100vh",
+                background: "var(--bg-primary)",
+                color: "var(--text-primary)",
+                transition: "background 0.3s, color 0.3s",
+              }}
+            >
               <Navbar />
-              <main style={{ paddingTop: '64px' }}>
+              <main style={{ paddingTop: "64px" }}>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />
-                  <Route path="/sos" element={<SOSPage />} />
+                  <Route
+                    path="/sos"
+                    element={
+                      <UserOnlyRoute>
+                        <SOSPage />
+                      </UserOnlyRoute>
+                    }
+                  />
                   <Route path="/tracking" element={<TrackingPage />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/driver" element={<DriverPage />} />
                   <Route path="/hospital" element={<HospitalPage />} />
-                  <Route path="/hospital-login" element={<HospitalSignupPage />} />
+                  <Route
+                    path="/hospital-login"
+                    element={<HospitalSignupPage />}
+                  />
                   <Route path="/user-login" element={<UserLoginPage />} />
                   <Route path="/driver-login" element={<DriverLoginPage />} />
                 </Routes>

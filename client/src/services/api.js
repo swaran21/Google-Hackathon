@@ -19,6 +19,8 @@ export const getMe = () => api.get('/auth/me');
 
 // ─── Emergency APIs ──────────────────────────────────────────────
 export const createEmergency = (data) => api.post('/emergency', data);
+export const selectHospitalForEmergency = (emergencyId, hospitalId) =>
+  api.post(`/emergency/${emergencyId}/select-hospital`, { hospitalId });
 export const getEmergency = (id) => api.get(`/emergency/${id}`);
 export const updateEmergencyStatus = (id, status) =>
   api.patch(`/emergency/${id}/status`, { status });
