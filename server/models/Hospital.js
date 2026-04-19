@@ -1,0 +1,64 @@
+const mongoose = require('mongoose');
+
+const hospitalSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Hospital name is required'],
+      trim: true,
+    },
+    address: {
+      type: String,
+      required: [true, 'Hospital address is required'],
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: [true, 'Hospital phone is required'],
+      trim: true,
+    },
+    location: {
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
+    totalBeds: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    availableBeds: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    icuTotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    icuAvailable: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    specialties: {
+      type: [String],
+      default: [],
+    },
+    emergencyDepartment: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Geospatial index for nearby hospital queries
+hospitalSchema.index({ location: '2dsphere' });
+
+module.exports = mongoose.model('Hospital', hospitalSchema);
