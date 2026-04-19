@@ -73,19 +73,46 @@ export default function SOSPage() {
   const [step, setStep] = useState("idle");
   const [selectedType, setSelectedType] = useState(null);
   const [result, setResult] = useState(null);
+  const [locationError, setLocationError] = useState("");
   const [error, setError] = useState("");
   const [resultError, setResultError] = useState("");
   const [loadingText, setLoadingText] = useState("Querying nearest fleets...");
   const [selectingHospitalId, setSelectingHospitalId] = useState(null);
   const [cancellingEmergency, setCancellingEmergency] = useState(false);
 
+  const handleRequestLocation = async () => {
+    setLocationError("");
+    const location = await geo.requestLocation();
+    if (!location) {
+      setLocationError(
+        "Allow browser location access to continue SOS dispatch.",
+      );
+    }
+  };
+
   const handleSOS = () => {
+    if (!geo.hasCoordinates) {
+      setLocationError(
+        'Tap "Use Current Location" and allow browser access before starting SOS.',
+      );
+      return;
+    }
+
     setStep("form");
     setError("");
     setResultError("");
+    setLocationError("");
   };
 
   const handleSubmit = async (formData) => {
+    if (!geo.hasCoordinates) {
+      setError(
+        "Current location is required. Please enable location access first.",
+      );
+      setStep("idle");
+      return;
+    }
+
     setStep("submitting");
     setError("");
     setResultError("");
@@ -168,6 +195,7 @@ export default function SOSPage() {
     setStep("idle");
     setSelectedType(null);
     setResult(null);
+    setLocationError("");
     setError("");
     setResultError("");
     setSelectingHospitalId(null);
@@ -377,11 +405,55 @@ export default function SOSPage() {
                 }}
               >
                 {geo.loading
-                  ? "Establishing Link..."
-                  : `${geo.latitude.toFixed(4)}, ${geo.longitude.toFixed(4)}`}
+                  ? "Fetching current location..."
+                  : geo.hasCoordinates
+                    ? `${geo.latitude.toFixed(4)}, ${geo.longitude.toFixed(4)}`
+                    : "Location access required"}
               </p>
             </div>
           </div>
+          <button
+            onClick={handleRequestLocation}
+            className="cursor-pointer"
+            style={{
+              marginTop: "16px",
+              padding: "12px 18px",
+              borderRadius: "14px",
+              border: "1px solid rgba(59,130,246,0.35)",
+              background: "rgba(59,130,246,0.1)",
+              color: "#93c5fd",
+              fontWeight: 800,
+              fontFamily: "var(--font-family)",
+              letterSpacing: "0.02em",
+              opacity: geo.loading ? 0.7 : 1,
+            }}
+            disabled={geo.loading}
+          >
+            {geo.loading
+              ? "Detecting Current Location..."
+              : geo.hasCoordinates
+                ? "Refresh Current Location"
+                : "Use Current Location"}
+          </button>
+
+          {(locationError || geo.error) && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "10px 12px",
+                borderRadius: "12px",
+                border: "1px solid rgba(239,68,68,0.28)",
+                background: "rgba(239,68,68,0.08)",
+                color: "#fecaca",
+                fontSize: "12px",
+                fontWeight: 700,
+                maxWidth: "360px",
+                textAlign: "center",
+              }}
+            >
+              {locationError || geo.error}
+            </div>
+          )}
         </div>
       )}
 
