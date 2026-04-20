@@ -1,405 +1,444 @@
 /**
- * Seed script for ResQNet AI — Hyderabad.
- * Seeds ambulances, hospitals, and default user accounts.
- * Idempotent — clears and re-seeds.
+ * Seed script for ResQNet AI - Hyderabad.
+ * Generates large random datasets for hospitals, ambulances, and linked users.
  *
  * Run: npm run seed
  */
 require("dotenv").config({
   path: require("path").resolve(__dirname, "../.env"),
 });
+
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const { faker } = require("@faker-js/faker");
+
 const Ambulance = require("../models/Ambulance");
 const Hospital = require("../models/Hospital");
 const User = require("../models/User");
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// ─── Test-area Ambulances (around 17.314347, 78.533894) ─────────
-const ambulances = [
+const HOSPITAL_COUNT = 300;
+const AMBULANCE_COUNT = 500;
+const GLOBAL_PASSWORD = "12345678";
+
+const HYD_BOUNDS = {
+  latMin: 17.23,
+  latMax: 17.62,
+  lngMin: 78.22,
+  lngMax: 78.68,
+};
+
+const HYD_LOCALITIES = [
+  "Banjara Hills",
+  "Jubilee Hills",
+  "Kukatpally",
+  "Miyapur",
+  "Gachibowli",
+  "Hitech City",
+  "Madhapur",
+  "Ameerpet",
+  "Secunderabad",
+  "LB Nagar",
+  "Dilsukhnagar",
+  "Uppal",
+  "Nagole",
+  "Malakpet",
+  "Kothapet",
+  "Habsiguda",
+  "Nallakunta",
+  "Begumpet",
+  "Mehdipatnam",
+  "Tolichowki",
+  "Nampally",
+  "Charminar",
+  "Attapur",
+  "Shamshabad",
+  "Kompally",
+  "Manikonda",
+  "Kondapur",
+  "Serilingampally",
+  "Sainikpuri",
+  "Moosapet",
+];
+
+const SPECIALTIES = [
+  "Trauma",
+  "Cardiology",
+  "Neurology",
+  "Emergency Medicine",
+  "Orthopedics",
+  "Pulmonology",
+  "Nephrology",
+  "General Surgery",
+  "Critical Care",
+  "Respiratory Care",
+  "Burns",
+  "General Medicine",
+  "Pediatrics",
+  "Infectious Disease",
+  "Anesthesiology",
+];
+
+const TREATMENT_LIBRARY = [
   {
-    vehicleNumber: "TS09EA1234",
-    driverName: "Rajesh Kumar",
-    driverPhone: "+91 9876543210",
-    location: { type: "Point", coordinates: [78.5329, 17.3148] },
-    status: "available",
-    equipmentLevel: "advanced",
+    name: "Primary Cardiac Stabilization",
+    emergencyTypes: ["cardiac"],
+    avgCost: 65000,
   },
   {
-    vehicleNumber: "TS09EB5678",
-    driverName: "Mohammed Irfan",
-    driverPhone: "+91 9876543211",
-    location: { type: "Point", coordinates: [78.5387, 17.3094] },
-    status: "available",
-    equipmentLevel: "critical_care",
+    name: "Stroke Thrombolysis Package",
+    emergencyTypes: ["stroke"],
+    avgCost: 120000,
   },
   {
-    vehicleNumber: "TS09EC9012",
-    driverName: "Venkat Reddy",
-    driverPhone: "+91 9876543212",
-    location: { type: "Point", coordinates: [78.5262, 17.3205] },
-    status: "available",
-    equipmentLevel: "basic",
+    name: "Accident Trauma Surgery",
+    emergencyTypes: ["accident"],
+    avgCost: 140000,
   },
   {
-    vehicleNumber: "TS09ED3456",
-    driverName: "Srinivas Rao",
-    driverPhone: "+91 9876543213",
-    location: { type: "Point", coordinates: [78.5478, 17.3041] },
-    status: "available",
-    equipmentLevel: "advanced",
+    name: "Critical Burn Management",
+    emergencyTypes: ["fire"],
+    avgCost: 180000,
   },
   {
-    vehicleNumber: "TS09EE7890",
-    driverName: "Anil Sharma",
-    driverPhone: "+91 9876543214",
-    location: { type: "Point", coordinates: [78.5208, 17.3273] },
-    status: "available",
-    equipmentLevel: "basic",
+    name: "Respiratory Distress Support",
+    emergencyTypes: ["breathing"],
+    avgCost: 42000,
   },
   {
-    vehicleNumber: "TS09EF2345",
-    driverName: "Prasad Goud",
-    driverPhone: "+91 9876543215",
-    location: { type: "Point", coordinates: [78.5562, 17.3189] },
-    status: "available",
-    equipmentLevel: "critical_care",
+    name: "Disaster Acute Care",
+    emergencyTypes: ["flood"],
+    avgCost: 30000,
   },
   {
-    vehicleNumber: "TS09EG6789",
-    driverName: "Kiran Naik",
-    driverPhone: "+91 9876543216",
-    location: { type: "Point", coordinates: [78.5411, 17.3338] },
-    status: "available",
-    equipmentLevel: "advanced",
+    name: "Emergency ICU Admission",
+    emergencyTypes: ["cardiac", "stroke", "breathing"],
+    avgCost: 85000,
   },
   {
-    vehicleNumber: "TS09EH0123",
-    driverName: "Ravi Teja",
-    driverPhone: "+91 9876543217",
-    location: { type: "Point", coordinates: [78.5149, 17.3012] },
-    status: "available",
-    equipmentLevel: "basic",
+    name: "General Emergency Observation",
+    emergencyTypes: ["other", "flood"],
+    avgCost: 20000,
+  },
+  {
+    name: "Polytrauma Stabilization",
+    emergencyTypes: ["accident", "fire"],
+    avgCost: 95000,
   },
 ];
 
-// ─── Test-area Hospitals (all within ~5km) ──────────────────────
-const hospitals = [
-  {
-    name: "LB Nagar Emergency Center",
-    address: "LB Nagar, Hyderabad, Telangana 500074",
-    phone: "+91 40 23390202",
-    location: { type: "Point", coordinates: [78.5371, 17.3179] },
-    totalBeds: 420,
-    availableBeds: 116,
-    icuTotal: 48,
-    icuAvailable: 11,
-    specialties: ["Trauma", "Cardiology", "Neurology", "Emergency Medicine"],
-    treatments: [
-      {
-        name: "Primary Cardiac Stabilization",
-        emergencyTypes: ["cardiac"],
-        costMin: 25000,
-        costMax: 65000,
-        currency: "INR",
-        notes: "Includes ECG, emergency medication, monitored bed",
-      },
-      {
-        name: "Stroke Thrombolysis Package",
-        emergencyTypes: ["stroke"],
-        costMin: 70000,
-        costMax: 145000,
-        currency: "INR",
-      },
-      {
-        name: "Polytrauma Emergency Surgery",
-        emergencyTypes: ["accident", "fire"],
-        costMin: 85000,
-        costMax: 220000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-  {
-    name: "Saroornagar Trauma Hospital",
-    address: "Saroornagar, Hyderabad, Telangana 500035",
-    phone: "+91 40 27505566",
-    location: { type: "Point", coordinates: [78.5248, 17.3098] },
-    totalBeds: 360,
-    availableBeds: 92,
-    icuTotal: 40,
-    icuAvailable: 8,
-    specialties: ["Trauma", "General Surgery", "Orthopedics", "Pulmonology"],
-    treatments: [
-      {
-        name: "Accident Trauma Bundle",
-        emergencyTypes: ["accident"],
-        costMin: 60000,
-        costMax: 180000,
-        currency: "INR",
-      },
-      {
-        name: "Respiratory Distress Support",
-        emergencyTypes: ["breathing"],
-        costMin: 18000,
-        costMax: 52000,
-        currency: "INR",
-      },
-      {
-        name: "Flood Infection Emergency Care",
-        emergencyTypes: ["flood"],
-        costMin: 12000,
-        costMax: 38000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-  {
-    name: "Dilsukhnagar MultiSpeciality",
-    address: "Dilsukhnagar, Hyderabad, Telangana 500060",
-    phone: "+91 40 24600146",
-    location: { type: "Point", coordinates: [78.5455, 17.3261] },
-    totalBeds: 300,
-    availableBeds: 74,
-    icuTotal: 36,
-    icuAvailable: 7,
-    specialties: ["Cardiology", "Neurology", "General Medicine", "Emergency"],
-    treatments: [
-      {
-        name: "Rapid Cardiac Response",
-        emergencyTypes: ["cardiac"],
-        costMin: 22000,
-        costMax: 78000,
-        currency: "INR",
-      },
-      {
-        name: "Neuro Stroke Imaging + Care",
-        emergencyTypes: ["stroke"],
-        costMin: 55000,
-        costMax: 130000,
-        currency: "INR",
-      },
-      {
-        name: "General Emergency Observation",
-        emergencyTypes: ["other", "flood"],
-        costMin: 8000,
-        costMax: 26000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-  {
-    name: "Champapet Critical Care",
-    address: "Champapet, Hyderabad, Telangana 500079",
-    phone: "+91 40 23607777",
-    location: { type: "Point", coordinates: [78.5303, 17.2986] },
-    totalBeds: 280,
-    availableBeds: 68,
-    icuTotal: 42,
-    icuAvailable: 9,
-    specialties: ["Critical Care", "Burns", "Cardiology", "Emergency Surgery"],
-    treatments: [
-      {
-        name: "Critical Burn Management",
-        emergencyTypes: ["fire"],
-        costMin: 90000,
-        costMax: 260000,
-        currency: "INR",
-      },
-      {
-        name: "Advanced Ventilator Support",
-        emergencyTypes: ["breathing"],
-        costMin: 35000,
-        costMax: 98000,
-        currency: "INR",
-      },
-      {
-        name: "Emergency Cardiac ICU Admission",
-        emergencyTypes: ["cardiac"],
-        costMin: 45000,
-        costMax: 120000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-  {
-    name: "Kothapet LifeCare",
-    address: "Kothapet, Hyderabad, Telangana 500035",
-    phone: "+91 40 45674567",
-    location: { type: "Point", coordinates: [78.5523, 17.3131] },
-    totalBeds: 340,
-    availableBeds: 88,
-    icuTotal: 44,
-    icuAvailable: 10,
-    specialties: ["Cardiology", "Nephrology", "Pulmonology", "Emergency"],
-    treatments: [
-      {
-        name: "Cardiac Emergency Care Plus",
-        emergencyTypes: ["cardiac"],
-        costMin: 28000,
-        costMax: 90000,
-        currency: "INR",
-      },
-      {
-        name: "Pulmonary Acute Rescue",
-        emergencyTypes: ["breathing"],
-        costMin: 20000,
-        costMax: 60000,
-        currency: "INR",
-      },
-      {
-        name: "Emergency Dialysis + Stabilization",
-        emergencyTypes: ["other"],
-        costMin: 24000,
-        costMax: 75000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-  {
-    name: "Malakpet City Hospital",
-    address: "Malakpet, Hyderabad, Telangana 500036",
-    phone: "+91 40 44885000",
-    location: { type: "Point", coordinates: [78.5189, 17.3224] },
-    totalBeds: 260,
-    availableBeds: 61,
-    icuTotal: 30,
-    icuAvailable: 6,
-    specialties: [
-      "General Medicine",
-      "Trauma",
-      "Respiratory Care",
-      "Orthopedics",
-    ],
-    treatments: [
-      {
-        name: "Fracture + Trauma Stabilization",
-        emergencyTypes: ["accident"],
-        costMin: 35000,
-        costMax: 125000,
-        currency: "INR",
-      },
-      {
-        name: "Respiratory Emergency Package",
-        emergencyTypes: ["breathing"],
-        costMin: 16000,
-        costMax: 48000,
-        currency: "INR",
-      },
-      {
-        name: "General Acute Care",
-        emergencyTypes: ["other", "flood"],
-        costMin: 7000,
-        costMax: 24000,
-        currency: "INR",
-      },
-    ],
-    emergencyDepartment: true,
-  },
-];
+const randomPointInHyderabad = () => {
+  const latitude = faker.number.float({
+    min: HYD_BOUNDS.latMin,
+    max: HYD_BOUNDS.latMax,
+    fractionDigits: 6,
+  });
+  const longitude = faker.number.float({
+    min: HYD_BOUNDS.lngMin,
+    max: HYD_BOUNDS.lngMax,
+    fractionDigits: 6,
+  });
+
+  return {
+    type: "Point",
+    coordinates: [Number(longitude.toFixed(6)), Number(latitude.toFixed(6))],
+  };
+};
+
+const getUniqueCode = (prefix, index) => {
+  const code = (index + 1).toString(36).padStart(4, "0").toUpperCase();
+  return `${prefix}${code}`;
+};
+
+const createEmailFromName = (name, usedEmails) => {
+  const clean = String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  const firstFive = clean.slice(0, 5).padEnd(5, "x");
+  let email = `${firstFive}123@gmail.com`;
+
+  if (!usedEmails.has(email)) {
+    usedEmails.add(email);
+    return email;
+  }
+
+  let suffix = 1;
+  while (usedEmails.has(email)) {
+    email = `${firstFive}${suffix}123@gmail.com`;
+    suffix += 1;
+  }
+
+  usedEmails.add(email);
+  return email;
+};
+
+const randomIndianPhone = () => `+91 9${faker.string.numeric(9)}`;
+
+const buildTreatments = () => {
+  const selected = faker.helpers.arrayElements(
+    TREATMENT_LIBRARY,
+    faker.number.int({ min: 3, max: 5 }),
+  );
+
+  return selected.map((template) => {
+    const avg = Math.max(
+      8000,
+      template.avgCost + faker.number.int({ min: -8000, max: 12000 }),
+    );
+    const variance = faker.number.float({
+      min: 0.15,
+      max: 0.35,
+      fractionDigits: 2,
+    });
+
+    const costMin = Math.max(5000, Math.round(avg * (1 - variance)));
+    const costMax = Math.max(costMin + 1000, Math.round(avg * (1 + variance)));
+
+    return {
+      name: template.name,
+      emergencyTypes: template.emergencyTypes,
+      costMin,
+      costMax,
+      currency: "INR",
+      notes: `Average cost around INR ${avg.toLocaleString("en-IN")}`,
+    };
+  });
+};
+
+const buildHospitals = (count, usedEmails) => {
+  const hospitals = [];
+  const hospitalUsers = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const code = getUniqueCode("H", i);
+    const careLabel = faker.helpers.arrayElement([
+      "Emergency",
+      "LifeCare",
+      "CityCare",
+      "Prime",
+      "Advanced",
+      "Critical",
+      "Metro",
+    ]);
+
+    const name = `${code} ${careLabel} Hospital`;
+    const locality = faker.helpers.arrayElement(HYD_LOCALITIES);
+    const pincode = `500${faker.number
+      .int({ min: 1, max: 99 })
+      .toString()
+      .padStart(2, "0")}`;
+
+    const totalBeds = faker.number.int({ min: 90, max: 900 });
+    const icuTotal = faker.number.int({
+      min: Math.max(10, Math.floor(totalBeds * 0.08)),
+      max: Math.max(20, Math.floor(totalBeds * 0.25)),
+    });
+
+    const availableBeds = faker.number.int({
+      min: Math.max(5, Math.floor(totalBeds * 0.08)),
+      max: Math.max(10, Math.floor(totalBeds * 0.8)),
+    });
+
+    const icuAvailable = faker.number.int({
+      min: Math.max(0, Math.floor(icuTotal * 0.05)),
+      max: Math.max(1, Math.floor(icuTotal * 0.75)),
+    });
+
+    const email = createEmailFromName(name, usedEmails);
+
+    hospitals.push({
+      name,
+      email,
+      address: `${faker.location.streetAddress()}, ${locality}, Hyderabad, Telangana ${pincode}`,
+      phone: randomIndianPhone(),
+      location: randomPointInHyderabad(),
+      totalBeds,
+      availableBeds,
+      icuTotal,
+      icuAvailable,
+      specialties: faker.helpers.arrayElements(
+        SPECIALTIES,
+        faker.number.int({ min: 3, max: 6 }),
+      ),
+      treatments: buildTreatments(),
+      emergencyDepartment: true,
+      isActive: true,
+    });
+
+    hospitalUsers.push({
+      name: `${code} Admin`,
+      email,
+      password: GLOBAL_PASSWORD,
+      phone: randomIndianPhone(),
+      role: "hospital",
+      _hospitalIndex: i,
+    });
+  }
+
+  return { hospitals, hospitalUsers };
+};
+
+const buildAmbulances = (count, usedEmails) => {
+  const ambulances = [];
+  const driverUsers = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const driverCode = getUniqueCode("D", i);
+    const driverName = `${driverCode} ${faker.person.firstName()}`;
+    const vehicleSeries = String(i + 1).padStart(4, "0");
+    const vehicleSuffix = String.fromCharCode(65 + (i % 26));
+    const vehicleNumber = `TS09${vehicleSuffix}${vehicleSeries}`;
+
+    ambulances.push({
+      vehicleNumber,
+      driverName,
+      driverPhone: randomIndianPhone(),
+      location: randomPointInHyderabad(),
+      status: "available",
+      equipmentLevel: faker.helpers.arrayElement([
+        "basic",
+        "advanced",
+        "critical_care",
+      ]),
+      isActive: true,
+    });
+
+    driverUsers.push({
+      name: driverName,
+      email: createEmailFromName(driverName, usedEmails),
+      password: GLOBAL_PASSWORD,
+      phone: randomIndianPhone(),
+      role: "driver",
+      _ambulanceIndex: i,
+    });
+  }
+
+  return { ambulances, driverUsers };
+};
+
+const buildCoreUsers = (usedEmails) => {
+  const adminName = "A0001 Admin";
+  const patientName = "U0001 Patient";
+
+  return [
+    {
+      name: adminName,
+      email: createEmailFromName(adminName, usedEmails),
+      password: GLOBAL_PASSWORD,
+      phone: randomIndianPhone(),
+      role: "admin",
+    },
+    {
+      name: patientName,
+      email: createEmailFromName(patientName, usedEmails),
+      password: GLOBAL_PASSWORD,
+      phone: randomIndianPhone(),
+      role: "user",
+    },
+  ];
+};
 
 const seedDB = async () => {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log("✅ Connected to MongoDB for seeding");
+    if (!MONGODB_URI) {
+      throw new Error("MONGODB_URI is missing in server/.env");
+    }
 
-    // Clear existing data
+    faker.seed(20260420);
+
+    await mongoose.connect(MONGODB_URI);
+    console.log("Connected to MongoDB for seeding");
+
     await Ambulance.deleteMany({});
     await Hospital.deleteMany({});
     await User.deleteMany({});
-    console.log("🗑️  Cleared existing data");
+    console.log("Cleared existing data");
 
-    // Insert ambulances and hospitals
-    const insertedAmbulances = await Ambulance.insertMany(ambulances);
+    const usedEmails = new Set();
+
+    const { hospitals, hospitalUsers } = buildHospitals(
+      HOSPITAL_COUNT,
+      usedEmails,
+    );
+    const { ambulances, driverUsers } = buildAmbulances(
+      AMBULANCE_COUNT,
+      usedEmails,
+    );
+    const coreUsers = buildCoreUsers(usedEmails);
+
     const insertedHospitals = await Hospital.insertMany(hospitals);
+    const insertedAmbulances = await Ambulance.insertMany(ambulances);
 
-    console.log(`🚑 Seeded ${insertedAmbulances.length} ambulances`);
-    console.log(`🏥 Seeded ${insertedHospitals.length} hospitals`);
+    console.log(`Seeded ${insertedHospitals.length} hospitals`);
+    console.log(`Seeded ${insertedAmbulances.length} ambulances`);
 
-    // ─── Create default user accounts ────────────────────────────
-    const users = [
-      {
-        name: "Admin User",
-        email: "admin@resqnet.ai",
-        password: "admin123",
-        phone: "+91 9000000001",
-        role: "admin",
-      },
-      {
-        name: "Rajesh Kumar",
-        email: "driver1@resqnet.ai",
-        password: "driver123",
-        phone: "+91 9876543210",
-        role: "driver",
-        assignedAmbulance: insertedAmbulances[0]._id,
-      },
-      {
-        name: "Mohammed Irfan",
-        email: "driver2@resqnet.ai",
-        password: "driver123",
-        phone: "+91 9876543211",
-        role: "driver",
-        assignedAmbulance: insertedAmbulances[1]._id,
-      },
-      {
-        name: "NIMS Hospital Admin",
-        email: "nims@resqnet.ai",
-        password: "hospital123",
-        phone: "+91 40 23390202",
-        role: "hospital",
-        assignedHospital: insertedHospitals[0]._id,
-      },
-      {
-        name: "Gandhi Hospital Admin",
-        email: "gandhi@resqnet.ai",
-        password: "hospital123",
-        phone: "+91 40 27505566",
-        role: "hospital",
-        assignedHospital: insertedHospitals[1]._id,
-      },
-      {
-        name: "Test User",
-        email: "user@resqnet.ai",
-        password: "user123",
-        phone: "+91 9000000002",
-        role: "user",
-      },
+    const hashedPassword = await bcrypt.hash(GLOBAL_PASSWORD, 12);
+
+    const usersToInsert = [
+      ...coreUsers.map((user) => ({ ...user, password: hashedPassword })),
+      ...hospitalUsers.map((user) => ({
+        name: user.name,
+        email: user.email,
+        password: hashedPassword,
+        phone: user.phone,
+        role: user.role,
+        assignedHospital: insertedHospitals[user._hospitalIndex]._id,
+      })),
+      ...driverUsers.map((user) => ({
+        name: user.name,
+        email: user.email,
+        password: hashedPassword,
+        phone: user.phone,
+        role: user.role,
+        assignedAmbulance: insertedAmbulances[user._ambulanceIndex]._id,
+      })),
     ];
 
-    // Create users one by one (to trigger pre-save password hashing)
-    for (const userData of users) {
-      await User.create(userData);
+    const insertedUsers = await User.insertMany(usersToInsert);
+
+    const driverAccounts = insertedUsers.filter(
+      (user) => user.role === "driver" && user.assignedAmbulance,
+    );
+
+    if (driverAccounts.length > 0) {
+      const linkOps = driverAccounts.map((driver) => ({
+        updateOne: {
+          filter: { _id: driver.assignedAmbulance },
+          update: { assignedDriver: driver._id },
+        },
+      }));
+
+      await Ambulance.bulkWrite(linkOps);
     }
 
-    console.log(`👤 Seeded ${users.length} user accounts`);
+    console.log(`Seeded ${insertedUsers.length} user accounts`);
+    console.log("Linked driver users to ambulances");
 
-    // ─── Link drivers back to ambulances (assignedDriver) ────────
-    const driverUsers = await User.find({ role: "driver" });
-    for (const driver of driverUsers) {
-      if (driver.assignedAmbulance) {
-        await Ambulance.findByIdAndUpdate(driver.assignedAmbulance, {
-          assignedDriver: driver._id,
-        });
-      }
-    }
-    console.log("🔗 Linked driver users to ambulances");
+    console.log("\nDefault credentials for all seeded accounts:");
+    console.log(`  Password: ${GLOBAL_PASSWORD}`);
+    console.log("  Email format: first 5 letters of name + 123@gmail.com");
 
-    console.log("\n📋 Default Login Credentials:");
-    console.log("   Admin:    admin@resqnet.ai / admin123");
-    console.log("   Driver:   driver1@resqnet.ai / driver123");
-    console.log("   Hospital: nims@resqnet.ai / hospital123");
-    console.log("   User:     user@resqnet.ai / user123");
+    const sampleAccounts = insertedUsers.slice(0, 6).map((user) => ({
+      role: user.role,
+      name: user.name,
+      email: user.email,
+    }));
 
-    console.log("\n✅ Database seeding complete!");
+    console.log("\nSample accounts:");
+    sampleAccounts.forEach((account) => {
+      console.log(
+        `  ${account.role.padEnd(8)} ${account.name} -> ${account.email}`,
+      );
+    });
+
+    console.log("\nDatabase seeding complete");
+
     await mongoose.disconnect();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Seeding error:", error.message);
+    console.error("Seeding error:", error.message);
     process.exit(1);
   }
 };
