@@ -1,7 +1,14 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, MessageSquare, Shield, User } from "lucide-react";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 const createIcon = (emoji, size, pulse = false) => {
@@ -43,16 +50,89 @@ const hospitalIcon = L.divIcon({
 
 function FitBounds({ markers }) {
   const map = useMap();
+  const hasCenteredRef = useRef(false);
 
   useEffect(() => {
+    if (hasCenteredRef.current) return;
     if (!markers.length) return;
 
     const bounds = L.latLngBounds(markers.map(({ lat, lng }) => [lat, lng]));
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+    hasCenteredRef.current = true;
   }, [markers, map]);
 
   return null;
 }
+
+function FocusController({ focusPoint }) {
+  const map = useMap();
+  const lastFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!focusPoint) return;
+
+    const nextKey = `${focusPoint.lat.toFixed(5)},${focusPoint.lng.toFixed(5)}`;
+    if (lastFocusRef.current === nextKey) return;
+
+    const nextZoom = Math.max(map.getZoom(), 13);
+    map.setView([focusPoint.lat, focusPoint.lng], nextZoom, {
+      animate: true,
+      duration: 0.8,
+    });
+    lastFocusRef.current = nextKey;
+  }, [focusPoint, map]);
+
+  return null;
+}
+
+function ViewportTracker({ onViewportChange }) {
+  const map = useMapEvents({
+    zoomend() {
+      onViewportChange(map.getZoom(), map.getBounds());
+    },
+    moveend() {
+      onViewportChange(map.getZoom(), map.getBounds());
+    },
+  });
+
+  useEffect(() => {
+    onViewportChange(map.getZoom(), map.getBounds());
+  }, [map, onViewportChange]);
+
+  return null;
+}
+
+const hasValidCoords = (item) =>
+  Array.isArray(item?.location?.coordinates) &&
+  item.location.coordinates.length === 2;
+
+const isInsideBounds = (item, bounds) => {
+  if (!hasValidCoords(item)) return false;
+  if (!bounds) return true;
+
+  const [lng, lat] = item.location.coordinates;
+  return bounds.contains(L.latLng(lat, lng));
+};
+
+const getDensityByZoom = (zoomLevel) => {
+  if (zoomLevel >= 14) {
+    return {
+      maxAmbulances: Infinity,
+      maxHospitals: Infinity,
+      showHospitals: true,
+    };
+  }
+
+  if (zoomLevel >= 12) {
+    return { maxAmbulances: 45, maxHospitals: 30, showHospitals: true };
+  }
+
+  if (zoomLevel >= 10) {
+    return { maxAmbulances: 24, maxHospitals: 16, showHospitals: true };
+  }
+
+  return { maxAmbulances: 12, maxHospitals: 6, showHospitals: false };
+};
 
 export default function TrackingMapCard({
   filteredAmbulances,
@@ -61,25 +141,69 @@ export default function TrackingMapCard({
   isDark,
   assignedAmbulanceId,
   isUserViewer,
+  focusPoint,
   onOpenDispatchPanel,
 }) {
+  const [zoomLevel, setZoomLevel] = useState(12);
+  const [mapBounds, setMapBounds] = useState(null);
+
+  const handleViewportChange = useCallback((nextZoom, bounds) => {
+    setZoomLevel(nextZoom);
+    setMapBounds(bounds);
+  }, []);
+
   const allMarkers = useMemo(() => {
     const ambulanceMarkers = filteredAmbulances
-      .filter((amb) => amb?.location?.coordinates?.length === 2)
+      .filter(hasValidCoords)
       .map((amb) => ({
         lat: amb.location.coordinates[1],
         lng: amb.location.coordinates[0],
       }));
 
-    const hospitalMarkers = hospitals
-      .filter((hosp) => hosp?.location?.coordinates?.length === 2)
-      .map((hosp) => ({
-        lat: hosp.location.coordinates[1],
-        lng: hosp.location.coordinates[0],
-      }));
+    const hospitalMarkers = hospitals.filter(hasValidCoords).map((hosp) => ({
+      lat: hosp.location.coordinates[1],
+      lng: hosp.location.coordinates[0],
+    }));
 
     return [...ambulanceMarkers, ...hospitalMarkers];
   }, [filteredAmbulances, hospitals]);
+
+  const mapDensity = useMemo(() => getDensityByZoom(zoomLevel), [zoomLevel]);
+
+  const visibleAmbulances = useMemo(() => {
+    const sorted = [...filteredAmbulances]
+      .filter(hasValidCoords)
+      .sort((a, b) => {
+        const aPriority = a._id?.toString() === assignedAmbulanceId ? 1 : 0;
+        const bPriority = b._id?.toString() === assignedAmbulanceId ? 1 : 0;
+        return bPriority - aPriority;
+      });
+
+    const inBounds = sorted.filter((item) => isInsideBounds(item, mapBounds));
+    const scoped = inBounds.length > 0 ? inBounds : sorted;
+
+    if (!Number.isFinite(mapDensity.maxAmbulances)) return scoped;
+    return scoped.slice(0, mapDensity.maxAmbulances);
+  }, [
+    filteredAmbulances,
+    assignedAmbulanceId,
+    mapBounds,
+    mapDensity.maxAmbulances,
+  ]);
+
+  const visibleHospitals = useMemo(() => {
+    if (!mapDensity.showHospitals) return [];
+
+    const scoped = hospitals
+      .filter(hasValidCoords)
+      .filter((item) => isInsideBounds(item, mapBounds));
+
+    const fallback =
+      scoped.length > 0 ? scoped : hospitals.filter(hasValidCoords);
+
+    if (!Number.isFinite(mapDensity.maxHospitals)) return fallback;
+    return fallback.slice(0, mapDensity.maxHospitals);
+  }, [hospitals, mapBounds, mapDensity.maxHospitals, mapDensity.showHospitals]);
 
   return (
     <div
@@ -92,15 +216,19 @@ export default function TrackingMapCard({
       }}
     >
       <MapContainer
-        center={[17.385, 78.4867]}
+        center={
+          focusPoint ? [focusPoint.lat, focusPoint.lng] : [17.385, 78.4867]
+        }
         zoom={12}
         zoomControl={false}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
         <FitBounds markers={allMarkers} />
+        <FocusController focusPoint={focusPoint} />
+        <ViewportTracker onViewportChange={handleViewportChange} />
 
-        {filteredAmbulances.map((amb) => (
+        {visibleAmbulances.map((amb) => (
           <Marker
             key={amb._id}
             position={[
@@ -228,7 +356,7 @@ export default function TrackingMapCard({
           </Marker>
         ))}
 
-        {hospitals.map((hosp) => (
+        {visibleHospitals.map((hosp) => (
           <Marker
             key={hosp._id}
             position={[
@@ -345,6 +473,34 @@ export default function TrackingMapCard({
       >
         <Activity size={14} style={{ color: "#ef4444" }} /> Fleet Health:{" "}
         <span style={{ color: "var(--text-primary)" }}>Optimal</span>
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: "16px",
+          left: "16px",
+          zIndex: 1000,
+          background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid var(--border-glass)",
+          padding: "10px 12px",
+          borderRadius: "12px",
+          fontSize: "11px",
+          fontWeight: 700,
+          color: "var(--text-secondary)",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        <span>Zoom {zoomLevel.toFixed(1)}</span>
+        <span>
+          Showing {visibleAmbulances.length} ambulances
+          {mapDensity.showHospitals
+            ? ` • ${visibleHospitals.length} hospitals`
+            : ""}
+        </span>
       </div>
     </div>
   );

@@ -19,7 +19,8 @@ const User = require("../models/User");
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const HOSPITAL_COUNT = 100;
-const AMBULANCE_COUNT = 100;
+const AMBULANCE_COUNT = 50;
+const PATIENT_COUNT = 50;
 const GLOBAL_PASSWORD = "12345678";
 
 const HYD_BOUNDS = {
@@ -320,9 +321,7 @@ const buildAmbulances = (count, usedEmails) => {
 
 const buildCoreUsers = (usedEmails) => {
   const adminName = "A0001 Admin";
-  const patientName = "U0001 Patient";
-
-  return [
+  const users = [
     {
       name: adminName,
       email: createEmailFromName(adminName, usedEmails),
@@ -330,14 +329,22 @@ const buildCoreUsers = (usedEmails) => {
       phone: randomIndianPhone(),
       role: "admin",
     },
-    {
+  ];
+
+  for (let i = 0; i < PATIENT_COUNT; i += 1) {
+    const userCode = getUniqueCode("U", i);
+    const patientName = `${userCode} ${faker.person.firstName()}`;
+
+    users.push({
       name: patientName,
       email: createEmailFromName(patientName, usedEmails),
       password: GLOBAL_PASSWORD,
       phone: randomIndianPhone(),
       role: "user",
-    },
-  ];
+    });
+  }
+
+  return users;
 };
 
 const seedDB = async () => {

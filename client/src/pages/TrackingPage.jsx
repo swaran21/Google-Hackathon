@@ -41,6 +41,26 @@ export default function TrackingPage() {
     return ambulances.filter((ambulance) => ambulance.status === filter);
   }, [ambulances, filter]);
 
+  const mapFocusPoint = useMemo(() => {
+    const emergencyCoords = activeEmergency?.location?.coordinates;
+    if (Array.isArray(emergencyCoords) && emergencyCoords.length === 2) {
+      return {
+        lat: emergencyCoords[1],
+        lng: emergencyCoords[0],
+      };
+    }
+
+    const assignedCoords = dispatchedAmbulance?.location?.coordinates;
+    if (Array.isArray(assignedCoords) && assignedCoords.length === 2) {
+      return {
+        lat: assignedCoords[1],
+        lng: assignedCoords[0],
+      };
+    }
+
+    return null;
+  }, [activeEmergency, dispatchedAmbulance]);
+
   const tileUrl = isDark
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
@@ -286,6 +306,7 @@ export default function TrackingPage() {
             isDark={isDark}
             assignedAmbulanceId={assignedAmbulanceId}
             isUserViewer={isUserViewer}
+            focusPoint={mapFocusPoint}
             onOpenDispatchPanel={openDispatchPanel}
           />
 
