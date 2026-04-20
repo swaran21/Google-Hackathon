@@ -655,6 +655,8 @@ export default function SOSResult({
 
       <DispatchControlModal
         isOpen={showDispatchPanel && !!ambulance}
+        emergencyId={emergency?._id}
+        emergencyChatSeed={emergency?.chatThread || []}
         ambulance={ambulance}
         hospitalPhone={topHospital?.phone}
         onClose={() => setShowDispatchPanel(false)}

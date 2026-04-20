@@ -307,6 +307,8 @@ export default function TrackingPage() {
 
         <DispatchControlModal
           isOpen={showDispatchPanel && !!dispatchedAmbulance}
+          emergencyId={activeEmergency?._id}
+          emergencyChatSeed={activeEmergency?.chatThread || []}
           ambulance={dispatchedAmbulance}
           hospitalPhone={assignedHospital?.phone}
           onClose={() => setShowDispatchPanel(false)}

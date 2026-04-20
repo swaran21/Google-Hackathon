@@ -23,6 +23,8 @@ export const getMe = () => api.get("/auth/me");
 export const createEmergency = (data) => api.post("/emergency", data);
 export const selectHospitalForEmergency = (emergencyId, hospitalId) =>
   api.post(`/emergency/${emergencyId}/select-hospital`, { hospitalId });
+export const bookAmbulanceForEmergency = (emergencyId) =>
+  api.post(`/emergency/${emergencyId}/book-ambulance`);
 export const getEmergency = (id) => api.get(`/emergency/${id}`);
 export const getMyActiveEmergency = () => api.get("/emergency/mine/active");
 export const cancelEmergencyRequest = (id) =>
@@ -42,6 +44,25 @@ export const updateAmbulanceLocation = (id, latitude, longitude) =>
 export const suggestHospitals = (lat, lng) =>
   api.get(`/hospitals/suggest?lat=${lat}&lng=${lng}`);
 export const getAllHospitals = () => api.get("/hospitals");
+export const getMyHospitalProfile = () => api.get("/hospitals/me/profile");
+export const updateMyHospitalProfile = (data) =>
+  api.patch("/hospitals/me/profile", data);
+export const replaceMyHospitalTreatments = (treatments) =>
+  api.put("/hospitals/me/treatments", { treatments });
+export const addMyHospitalTreatment = (treatment) =>
+  api.post("/hospitals/me/treatments", treatment);
+export const removeMyHospitalTreatment = (treatmentId) =>
+  api.delete(`/hospitals/me/treatments/${treatmentId}`);
+export const getMyHospitalDashboard = () => api.get("/hospitals/me/dashboard");
+export const decideHospitalBedRequest = (emergencyId, decision, note = "") =>
+  api.patch(`/hospitals/me/requests/${emergencyId}/decision`, {
+    decision,
+    note,
+  });
+export const releaseHospitalBedRequest = (emergencyId, payload = {}) =>
+  api.patch(`/hospitals/me/requests/${emergencyId}/release`, payload);
+export const updateMyHospitalBeds = (data) =>
+  api.patch("/hospitals/me/beds", data);
 export const updateHospitalBeds = (id, data) =>
   api.patch(`/hospitals/${id}/beds`, data);
 

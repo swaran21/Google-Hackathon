@@ -1,21 +1,39 @@
 import { PhoneCall, Send, X, XCircle } from "lucide-react";
-import useDispatchChat from "../../hooks/useDispatchChat";
+import useEmergencyChat from "../../hooks/useEmergencyChat";
+import { useAuth } from "../../context/AuthContext";
 
 export default function DispatchControlModal({
   isOpen,
+  emergencyId,
+  emergencyChatSeed = [],
   ambulance,
   hospitalPhone,
+  patientPhone,
   onClose,
   onCancel,
+  title = "Dispatch Interface",
   cancelDisabled = false,
   cancelLabel = "Cancel Ambulance + Hospital Request",
 }) {
-  const { chatInput, setChatInput, chatLog, sendChat } = useDispatchChat({
-    ambulance,
+  const { user } = useAuth();
+
+  const { chatInput, setChatInput, chatLog, sendChat } = useEmergencyChat({
+    emergencyId,
     enabled: isOpen,
+    currentUserRole: user?.role,
+    currentUserName: user?.name,
+    currentUserId: user?.id || user?._id,
+    initialMessages: emergencyChatSeed,
   });
 
-  if (!isOpen || !ambulance) return null;
+  if (!isOpen) return null;
+
+  const chatEnabled = Boolean(emergencyId);
+  const subtitle = ambulance
+    ? `Unit ${ambulance.vehicleNumber} • ${ambulance.driverName}`
+    : emergencyId
+      ? `Emergency ${emergencyId.slice(-8).toUpperCase()}`
+      : "Emergency context unavailable";
 
   return (
     <div
@@ -52,9 +70,7 @@ export default function DispatchControlModal({
           }}
         >
           <div>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>
-              Dispatch Interface
-            </h3>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>{title}</h3>
             <p
               style={{
                 fontSize: "12px",
@@ -62,7 +78,7 @@ export default function DispatchControlModal({
                 marginTop: "4px",
               }}
             >
-              Unit {ambulance.vehicleNumber} • {ambulance.driverName}
+              {subtitle}
             </p>
           </div>
           <button
@@ -85,7 +101,7 @@ export default function DispatchControlModal({
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-          {ambulance.driverPhone && (
+          {ambulance?.driverPhone && (
             <a
               href={`tel:${ambulance.driverPhone}`}
               style={{ textDecoration: "none" }}
@@ -127,6 +143,27 @@ export default function DispatchControlModal({
                 }}
               >
                 <PhoneCall size={14} /> Call Hospital
+              </button>
+            </a>
+          )}
+          {patientPhone && (
+            <a href={`tel:${patientPhone}`} style={{ textDecoration: "none" }}>
+              <button
+                className="cursor-pointer"
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(234,179,8,0.4)",
+                  background: "rgba(234,179,8,0.12)",
+                  color: "#fde68a",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontFamily: "var(--font-family)",
+                }}
+              >
+                <PhoneCall size={14} /> Call Patient
               </button>
             </a>
           )}
@@ -186,11 +223,25 @@ export default function DispatchControlModal({
               </div>
             ))}
           </div>
+          {!chatEnabled && (
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#fca5a5",
+                fontWeight: 600,
+              }}
+            >
+              Chat becomes available once this case has a valid emergency ID.
+            </p>
+          )}
+
           <div style={{ display: "flex", gap: "8px" }}>
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Type a message to dispatch crew"
+              placeholder="Type a real-time message"
+              disabled={!chatEnabled}
               style={{
                 flex: 1,
                 borderRadius: "10px",
@@ -203,6 +254,7 @@ export default function DispatchControlModal({
             />
             <button
               onClick={sendChat}
+              disabled={!chatEnabled}
               className="cursor-pointer"
               style={{
                 borderRadius: "10px",
@@ -213,6 +265,7 @@ export default function DispatchControlModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                opacity: chatEnabled ? 1 : 0.55,
               }}
             >
               <Send size={14} />
@@ -220,27 +273,29 @@ export default function DispatchControlModal({
           </div>
         </div>
 
-        <button
-          onClick={onCancel}
-          disabled={cancelDisabled}
-          className="cursor-pointer"
-          style={{
-            borderRadius: "12px",
-            border: "1px solid rgba(239,68,68,0.4)",
-            background: "rgba(239,68,68,0.12)",
-            color: "#fca5a5",
-            padding: "12px 14px",
-            fontWeight: 800,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            fontFamily: "var(--font-family)",
-            opacity: cancelDisabled ? 0.65 : 1,
-          }}
-        >
-          <XCircle size={14} /> {cancelLabel}
-        </button>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            disabled={cancelDisabled}
+            className="cursor-pointer"
+            style={{
+              borderRadius: "12px",
+              border: "1px solid rgba(239,68,68,0.4)",
+              background: "rgba(239,68,68,0.12)",
+              color: "#fca5a5",
+              padding: "12px 14px",
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              fontFamily: "var(--font-family)",
+              opacity: cancelDisabled ? 0.65 : 1,
+            }}
+          >
+            <XCircle size={14} /> {cancelLabel}
+          </button>
+        )}
       </div>
     </div>
   );
