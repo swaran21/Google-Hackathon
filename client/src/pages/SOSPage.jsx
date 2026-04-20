@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { useGeolocation } from "../hooks/useSocket";
+import { useCallback, useEffect, useState } from "react";
+import { useGeolocation, useSocket } from "../hooks/useSocket";
 import {
+  bookAmbulanceForEmergency,
+  getEmergency,
   createEmergency,
   selectHospitalForEmergency,
   cancelEmergencyRequest,
 } from "../services/api";
 import EmergencyForm from "../components/EmergencyForm";
 import SOSResult from "../components/SOSResult";
+import socket from "../services/socket";
 import {
   AlertCircle,
   ChevronLeft,
@@ -79,6 +82,116 @@ export default function SOSPage() {
   const [loadingText, setLoadingText] = useState("Querying nearest fleets...");
   const [selectingHospitalId, setSelectingHospitalId] = useState(null);
   const [cancellingEmergency, setCancellingEmergency] = useState(false);
+  const [bookingAmbulance, setBookingAmbulance] = useState(false);
+
+  const mergeEmergencyIntoResult = useCallback((emergencyData) => {
+    if (!emergencyData?._id) return;
+
+    setResult((prev) => {
+      if (!prev) {
+        return {
+          emergency: emergencyData,
+          ambulance: emergencyData.assignedAmbulance || null,
+          selectedHospital: emergencyData.assignedHospital
+            ? { hospital: emergencyData.assignedHospital }
+            : null,
+          requiresHospitalSelection:
+            emergencyData.hospitalRequest?.status === "rejected",
+          requiresHospitalApproval:
+            emergencyData.hospitalRequest?.status === "pending",
+          canBookAmbulance:
+            emergencyData.hospitalRequest?.status === "accepted" &&
+            !emergencyData.assignedAmbulance,
+          suggestedHospitals: [],
+          notifications: [],
+        };
+      }
+
+      const hospitalStatus = emergencyData.hospitalRequest?.status;
+
+      return {
+        ...prev,
+        emergency: emergencyData,
+        ambulance: emergencyData.assignedAmbulance || prev.ambulance || null,
+        selectedHospital: emergencyData.assignedHospital
+          ? {
+              ...(prev.selectedHospital || {}),
+              hospital: emergencyData.assignedHospital,
+            }
+          : prev.selectedHospital,
+        requiresHospitalSelection:
+          hospitalStatus === "rejected" || prev.requiresHospitalSelection,
+        requiresHospitalApproval: hospitalStatus === "pending",
+        canBookAmbulance:
+          hospitalStatus === "accepted" && !emergencyData.assignedAmbulance,
+      };
+    });
+  }, []);
+
+  const activeEmergencyId = result?.emergency?._id || null;
+
+  useEffect(() => {
+    if (!activeEmergencyId) return;
+
+    socket.emit("emergency:join", activeEmergencyId);
+    return () => {
+      socket.emit("emergency:leave", activeEmergencyId);
+    };
+  }, [activeEmergencyId]);
+
+  useSocket(socket, "emergency:hospital-decision", async (payload) => {
+    if (!payload?.emergencyId || payload.emergencyId !== activeEmergencyId)
+      return;
+
+    try {
+      const res = await getEmergency(activeEmergencyId);
+      mergeEmergencyIntoResult(res.data.data);
+    } catch {
+      // Keep UI stable and rely on polling fallback.
+    }
+  });
+
+  useSocket(socket, "emergency:ambulance-booked", async (payload) => {
+    if (!payload?.emergencyId || payload.emergencyId !== activeEmergencyId)
+      return;
+
+    try {
+      const res = await getEmergency(activeEmergencyId);
+      mergeEmergencyIntoResult(res.data.data);
+    } catch {
+      // Keep UI stable and rely on polling fallback.
+    }
+  });
+
+  useEffect(() => {
+    if (!activeEmergencyId) return;
+    if (step !== "result") return;
+
+    const needsPolling =
+      !result?.ambulance &&
+      ["pending", "accepted", "rejected", "not_requested"].includes(
+        result?.emergency?.hospitalRequest?.status,
+      );
+
+    if (!needsPolling) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getEmergency(activeEmergencyId);
+        mergeEmergencyIntoResult(res.data.data);
+      } catch {
+        // Ignore intermittent polling failures.
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [
+    activeEmergencyId,
+    step,
+    result?.ambulance,
+    result?.emergency?.hospitalRequest?.status,
+    mergeEmergencyIntoResult,
+  ]);
 
   const handleRequestLocation = async () => {
     setLocationError("");
@@ -142,7 +255,7 @@ export default function SOSPage() {
     setSelectingHospitalId(hospitalId);
     setResultError("");
     setStep("submitting");
-    setLoadingText("Assigning nearest ambulance and computing live route...");
+    setLoadingText("Sending bed request to selected hospital...");
 
     try {
       const res = await selectHospitalForEmergency(
@@ -154,11 +267,34 @@ export default function SOSPage() {
     } catch (err) {
       setResultError(
         err.response?.data?.message ||
-          "Failed to assign hospital. Please try another one.",
+          "Failed to submit hospital request. Please try another hospital.",
       );
       setStep("result");
     } finally {
       setSelectingHospitalId(null);
+    }
+  };
+
+  const handleBookAmbulance = async (emergencyId) => {
+    if (!emergencyId) return;
+
+    setBookingAmbulance(true);
+    setResultError("");
+    setStep("submitting");
+    setLoadingText("Booking nearest ambulance for approved hospital...");
+
+    try {
+      const res = await bookAmbulanceForEmergency(emergencyId);
+      setResult(res.data.data);
+      setStep("result");
+    } catch (err) {
+      setResultError(
+        err.response?.data?.message ||
+          "Unable to book ambulance right now. Please retry.",
+      );
+      setStep("result");
+    } finally {
+      setBookingAmbulance(false);
     }
   };
 
@@ -178,6 +314,8 @@ export default function SOSPage() {
         ambulance: null,
         selectedHospital: null,
         requiresHospitalSelection: false,
+        requiresHospitalApproval: false,
+        canBookAmbulance: false,
         cancellationMessage:
           res.data.message || "Emergency request cancelled successfully.",
       }));
@@ -201,6 +339,7 @@ export default function SOSPage() {
     setSelectingHospitalId(null);
     setLoadingText("Querying nearest fleets...");
     setCancellingEmergency(false);
+    setBookingAmbulance(false);
   };
 
   return (
@@ -704,10 +843,12 @@ export default function SOSPage() {
             result={result}
             onReset={handleReset}
             onSelectHospital={handleHospitalSelect}
+            onBookAmbulance={handleBookAmbulance}
             selectingHospitalId={selectingHospitalId}
             actionError={resultError}
             onCancelEmergency={handleCancelEmergency}
             cancellingEmergency={cancellingEmergency}
+            bookingAmbulance={bookingAmbulance}
           />
         </div>
       )}

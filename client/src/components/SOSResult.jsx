@@ -49,10 +49,12 @@ export default function SOSResult({
   result,
   onReset,
   onSelectHospital,
+  onBookAmbulance,
   selectingHospitalId,
   actionError,
   onCancelEmergency,
   cancellingEmergency = false,
+  bookingAmbulance = false,
 }) {
   const navigate = useNavigate();
   const [showDispatchPanel, setShowDispatchPanel] = useState(false);
@@ -71,8 +73,20 @@ export default function SOSResult({
     suggestedHospitals.find((entry) => entry.recommended) ||
     suggestedHospitals[0];
   const topHospital = selectedHospital || recommendedHospitalEntry?.hospital;
+  const hospitalRequestStatus =
+    emergency?.hospitalRequest?.status || "not_requested";
   const requiresHospitalSelection =
-    !!result?.requiresHospitalSelection && !ambulance;
+    (!!result?.requiresHospitalSelection ||
+      hospitalRequestStatus === "rejected") &&
+    !ambulance;
+  const waitingHospitalApproval =
+    !ambulance &&
+    (!!result?.requiresHospitalApproval || hospitalRequestStatus === "pending");
+  const canBookAmbulance =
+    !ambulance &&
+    (!!result?.canBookAmbulance ||
+      emergency?.ambulanceBooking?.status === "ready_to_book" ||
+      hospitalRequestStatus === "accepted");
   const sev = SEV[triage?.severity] || SEV[3];
 
   const handleCancelDispatch = async () => {
@@ -82,8 +96,14 @@ export default function SOSResult({
   };
 
   const openDispatchControls = () => {
-    if (!ambulance) return;
+    if (!emergency?._id) return;
+    if (!ambulance && !topHospital) return;
     setShowDispatchPanel(true);
+  };
+
+  const handleBookAmbulance = async () => {
+    if (!onBookAmbulance || !emergency?._id) return;
+    await onBookAmbulance(emergency._id);
   };
 
   return (
@@ -130,7 +150,11 @@ export default function SOSResult({
         >
           {requiresHospitalSelection
             ? "Select Receiving Hospital"
-            : "Response Active"}
+            : waitingHospitalApproval
+              ? "Awaiting Hospital Approval"
+              : canBookAmbulance
+                ? "Hospital Approved - Book Ambulance"
+                : "Response Active"}
         </h2>
         <div
           style={{
@@ -203,7 +227,77 @@ export default function SOSResult({
         </div>
       )}
 
-      {ambulance && (
+      {waitingHospitalApproval && (
+        <div
+          className="glass-card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: "18px",
+            border: "1px solid rgba(250,204,21,0.3)",
+            background: "rgba(250,204,21,0.08)",
+            color: "#fde68a",
+            fontWeight: 700,
+          }}
+        >
+          Bed request sent to hospital. Waiting for hospital admin approval.
+        </div>
+      )}
+
+      {hospitalRequestStatus === "rejected" && (
+        <div
+          className="glass-card"
+          style={{
+            padding: "16px 20px",
+            borderRadius: "18px",
+            border: "1px solid rgba(239,68,68,0.3)",
+            background: "rgba(239,68,68,0.08)",
+            color: "#fecaca",
+            fontWeight: 700,
+          }}
+        >
+          Hospital declined this request. Select another hospital below.
+        </div>
+      )}
+
+      {canBookAmbulance && (
+        <div
+          className="glass-card"
+          style={{
+            padding: "14px 16px",
+            borderRadius: "18px",
+            border: "1px solid rgba(34,197,94,0.35)",
+            background: "rgba(34,197,94,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ color: "#bbf7d0", fontWeight: 800 }}>
+            Hospital accepted your bed request. Book ambulance now.
+          </span>
+          <button
+            onClick={handleBookAmbulance}
+            disabled={bookingAmbulance}
+            className="cursor-pointer"
+            style={{
+              padding: "10px 14px",
+              borderRadius: "10px",
+              border: "none",
+              background: "#22c55e",
+              color: "#052e16",
+              fontWeight: 900,
+              fontFamily: "var(--font-family)",
+              opacity: bookingAmbulance ? 0.7 : 1,
+            }}
+          >
+            {bookingAmbulance ? "Booking..." : "Book Ambulance"}
+          </button>
+        </div>
+      )}
+
+      {emergency?._id && (ambulance || topHospital) && (
         <button
           onClick={openDispatchControls}
           className="glass-card cursor-pointer"
@@ -238,7 +332,7 @@ export default function SOSResult({
                 color: "#93c5fd",
               }}
             >
-              Booked Ambulance
+              {ambulance ? "Booked Ambulance" : "Hospital Coordination"}
             </span>
             <span
               style={{
@@ -247,7 +341,7 @@ export default function SOSResult({
                 fontFamily: "monospace",
               }}
             >
-              {ambulance.vehicleNumber}
+              {ambulance?.vehicleNumber || topHospital?.name}
             </span>
           </span>
           <span
@@ -258,7 +352,7 @@ export default function SOSResult({
               letterSpacing: "0.1em",
             }}
           >
-            Tap to Chat / Call / Cancel
+            Tap to Chat / Call {ambulance ? "/ Cancel" : ""}
           </span>
         </button>
       )}
@@ -654,10 +748,11 @@ export default function SOSResult({
       )}
 
       <DispatchControlModal
-        isOpen={showDispatchPanel && !!ambulance}
+        isOpen={showDispatchPanel && !!emergency?._id}
+        title={ambulance ? "Dispatch Interface" : "Hospital Coordination"}
         emergencyId={emergency?._id}
         emergencyChatSeed={emergency?.chatThread || []}
-        ambulance={ambulance}
+        ambulance={ambulance || null}
         hospitalPhone={topHospital?.phone}
         onClose={() => setShowDispatchPanel(false)}
         onCancel={handleCancelDispatch}
