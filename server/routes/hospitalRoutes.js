@@ -1,10 +1,55 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { suggest, getAllHospitals } = require('../controllers/hospitalController');
-const { updateBeds } = require('../controllers/hospitalBedController');
+const {
+  suggest,
+  getAllHospitals,
+  getMyHospitalProfile,
+  updateMyHospitalProfile,
+  replaceMyTreatments,
+  addMyTreatment,
+  removeMyTreatment,
+} = require("../controllers/hospitalController");
+const {
+  updateBeds,
+  updateMyBeds,
+} = require("../controllers/hospitalBedController");
+const { protect, authorize } = require("../middleware/auth");
 
-router.get('/suggest', suggest);
-router.get('/', getAllHospitals);
-router.patch('/:id/beds', updateBeds);
+router.get("/suggest", suggest);
+router.get("/", getAllHospitals);
+
+router.get(
+  "/me/profile",
+  protect,
+  authorize("hospital", "admin"),
+  getMyHospitalProfile,
+);
+router.patch(
+  "/me/profile",
+  protect,
+  authorize("hospital", "admin"),
+  updateMyHospitalProfile,
+);
+router.put(
+  "/me/treatments",
+  protect,
+  authorize("hospital", "admin"),
+  replaceMyTreatments,
+);
+router.post(
+  "/me/treatments",
+  protect,
+  authorize("hospital", "admin"),
+  addMyTreatment,
+);
+router.delete(
+  "/me/treatments/:treatmentId",
+  protect,
+  authorize("hospital", "admin"),
+  removeMyTreatment,
+);
+router.patch("/me/beds", protect, authorize("hospital", "admin"), updateMyBeds);
+
+router.patch("/:id/beds", protect, authorize("admin"), updateBeds);
 
 module.exports = router;
