@@ -8,6 +8,9 @@ const {
   replaceMyTreatments,
   addMyTreatment,
   removeMyTreatment,
+  getMyHospitalDashboard,
+  decideEmergencyBedRequest,
+  releaseEmergencyBeds,
 } = require("../controllers/hospitalController");
 const {
   updateBeds,
@@ -49,6 +52,24 @@ router.delete(
   removeMyTreatment,
 );
 router.patch("/me/beds", protect, authorize("hospital", "admin"), updateMyBeds);
+router.get(
+  "/me/dashboard",
+  protect,
+  authorize("hospital", "admin"),
+  getMyHospitalDashboard,
+);
+router.patch(
+  "/me/requests/:emergencyId/decision",
+  protect,
+  authorize("hospital", "admin"),
+  decideEmergencyBedRequest,
+);
+router.patch(
+  "/me/requests/:emergencyId/release",
+  protect,
+  authorize("hospital", "admin"),
+  releaseEmergencyBeds,
+);
 
 router.patch("/:id/beds", protect, authorize("admin"), updateBeds);
 

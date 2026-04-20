@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createEmergency,
   selectHospitalAndDispatch,
+  bookAmbulanceAfterHospitalApproval,
   getMyActiveEmergency,
   cancelEmergencyRequest,
   getEmergency,
@@ -17,6 +18,12 @@ router.post(
   protect,
   authorize("user"),
   selectHospitalAndDispatch,
+);
+router.post(
+  "/:id/book-ambulance",
+  protect,
+  authorize("user"),
+  bookAmbulanceAfterHospitalApproval,
 );
 router.post("/:id/cancel", protect, authorize("user"), cancelEmergencyRequest);
 router.get("/:id", protect, getEmergency);

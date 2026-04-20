@@ -1,5 +1,6 @@
 const { suggestHospitals } = require("../services/hospitalService");
 const Hospital = require("../models/Hospital");
+const Emergency = require("../models/Emergency");
 const { ApiError } = require("../middleware/errorHandler");
 
 const sanitizeSpecialties = (specialties = []) =>
@@ -68,6 +69,27 @@ const hospitalPublicProjection = {
   isActive: 1,
   createdAt: 1,
   updatedAt: 1,
+};
+
+const DEFAULT_HOSPITAL_REQUEST_STATUSES = [
+  "pending",
+  "accepted",
+  "released",
+  "rejected",
+];
+
+const emitHospitalBedUpdate = (req, hospital) => {
+  const io = req.app.get("io");
+  if (!io || !hospital) return;
+
+  io.emit("hospital:beds-update", {
+    hospitalId: hospital._id,
+    name: hospital.name,
+    availableBeds: hospital.availableBeds,
+    totalBeds: hospital.totalBeds,
+    icuAvailable: hospital.icuAvailable,
+    icuTotal: hospital.icuTotal,
+  });
 };
 
 /**
@@ -311,6 +333,359 @@ const removeMyTreatment = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get logged-in hospital dashboard (own hospital only)
+ * @route   GET /api/hospitals/me/dashboard
+ */
+const getMyHospitalDashboard = async (req, res, next) => {
+  try {
+    const hospitalId = getHospitalIdFromUser(req.user);
+    const statusFilter = req.query?.status;
+    const requestStatuses = statusFilter
+      ? [String(statusFilter)]
+      : DEFAULT_HOSPITAL_REQUEST_STATUSES;
+
+    const hospital = await Hospital.findById(hospitalId).select(
+      hospitalPublicProjection,
+    );
+    if (!hospital) {
+      throw new ApiError(404, "Hospital profile not found");
+    }
+
+    const emergencyRequests = await Emergency.find({
+      assignedHospital: hospitalId,
+      "hospitalRequest.status": { $in: requestStatuses },
+    })
+      .sort({ updatedAt: -1 })
+      .populate("assignedAmbulance")
+      .populate("reportedBy", "name email phone role")
+      .lean();
+
+    const summary = {
+      pending: emergencyRequests.filter(
+        (entry) => entry?.hospitalRequest?.status === "pending",
+      ).length,
+      accepted: emergencyRequests.filter(
+        (entry) => entry?.hospitalRequest?.status === "accepted",
+      ).length,
+      released: emergencyRequests.filter(
+        (entry) => entry?.hospitalRequest?.status === "released",
+      ).length,
+      rejected: emergencyRequests.filter(
+        (entry) => entry?.hospitalRequest?.status === "rejected",
+      ).length,
+      total: emergencyRequests.length,
+    };
+
+    res.json({
+      success: true,
+      data: {
+        hospital,
+        requests: emergencyRequests,
+        summary,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Accept or reject a bed request for an emergency in this hospital
+ * @route   PATCH /api/hospitals/me/requests/:emergencyId/decision
+ */
+const decideEmergencyBedRequest = async (req, res, next) => {
+  try {
+    const hospitalId = getHospitalIdFromUser(req.user);
+    const { emergencyId } = req.params;
+    const { decision, note = "" } = req.body;
+
+    if (!["accepted", "rejected"].includes(decision)) {
+      throw new ApiError(
+        400,
+        "decision must be either 'accepted' or 'rejected'",
+      );
+    }
+
+    const emergency = await Emergency.findOne({
+      _id: emergencyId,
+      assignedHospital: hospitalId,
+    })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    if (!emergency) {
+      throw new ApiError(404, "Emergency request not found for this hospital");
+    }
+
+    if (emergency.hospitalRequest?.status !== "pending") {
+      throw new ApiError(
+        400,
+        `Only pending requests can be processed (current: ${emergency.hospitalRequest?.status || "unknown"})`,
+      );
+    }
+
+    const hospital = await Hospital.findById(hospitalId);
+    if (!hospital) {
+      throw new ApiError(404, "Hospital profile not found");
+    }
+
+    const requiredBedType =
+      emergency.hospitalRequest?.requiredBedType ||
+      (emergency.severity >= 4 ? "icu" : "general");
+
+    let allocatedGeneralBeds = 0;
+    let allocatedIcuBeds = 0;
+
+    if (decision === "accepted") {
+      if (requiredBedType === "icu") {
+        if (hospital.icuAvailable < 1) {
+          throw new ApiError(
+            409,
+            "No ICU beds currently available to accept this request",
+          );
+        }
+
+        hospital.icuAvailable -= 1;
+        allocatedIcuBeds = 1;
+      } else {
+        if (hospital.availableBeds < 1) {
+          throw new ApiError(
+            409,
+            "No general beds currently available to accept this request",
+          );
+        }
+
+        hospital.availableBeds -= 1;
+        allocatedGeneralBeds = 1;
+      }
+
+      emergency.hospitalRequest.status = "accepted";
+      emergency.hospitalRequest.respondedAt = new Date();
+      emergency.hospitalRequest.decisionNote = String(note || "").trim();
+      emergency.hospitalRequest.allocatedGeneralBeds = allocatedGeneralBeds;
+      emergency.hospitalRequest.allocatedIcuBeds = allocatedIcuBeds;
+      emergency.ambulanceBooking.status = "ready_to_book";
+      emergency.chatThread.push({
+        senderRole: "hospital",
+        senderName: hospital.name,
+        message:
+          "Hospital accepted the bed request. Patient can now book an ambulance.",
+      });
+
+      await hospital.save();
+    } else {
+      emergency.hospitalRequest.status = "rejected";
+      emergency.hospitalRequest.respondedAt = new Date();
+      emergency.hospitalRequest.decisionNote = String(note || "").trim();
+      emergency.hospitalRequest.allocatedGeneralBeds = 0;
+      emergency.hospitalRequest.allocatedIcuBeds = 0;
+      emergency.ambulanceBooking.status = "not_ready";
+      emergency.assignedHospital = null;
+      emergency.chatThread.push({
+        senderRole: "hospital",
+        senderName: hospital.name,
+        message:
+          "Hospital rejected the bed request. Please select another hospital.",
+      });
+    }
+
+    await emergency.save();
+
+    const populatedEmergency = await Emergency.findById(emergency._id)
+      .populate("assignedAmbulance")
+      .populate("assignedHospital")
+      .populate("reportedBy", "name email phone role");
+
+    const io = req.app.get("io");
+    if (io) {
+      if (decision === "accepted") {
+        emitHospitalBedUpdate(req, hospital);
+      }
+
+      io.to(`hospital:${hospitalId}`).emit("hospital:request-update", {
+        hospitalId,
+        emergencyId: populatedEmergency._id,
+        decision,
+        emergency: populatedEmergency,
+      });
+
+      if (populatedEmergency.reportedBy?._id) {
+        io.to(`user:${populatedEmergency.reportedBy._id}`).emit(
+          "emergency:hospital-decision",
+          {
+            emergencyId: populatedEmergency._id,
+            decision,
+            canBookAmbulance: decision === "accepted",
+            hospitalId,
+            hospitalName: hospital.name,
+            note: String(note || "").trim(),
+          },
+        );
+      }
+
+      io.to(`emergency:${populatedEmergency._id}`).emit(
+        "emergency:hospital-decision",
+        {
+          emergencyId: populatedEmergency._id,
+          decision,
+          canBookAmbulance: decision === "accepted",
+          hospitalId,
+          hospitalName: hospital.name,
+          note: String(note || "").trim(),
+        },
+      );
+    }
+
+    res.json({
+      success: true,
+      data: {
+        emergency: populatedEmergency,
+        hospital,
+        decision,
+        canBookAmbulance: decision === "accepted",
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Release allocated beds for an emergency in this hospital
+ * @route   PATCH /api/hospitals/me/requests/:emergencyId/release
+ */
+const releaseEmergencyBeds = async (req, res, next) => {
+  try {
+    const hospitalId = getHospitalIdFromUser(req.user);
+    const { emergencyId } = req.params;
+    const { generalBeds, icuBeds, note = "" } = req.body;
+
+    const emergency = await Emergency.findOne({
+      _id: emergencyId,
+      assignedHospital: hospitalId,
+    })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital")
+      .populate("reportedBy", "name email phone role");
+
+    if (!emergency) {
+      throw new ApiError(404, "Emergency request not found for this hospital");
+    }
+
+    if (!["accepted", "released"].includes(emergency.hospitalRequest?.status)) {
+      throw new ApiError(
+        400,
+        "Beds can only be released for accepted/released hospital requests",
+      );
+    }
+
+    const hospital = await Hospital.findById(hospitalId);
+    if (!hospital) {
+      throw new ApiError(404, "Hospital profile not found");
+    }
+
+    const currentGeneral = Number(
+      emergency.hospitalRequest?.allocatedGeneralBeds || 0,
+    );
+    const currentIcu = Number(emergency.hospitalRequest?.allocatedIcuBeds || 0);
+
+    const releaseGeneral =
+      generalBeds === undefined
+        ? currentGeneral
+        : Math.max(0, Number.parseInt(generalBeds, 10) || 0);
+    const releaseIcu =
+      icuBeds === undefined
+        ? currentIcu
+        : Math.max(0, Number.parseInt(icuBeds, 10) || 0);
+
+    const effectiveGeneral = Math.min(currentGeneral, releaseGeneral);
+    const effectiveIcu = Math.min(currentIcu, releaseIcu);
+
+    hospital.availableBeds = Math.min(
+      hospital.totalBeds,
+      hospital.availableBeds + effectiveGeneral,
+    );
+    hospital.icuAvailable = Math.min(
+      hospital.icuTotal,
+      hospital.icuAvailable + effectiveIcu,
+    );
+
+    emergency.hospitalRequest.allocatedGeneralBeds = Math.max(
+      0,
+      currentGeneral - effectiveGeneral,
+    );
+    emergency.hospitalRequest.allocatedIcuBeds = Math.max(
+      0,
+      currentIcu - effectiveIcu,
+    );
+    emergency.hospitalRequest.releasedAt = new Date();
+    emergency.hospitalRequest.decisionNote = String(note || "").trim();
+
+    const hasRemainingBeds =
+      emergency.hospitalRequest.allocatedGeneralBeds > 0 ||
+      emergency.hospitalRequest.allocatedIcuBeds > 0;
+    emergency.hospitalRequest.status = hasRemainingBeds
+      ? "accepted"
+      : "released";
+
+    emergency.chatThread.push({
+      senderRole: "hospital",
+      senderName: hospital.name,
+      message: hasRemainingBeds
+        ? "Hospital partially released allocated beds for this patient."
+        : "Hospital released all allocated beds for this patient.",
+    });
+
+    await hospital.save();
+    await emergency.save();
+
+    emitHospitalBedUpdate(req, hospital);
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`hospital:${hospitalId}`).emit("hospital:request-update", {
+        hospitalId,
+        emergencyId: emergency._id,
+        status: emergency.hospitalRequest.status,
+        emergency,
+        releasedBeds: {
+          generalBeds: effectiveGeneral,
+          icuBeds: effectiveIcu,
+        },
+      });
+
+      if (emergency.reportedBy?._id) {
+        io.to(`user:${emergency.reportedBy._id}`).emit(
+          "emergency:hospital-release",
+          {
+            emergencyId: emergency._id,
+            status: emergency.hospitalRequest.status,
+            releasedBeds: {
+              generalBeds: effectiveGeneral,
+              icuBeds: effectiveIcu,
+            },
+          },
+        );
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        emergency,
+        hospital,
+        releasedBeds: {
+          generalBeds: effectiveGeneral,
+          icuBeds: effectiveIcu,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   suggest,
   getAllHospitals,
@@ -319,4 +694,7 @@ module.exports = {
   replaceMyTreatments,
   addMyTreatment,
   removeMyTreatment,
+  getMyHospitalDashboard,
+  decideEmergencyBedRequest,
+  releaseEmergencyBeds,
 };

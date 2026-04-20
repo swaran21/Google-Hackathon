@@ -1,5 +1,6 @@
 const Emergency = require("../models/Emergency");
 const Ambulance = require("../models/Ambulance");
+const Hospital = require("../models/Hospital");
 const {
   findBestAmbulanceForTransfer,
   assignAmbulance,
@@ -13,6 +14,14 @@ const { ApiError } = require("../middleware/errorHandler");
 const HOSPITAL_RADIUS_KM = 5;
 const HOSPITAL_LIMIT = 10;
 const ACTIVE_USER_STATUSES = ["pending", "dispatched", "en_route", "at_scene"];
+
+const getBedRequirementFromSeverity = (severity = 3) => {
+  if (severity >= 4) {
+    return { requiredBedType: "icu", generalBeds: 0, icuBeds: 1 };
+  }
+
+  return { requiredBedType: "general", generalBeds: 1, icuBeds: 0 };
+};
 
 const isEmergencyOwner = (emergency, userId) => {
   if (!emergency?.reportedBy || !userId) return false;
@@ -59,6 +68,7 @@ const createEmergency = async (req, res, next) => {
     }
 
     const triage = classifyEmergency(type, description);
+    const bedRequirement = getBedRequirementFromSeverity(triage.severity);
 
     const emergency = await Emergency.create({
       type,
@@ -80,6 +90,20 @@ const createEmergency = async (req, res, next) => {
         matchedIndicators: triage.matchedIndicators || [],
         aiModel: triage.aiModel || "",
       },
+      hospitalRequest: {
+        status: "not_requested",
+        requiredBedType: bedRequirement.requiredBedType,
+      },
+      ambulanceBooking: {
+        status: "not_ready",
+      },
+      chatThread: [
+        {
+          senderRole: "system",
+          senderName: "ResQNet",
+          message: "Emergency created. Select a hospital to request a bed.",
+        },
+      ],
     });
 
     const hospitals = await suggestHospitals(lat, lng, type, {
@@ -106,6 +130,8 @@ const createEmergency = async (req, res, next) => {
         suggestedHospitals: hospitals,
         recommendedHospital: hospitals[0] || null,
         requiresHospitalSelection: true,
+        requiresHospitalApproval: false,
+        canBookAmbulance: false,
         searchRadiusKm: HOSPITAL_RADIUS_KM,
         route: null,
         fullRoute: null,
@@ -118,7 +144,7 @@ const createEmergency = async (req, res, next) => {
 };
 
 /**
- * @desc    User selects a hospital, then system assigns nearest ambulance
+ * @desc    User selects a hospital and creates a bed request for hospital approval
  * @route   POST /api/emergency/:id/select-hospital
  */
 const selectHospitalAndDispatch = async (req, res, next) => {
@@ -134,13 +160,20 @@ const selectHospitalAndDispatch = async (req, res, next) => {
     }
 
     if (!isEmergencyOwner(emergency, req.user?._id)) {
-      throw new ApiError(403, "You can only dispatch your own emergency");
+      throw new ApiError(403, "You can only manage your own emergency");
     }
 
     if (["resolved", "cancelled"].includes(emergency.status)) {
       throw new ApiError(
         400,
-        "Cannot dispatch for resolved or cancelled emergency",
+        "Cannot request hospital for resolved or cancelled emergency",
+      );
+    }
+
+    if (emergency.assignedAmbulance) {
+      throw new ApiError(
+        400,
+        "Ambulance already booked for this emergency. Cancel first to re-select hospital.",
       );
     }
 
@@ -173,10 +206,139 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       );
     }
 
+    const bedRequirement = getBedRequirementFromSeverity(emergency.severity);
+
     emergency.assignedHospital = selected.hospital._id;
+    emergency.hospitalRequest = {
+      status: "pending",
+      requiredBedType: bedRequirement.requiredBedType,
+      requestedAt: new Date(),
+      respondedAt: null,
+      releasedAt: null,
+      decisionNote: "",
+      allocatedGeneralBeds: 0,
+      allocatedIcuBeds: 0,
+    };
+    emergency.ambulanceBooking = {
+      status: "not_ready",
+      bookedAt: null,
+    };
+    emergency.eta = null;
+    emergency.chatThread.push({
+      senderRole: "system",
+      senderName: "ResQNet",
+      message: `Bed request sent to ${selected.hospital.name}. Waiting for hospital approval.`,
+    });
     await emergency.save();
 
-    const [hospitalLng, hospitalLat] = selected.hospital.location.coordinates;
+    const populated = await Emergency.findById(emergency._id)
+      .populate("assignedHospital")
+      .populate("assignedAmbulance");
+
+    const io = req.app.get("io");
+    if (io) {
+      const eventPayload = {
+        hospitalId: selected.hospital._id,
+        emergencyId: populated._id,
+        emergency: populated,
+        requiredBedType: bedRequirement.requiredBedType,
+        triage: buildTriageSummary(populated),
+      };
+
+      io.to(`hospital:${selected.hospital._id}`).emit(
+        "hospital:bed-request",
+        eventPayload,
+      );
+      io.to(`user:${req.user._id}`).emit("emergency:hospital-requested", {
+        emergencyId: populated._id,
+        hospitalId: selected.hospital._id,
+        hospitalName: selected.hospital.name,
+        requestStatus: "pending",
+      });
+      io.to(`emergency:${populated._id}`).emit(
+        "hospital:bed-request",
+        eventPayload,
+      );
+    }
+
+    res.json({
+      success: true,
+      data: {
+        emergency: populated,
+        triage: buildTriageSummary(populated),
+        ambulance: null,
+        suggestedHospitals: hospitals,
+        selectedHospital: selected,
+        requiresHospitalSelection: false,
+        requiresHospitalApproval: true,
+        canBookAmbulance: false,
+        route: null,
+        fullRoute: null,
+        notifications: [],
+        message: "Hospital request sent. Waiting for hospital confirmation.",
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Book ambulance after hospital accepts bed request
+ * @route   POST /api/emergency/:id/book-ambulance
+ */
+const bookAmbulanceAfterHospitalApproval = async (req, res, next) => {
+  try {
+    const emergency = await Emergency.findById(req.params.id)
+      .populate("assignedHospital")
+      .populate("assignedAmbulance");
+
+    if (!emergency) {
+      throw new ApiError(404, "Emergency not found");
+    }
+
+    if (!isEmergencyOwner(emergency, req.user?._id)) {
+      throw new ApiError(
+        403,
+        "You can only book ambulance for your own emergency",
+      );
+    }
+
+    if (["resolved", "cancelled"].includes(emergency.status)) {
+      throw new ApiError(
+        400,
+        "Cannot book ambulance for resolved or cancelled emergency",
+      );
+    }
+
+    if (emergency.hospitalRequest?.status !== "accepted") {
+      throw new ApiError(400, "Hospital has not accepted your bed request yet");
+    }
+
+    if (!emergency.assignedHospital) {
+      throw new ApiError(400, "No hospital assigned for this emergency");
+    }
+
+    if (emergency.assignedAmbulance) {
+      return res.json({
+        success: true,
+        data: {
+          emergency,
+          triage: buildTriageSummary(emergency),
+          ambulance: emergency.assignedAmbulance,
+          selectedHospital: { hospital: emergency.assignedHospital },
+          requiresHospitalSelection: false,
+          requiresHospitalApproval: false,
+          canBookAmbulance: false,
+          message: "Ambulance already booked for this emergency.",
+        },
+      });
+    }
+
+    const [patientLng, patientLat] = emergency.location.coordinates;
+    const [hospitalLng, hospitalLat] =
+      emergency.assignedHospital.location.coordinates;
+
     const ambulanceMatch = await findBestAmbulanceForTransfer(
       patientLat,
       patientLng,
@@ -186,22 +348,27 @@ const selectHospitalAndDispatch = async (req, res, next) => {
     );
 
     if (!ambulanceMatch) {
-      const populatedNoAmbulance = await Emergency.findById(emergency._id)
-        .populate("assignedHospital")
-        .populate("assignedAmbulance");
+      emergency.ambulanceBooking = {
+        status: "ready_to_book",
+        bookedAt: null,
+      };
+      await emergency.save();
 
       return res.json({
         success: true,
         data: {
-          emergency: populatedNoAmbulance,
+          emergency,
           triage: buildTriageSummary(emergency),
           ambulance: null,
-          suggestedHospitals: hospitals,
-          selectedHospital: selected,
+          selectedHospital: { hospital: emergency.assignedHospital },
+          requiresHospitalSelection: false,
+          requiresHospitalApproval: false,
+          canBookAmbulance: true,
           route: null,
           fullRoute: null,
           notifications: [],
-          message: "Hospital selected. Waiting for available ambulance.",
+          message:
+            "No ambulance available right now. Please retry booking in a few moments.",
         },
       });
     }
@@ -217,8 +384,17 @@ const selectHospitalAndDispatch = async (req, res, next) => {
 
     if (routeData?.duration) {
       assignedEmergency.eta = routeData.duration;
-      await assignedEmergency.save();
     }
+    assignedEmergency.ambulanceBooking = {
+      status: "booked",
+      bookedAt: new Date(),
+    };
+    assignedEmergency.chatThread.push({
+      senderRole: "system",
+      senderName: "ResQNet",
+      message: `Ambulance ${ambulanceMatch.ambulance.vehicleNumber} booked and dispatched.`,
+    });
+    await assignedEmergency.save();
 
     const fullRoute = await getFullRoute(
       ambLat,
@@ -233,7 +409,7 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       assignedEmergency,
       ambulanceMatch.ambulance,
       routeData?.duration || ambulanceMatch.eta,
-      selected.hospital,
+      emergency.assignedHospital,
     );
 
     const populated = await Emergency.findById(assignedEmergency._id)
@@ -242,12 +418,6 @@ const selectHospitalAndDispatch = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("hospital:incoming-emergency", {
-        hospitalId: selected.hospital._id,
-        emergencyId: populated._id,
-        severity: populated.severity,
-      });
-
       io.emit("ambulance:assigned", {
         emergencyId: populated._id,
         ambulance: ambulanceMatch.ambulance,
@@ -258,6 +428,26 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       io.emit("emergency:status-change", {
         emergencyId: populated._id,
         status: populated.status,
+      });
+
+      if (populated.assignedHospital?._id) {
+        io.to(`hospital:${populated.assignedHospital._id}`).emit(
+          "hospital:request-update",
+          {
+            hospitalId: populated.assignedHospital._id,
+            emergencyId: populated._id,
+            emergency: populated,
+          },
+        );
+      }
+
+      io.to(`user:${req.user._id}`).emit("emergency:ambulance-booked", {
+        emergencyId: populated._id,
+        ambulance: populated.assignedAmbulance,
+      });
+      io.to(`emergency:${populated._id}`).emit("emergency:ambulance-booked", {
+        emergencyId: populated._id,
+        ambulance: populated.assignedAmbulance,
       });
     }
 
@@ -273,8 +463,10 @@ const selectHospitalAndDispatch = async (req, res, next) => {
             fullRoute?.totalDistance || ambulanceMatch.totalDistance,
           eta: routeData?.duration || ambulanceMatch.eta,
         },
-        suggestedHospitals: hospitals,
-        selectedHospital: selected,
+        selectedHospital: { hospital: populated.assignedHospital },
+        requiresHospitalSelection: false,
+        requiresHospitalApproval: false,
+        canBookAmbulance: false,
         route: routeData,
         fullRoute,
         notifications: notifications.map((n) => ({
@@ -348,10 +540,58 @@ const cancelEmergencyRequest = async (req, res, next) => {
       );
     }
 
+    const previousHospitalId = emergency.assignedHospital?._id?.toString();
+    let releasedHospital = null;
+    let releasedBeds = { generalBeds: 0, icuBeds: 0 };
+
+    if (
+      previousHospitalId &&
+      emergency.hospitalRequest?.status === "accepted"
+    ) {
+      const generalBeds = Number(
+        emergency.hospitalRequest.allocatedGeneralBeds || 0,
+      );
+      const icuBeds = Number(emergency.hospitalRequest.allocatedIcuBeds || 0);
+
+      if (generalBeds > 0 || icuBeds > 0) {
+        const hospital = await Hospital.findById(previousHospitalId);
+        if (hospital) {
+          hospital.availableBeds = Math.min(
+            hospital.totalBeds,
+            hospital.availableBeds + generalBeds,
+          );
+          hospital.icuAvailable = Math.min(
+            hospital.icuTotal,
+            hospital.icuAvailable + icuBeds,
+          );
+          await hospital.save();
+          releasedHospital = hospital;
+          releasedBeds = { generalBeds, icuBeds };
+        }
+      }
+
+      emergency.hospitalRequest.status = "released";
+      emergency.hospitalRequest.releasedAt = new Date();
+      emergency.hospitalRequest.allocatedGeneralBeds = 0;
+      emergency.hospitalRequest.allocatedIcuBeds = 0;
+      emergency.hospitalRequest.decisionNote =
+        emergency.hospitalRequest.decisionNote ||
+        "Released automatically due to patient cancellation";
+    }
+
     emergency.status = "cancelled";
     emergency.assignedAmbulance = null;
     emergency.assignedHospital = null;
+    emergency.ambulanceBooking = {
+      status: "cancelled",
+      bookedAt: emergency.ambulanceBooking?.bookedAt || null,
+    };
     emergency.eta = null;
+    emergency.chatThread.push({
+      senderRole: "system",
+      senderName: "ResQNet",
+      message: "Emergency request cancelled by patient.",
+    });
     await emergency.save();
 
     const io = req.app.get("io");
@@ -372,6 +612,34 @@ const cancelEmergencyRequest = async (req, res, next) => {
         emergencyId: emergency._id,
         releasedAmbulanceId: releasedAmbulance?._id || null,
       });
+
+      if (releasedHospital) {
+        io.emit("hospital:beds-update", {
+          hospitalId: releasedHospital._id,
+          name: releasedHospital.name,
+          availableBeds: releasedHospital.availableBeds,
+          totalBeds: releasedHospital.totalBeds,
+          icuAvailable: releasedHospital.icuAvailable,
+          icuTotal: releasedHospital.icuTotal,
+        });
+      }
+
+      if (previousHospitalId) {
+        io.to(`hospital:${previousHospitalId}`).emit(
+          "hospital:request-update",
+          {
+            hospitalId: previousHospitalId,
+            emergencyId: emergency._id,
+            status: "cancelled",
+            releasedBeds,
+          },
+        );
+      }
+
+      io.to(`user:${req.user._id}`).emit("emergency:cancelled", {
+        emergencyId: emergency._id,
+        releasedAmbulanceId: releasedAmbulance?._id || null,
+      });
     }
 
     res.json({
@@ -379,6 +647,8 @@ const cancelEmergencyRequest = async (req, res, next) => {
       data: {
         emergency,
         releasedAmbulance,
+        releasedHospital,
+        releasedBeds,
       },
       message: "Emergency request cancelled successfully",
     });
@@ -470,6 +740,7 @@ const updateStatus = async (req, res, next) => {
 module.exports = {
   createEmergency,
   selectHospitalAndDispatch,
+  bookAmbulanceAfterHospitalApproval,
   getMyActiveEmergency,
   cancelEmergencyRequest,
   getEmergency,
