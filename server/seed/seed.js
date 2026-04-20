@@ -18,8 +18,8 @@ const User = require("../models/User");
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-const HOSPITAL_COUNT = 300;
-const AMBULANCE_COUNT = 500;
+const HOSPITAL_COUNT = 100;
+const AMBULANCE_COUNT = 100;
 const GLOBAL_PASSWORD = "12345678";
 
 const HYD_BOUNDS = {
