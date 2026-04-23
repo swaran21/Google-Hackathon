@@ -504,6 +504,51 @@ const getMyActiveEmergency = async (req, res, next) => {
 };
 
 /**
+ * @desc    Get all emergencies for current user
+ * @route   GET /api/emergency/mine
+ */
+const getMyEmergencies = async (req, res, next) => {
+  try {
+    const emergencies = await Emergency.find({
+      reportedBy: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    res.json({ success: true, data: emergencies });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get all emergencies assigned to the driver's ambulance
+ * @route   GET /api/emergency/driver/mine
+ */
+const getDriverEmergencies = async (req, res, next) => {
+  try {
+    if (!req.user.assignedAmbulance) {
+      return res.status(400).json({
+        success: false,
+        message: "No ambulance assigned to this driver",
+      });
+    }
+
+    const emergencies = await Emergency.find({
+      assignedAmbulance: req.user.assignedAmbulance,
+    })
+      .sort({ createdAt: -1 })
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
+
+    res.json({ success: true, data: emergencies });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Cancel current user's emergency and release assigned ambulance
  * @route   POST /api/emergency/:id/cancel
  */
@@ -742,6 +787,8 @@ module.exports = {
   selectHospitalAndDispatch,
   bookAmbulanceAfterHospitalApproval,
   getMyActiveEmergency,
+  getMyEmergencies,
+  getDriverEmergencies,
   cancelEmergencyRequest,
   getEmergency,
   updateStatus,

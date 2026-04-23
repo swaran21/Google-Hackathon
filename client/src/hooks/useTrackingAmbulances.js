@@ -22,9 +22,7 @@ export default function useTrackingAmbulances({ isUserViewer }) {
 
   const isVisibleForUser = useCallback(
     (ambulance) => {
-      if (!ambulance) return false;
-      if (ambulance.status === "available") return true;
-      if (!assignedAmbulanceId) return false;
+      if (!ambulance || !assignedAmbulanceId) return false;
       return ambulance._id?.toString() === assignedAmbulanceId;
     },
     [assignedAmbulanceId],

@@ -6,6 +6,7 @@ import {
   createEmergency,
   selectHospitalForEmergency,
   cancelEmergencyRequest,
+  getMyActiveEmergency,
 } from "../services/api";
 import EmergencyForm from "../components/EmergencyForm";
 import SOSResult from "../components/SOSResult";
@@ -96,7 +97,8 @@ export default function SOSPage() {
             ? { hospital: emergencyData.assignedHospital }
             : null,
           requiresHospitalSelection:
-            emergencyData.hospitalRequest?.status === "rejected",
+            emergencyData.hospitalRequest?.status === "rejected" ||
+            emergencyData.hospitalRequest?.status === "not_requested",
           requiresHospitalApproval:
             emergencyData.hospitalRequest?.status === "pending",
           canBookAmbulance:
@@ -120,13 +122,28 @@ export default function SOSPage() {
             }
           : prev.selectedHospital,
         requiresHospitalSelection:
-          hospitalStatus === "rejected" || prev.requiresHospitalSelection,
+          hospitalStatus === "rejected" || hospitalStatus === "not_requested",
         requiresHospitalApproval: hospitalStatus === "pending",
         canBookAmbulance:
           hospitalStatus === "accepted" && !emergencyData.assignedAmbulance,
       };
     });
   }, []);
+
+  useEffect(() => {
+    const fetchActive = async () => {
+      try {
+        const res = await getMyActiveEmergency();
+        if (res.data.data) {
+          mergeEmergencyIntoResult(res.data.data);
+          setStep("result");
+        }
+      } catch (err) {
+        console.error("Failed to fetch active emergency", err);
+      }
+    };
+    fetchActive();
+  }, [mergeEmergencyIntoResult]);
 
   const activeEmergencyId = result?.emergency?._id || null;
 

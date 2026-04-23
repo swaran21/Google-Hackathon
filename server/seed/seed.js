@@ -23,11 +23,11 @@ const AMBULANCE_COUNT = 50;
 const PATIENT_COUNT = 50;
 const GLOBAL_PASSWORD = "12345678";
 
-const HYD_BOUNDS = {
-  latMin: 17.23,
-  latMax: 17.62,
-  lngMin: 78.22,
-  lngMax: 78.68,
+const KNR_BOUNDS = {
+  latMin: 18.35,
+  latMax: 18.50,
+  lngMin: 79.05,
+  lngMax: 79.25,
 };
 
 const HYD_LOCALITIES = [
@@ -131,13 +131,13 @@ const TREATMENT_LIBRARY = [
 
 const randomPointInHyderabad = () => {
   const latitude = faker.number.float({
-    min: HYD_BOUNDS.latMin,
-    max: HYD_BOUNDS.latMax,
+    min: KNR_BOUNDS.latMin,
+    max: KNR_BOUNDS.latMax,
     fractionDigits: 6,
   });
   const longitude = faker.number.float({
-    min: HYD_BOUNDS.lngMin,
-    max: HYD_BOUNDS.lngMax,
+    min: KNR_BOUNDS.lngMin,
+    max: KNR_BOUNDS.lngMax,
     fractionDigits: 6,
   });
 

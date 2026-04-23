@@ -4,6 +4,7 @@ import L from "leaflet";
 import {
   MapContainer,
   Marker,
+  Polyline,
   Popup,
   TileLayer,
   useMap,
@@ -46,6 +47,44 @@ const hospitalIcon = L.divIcon({
   className: "",
   iconSize: [30, 30],
   iconAnchor: [15, 15],
+});
+
+const emergencyIcon = L.divIcon({
+  html: `<div style="
+    width: 32px;
+    height: 32px;
+    background: #0a0a0f;
+    border: 2px solid #f97316;
+    border-radius: 10px;
+    box-shadow: 0 0 14px rgba(249,115,22,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    animation: pulse-glow 2s ease-in-out infinite;
+  ">🆘</div>`,
+  className: "",
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+
+const assignedHospitalIcon = L.divIcon({
+  html: `<div style="
+    width: 34px;
+    height: 34px;
+    background: #0a0a0f;
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    box-shadow: 0 0 14px rgba(59,130,246,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    animation: pulse-glow 2s ease-in-out infinite;
+  ">🏥</div>`,
+  className: "",
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
 });
 
 function FitBounds({ markers }) {
@@ -143,6 +182,8 @@ export default function TrackingMapCard({
   isUserViewer,
   focusPoint,
   onOpenDispatchPanel,
+  activeEmergency,
+  assignedHospital,
 }) {
   const [zoomLevel, setZoomLevel] = useState(12);
   const [mapBounds, setMapBounds] = useState(null);
@@ -192,6 +233,12 @@ export default function TrackingMapCard({
   ]);
 
   const visibleHospitals = useMemo(() => {
+    if (isUserViewer) {
+      // User should only ever see their assigned hospital
+      if (!assignedHospital || !hasValidCoords(assignedHospital)) return [];
+      return [assignedHospital];
+    }
+
     if (!mapDensity.showHospitals) return [];
 
     const scoped = hospitals
@@ -203,7 +250,7 @@ export default function TrackingMapCard({
 
     if (!Number.isFinite(mapDensity.maxHospitals)) return fallback;
     return fallback.slice(0, mapDensity.maxHospitals);
-  }, [hospitals, mapBounds, mapDensity.maxHospitals, mapDensity.showHospitals]);
+  }, [hospitals, mapBounds, mapDensity.maxHospitals, mapDensity.showHospitals, isUserViewer, assignedHospital]);
 
   return (
     <div
@@ -228,7 +275,76 @@ export default function TrackingMapCard({
         <FocusController focusPoint={focusPoint} />
         <ViewportTracker onViewportChange={handleViewportChange} />
 
-        {visibleAmbulances.map((amb) => (
+        {/* Phase-aware route polyline for user's active emergency */}
+        {isUserViewer && activeEmergency && assignedAmbulanceId && (() => {
+          const dispAmb = filteredAmbulances.find(a => a._id?.toString() === assignedAmbulanceId);
+          if (!dispAmb || !hasValidCoords(dispAmb)) return null;
+
+          const ambPos = [dispAmb.location.coordinates[1], dispAmb.location.coordinates[0]];
+          const emCoords = activeEmergency.location?.coordinates;
+          const emPos = emCoords ? [emCoords[1], emCoords[0]] : null;
+          const hospCoords = assignedHospital?.location?.coordinates;
+          const hospPos = hospCoords ? [hospCoords[1], hospCoords[0]] : null;
+          const status = activeEmergency.status;
+
+          const isPhase2 = status === 'at_scene' && hospPos;
+
+          return (
+            <>
+              {/* SOS marker for patient location (Phase 1 only) */}
+              {emPos && !isPhase2 && (
+                <Marker position={emPos} icon={emergencyIcon}>
+                  <Popup>
+                    <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
+                      <span style={{ fontWeight: 800, color: '#f97316' }}>Your SOS Location</span>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Assigned hospital highlighted marker */}
+              {hospPos && (
+                <Marker position={hospPos} icon={assignedHospitalIcon}>
+                  <Popup>
+                    <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
+                      <span style={{ fontWeight: 800, color: '#3b82f6' }}>Destination: {assignedHospital?.name}</span>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Ambulance marker */}
+              <Marker
+                position={ambPos}
+                icon={createIcon(status === "at_scene" ? "🚨" : "🚑", 36, true)}
+              >
+                <Popup>
+                  <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
+                    <span style={{ fontWeight: 800, color: '#ef4444' }}>
+                      {dispAmb.vehicleNumber} • {status === "at_scene" ? "Transporting" : "En Route"}
+                    </span>
+                  </div>
+                </Popup>
+              </Marker>
+
+              {/* Phase-aware route polyline */}
+              {isPhase2 && hospPos ? (
+                <Polyline
+                  positions={[ambPos, hospPos]}
+                  pathOptions={{ color: '#3b82f6', weight: 4, dashArray: '12, 8', opacity: 0.7 }}
+                />
+              ) : emPos ? (
+                <Polyline
+                  positions={[ambPos, emPos]}
+                  pathOptions={{ color: '#ef4444', weight: 4, dashArray: '12, 8', opacity: 0.7 }}
+                />
+              ) : null}
+            </>
+          );
+        })()}
+
+        {/* Generic ambulance markers — hidden for focused user view */}
+        {(!isUserViewer || !activeEmergency) && visibleAmbulances.map((amb) => (
           <Marker
             key={amb._id}
             position={[
@@ -356,7 +472,8 @@ export default function TrackingMapCard({
           </Marker>
         ))}
 
-        {visibleHospitals.map((hosp) => (
+        {/* Generic hospital markers — hidden for focused user view */}
+        {(!isUserViewer || !activeEmergency) && visibleHospitals.map((hosp) => (
           <Marker
             key={hosp._id}
             position={[
@@ -452,56 +569,110 @@ export default function TrackingMapCard({
         ))}
       </MapContainer>
 
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          zIndex: 1000,
-          background: isDark ? "rgba(10,10,15,0.85)" : "rgba(255,255,255,0.9)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid var(--border-glass)",
-          padding: "12px 16px",
-          borderRadius: "14px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          fontSize: "12px",
-          fontWeight: 700,
-          color: "var(--text-secondary)",
-        }}
-      >
-        <Activity size={14} style={{ color: "#ef4444" }} /> Fleet Health:{" "}
-        <span style={{ color: "var(--text-primary)" }}>Optimal</span>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: "16px",
-          left: "16px",
-          zIndex: 1000,
-          background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid var(--border-glass)",
-          padding: "10px 12px",
-          borderRadius: "12px",
-          fontSize: "11px",
-          fontWeight: 700,
-          color: "var(--text-secondary)",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
-        <span>Zoom {zoomLevel.toFixed(1)}</span>
-        <span>
-          Showing {visibleAmbulances.length} ambulances
-          {mapDensity.showHospitals
-            ? ` • ${visibleHospitals.length} hospitals`
-            : ""}
-        </span>
-      </div>
+      {/* HUD Overlays */}
+      {isUserViewer && activeEmergency ? (
+        <>
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              left: "20px",
+              zIndex: 1000,
+              background: isDark ? "rgba(10,10,15,0.85)" : "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid var(--border-glass)",
+              padding: "12px 16px",
+              borderRadius: "14px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+            }}
+          >
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'pulse-glow 2s ease-in-out infinite' }} />
+            <span style={{ color: "var(--text-primary)" }}>Emergency Active</span>
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              bottom: "16px",
+              left: "16px",
+              zIndex: 1000,
+              background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid var(--border-glass)",
+              padding: "10px 12px",
+              borderRadius: "12px",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <span>🚑 Ambulance</span>
+            <span>•</span>
+            <span>🏥 {assignedHospital?.name || 'Hospital'}</span>
+            <span>•</span>
+            <span>🆘 Your Location</span>
+          </div>
+        </>
+      ) : (
+        <>
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              left: "20px",
+              zIndex: 1000,
+              background: isDark ? "rgba(10,10,15,0.85)" : "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid var(--border-glass)",
+              padding: "12px 16px",
+              borderRadius: "14px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+            }}
+          >
+            <Activity size={14} style={{ color: "#ef4444" }} /> Fleet Health:{" "}
+            <span style={{ color: "var(--text-primary)" }}>Optimal</span>
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              bottom: "16px",
+              left: "16px",
+              zIndex: 1000,
+              background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid var(--border-glass)",
+              padding: "10px 12px",
+              borderRadius: "12px",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <span>Zoom {zoomLevel.toFixed(1)}</span>
+            <span>
+              Showing {visibleAmbulances.length} ambulances
+              {mapDensity.showHospitals
+                ? ` • ${visibleHospitals.length} hospitals`
+                : ""}
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
