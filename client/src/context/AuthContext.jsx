@@ -84,6 +84,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
+    localStorage.removeItem("resqnet_user_location");
     setToken(null);
     setUser(null);
   };
