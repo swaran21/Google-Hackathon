@@ -164,7 +164,8 @@ const updateDriverStatus = async (req, res, next) => {
 };
 
 /**
- * @desc    Simulate ambulance GPS movement toward emergency location.
+ * @desc    Simulate ambulance GPS movement toward emergency location (Phase 1)
+ *          or toward assigned hospital (Phase 2: after pickup).
  *          Moves the ambulance 1 step closer each call.
  * @route   POST /api/driver/simulate-move
  */
@@ -177,40 +178,94 @@ const simulateMove = async (req, res, next) => {
     if (!ambulance) throw new ApiError(404, 'Ambulance not found');
     if (!ambulance.currentEmergency) throw new ApiError(400, 'No active emergency assigned');
 
+    const emergency = await Emergency.findById(
+      ambulance.currentEmergency._id || ambulance.currentEmergency
+    ).populate('assignedHospital');
+
+    if (!emergency) throw new ApiError(404, 'Emergency not found');
+
     const [ambLng, ambLat] = ambulance.location.coordinates;
-    const [emLng, emLat] = ambulance.currentEmergency.location.coordinates;
+
+    // Phase 2: If at_scene, navigate toward hospital
+    const isPhase2 = ambulance.status === 'at_scene' && emergency.assignedHospital;
+    let targetLat, targetLng, arrivalLabel;
+
+    if (isPhase2) {
+      const [hospLng, hospLat] = emergency.assignedHospital.location.coordinates;
+      targetLat = hospLat;
+      targetLng = hospLng;
+      arrivalLabel = 'hospital';
+    } else {
+      // Phase 1: Navigate toward patient
+      const [emLng, emLat] = emergency.location.coordinates;
+      targetLat = emLat;
+      targetLng = emLng;
+      arrivalLabel = 'patient';
+    }
 
     // Move 15% closer to destination each step
     const stepFraction = 0.15;
-    const newLat = ambLat + (emLat - ambLat) * stepFraction;
-    const newLng = ambLng + (emLng - ambLng) * stepFraction;
+    const newLat = ambLat + (targetLat - ambLat) * stepFraction;
+    const newLng = ambLng + (targetLng - ambLng) * stepFraction;
 
     // Check if close enough (within ~200 meters)
-    const remainingDist = haversine(newLat, newLng, emLat, emLng);
+    const remainingDist = haversine(newLat, newLng, targetLat, targetLng);
     const arrived = remainingDist < 0.2;
 
     ambulance.location.coordinates = [newLng, newLat];
-    if (arrived) {
+
+    if (arrived && !isPhase2) {
+      // Phase 1 arrival: reached patient
       ambulance.status = 'at_scene';
+    } else if (arrived && isPhase2) {
+      // Phase 2 arrival: reached hospital → resolve emergency
+      ambulance.status = 'available';
+      ambulance.currentEmergency = null;
+      emergency.status = 'resolved';
+      await emergency.save();
     }
+
     await ambulance.save();
 
     const io = req.app.get('io');
     if (io) {
-      io.emit('ambulance:location-update', {
+      const locationPayload = {
         ambulanceId: ambulance._id,
         location: ambulance.location,
         vehicleNumber: ambulance.vehicleNumber,
         status: ambulance.status,
-      });
+        phase: isPhase2 ? 'to_hospital' : 'to_patient',
+      };
 
-      if (arrived) {
+      // Broadcast to all tracking clients
+      io.emit('ambulance:location-update', locationPayload);
+
+      // Emit to emergency room
+      io.to(`emergency:${emergency._id}`).emit('ambulance:tracking', locationPayload);
+
+      // Emit to hospital room
+      if (emergency.assignedHospital?._id) {
+        io.to(`hospital:${emergency.assignedHospital._id}`).emit(
+          'ambulance:tracking',
+          locationPayload
+        );
+      }
+
+      if (arrived && !isPhase2) {
+        // Phase 1 arrival events
         io.emit('ambulance:status-change', { ambulanceId: ambulance._id, status: 'at_scene' });
         io.emit('emergency:status-change', {
-          emergencyId: ambulance.currentEmergency._id,
+          emergencyId: emergency._id,
           status: 'at_scene',
         });
-        await Emergency.findByIdAndUpdate(ambulance.currentEmergency._id, { status: 'at_scene' });
+        await Emergency.findByIdAndUpdate(emergency._id, { status: 'at_scene' });
+      } else if (arrived && isPhase2) {
+        // Phase 2 arrival events
+        io.emit('ambulance:status-change', { ambulanceId: ambulance._id, status: 'available' });
+        io.emit('emergency:status-change', {
+          emergencyId: emergency._id,
+          status: 'resolved',
+        });
       }
     }
 
@@ -220,6 +275,8 @@ const simulateMove = async (req, res, next) => {
         ambulance,
         remainingDistance: Math.round(remainingDist * 100) / 100,
         arrived,
+        phase: isPhase2 ? 'to_hospital' : 'to_patient',
+        arrivalLabel,
       },
     });
   } catch (error) {

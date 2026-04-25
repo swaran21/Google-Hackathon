@@ -5,6 +5,8 @@ const {
   selectHospitalAndDispatch,
   bookAmbulanceAfterHospitalApproval,
   getMyActiveEmergency,
+  getMyEmergencies,
+  getDriverEmergencies,
   cancelEmergencyRequest,
   getEmergency,
   updateStatus,
@@ -12,7 +14,9 @@ const {
 const { protect, authorize } = require("../middleware/auth");
 
 router.post("/", protect, authorize("user"), createEmergency);
+router.get("/mine", protect, authorize("user"), getMyEmergencies);
 router.get("/mine/active", protect, authorize("user"), getMyActiveEmergency);
+router.get("/driver/mine", protect, authorize("driver"), getDriverEmergencies);
 router.post(
   "/:id/select-hospital",
   protect,

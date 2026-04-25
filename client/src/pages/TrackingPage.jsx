@@ -189,43 +189,46 @@ export default function TrackingPage() {
               </span>
             </h1>
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "4px",
-              background: "var(--bg-glass)",
-              borderRadius: "14px",
-              border: "1px solid var(--border-glass)",
-            }}
-          >
-            {["all", "available", "dispatched"].map((value) => (
-              <button
-                key={value}
-                onClick={() => setFilter(value)}
-                className="cursor-pointer"
-                style={{
-                  padding: "8px 20px",
-                  borderRadius: "10px",
-                  border: "none",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.02em",
-                  transition: "all 0.2s",
-                  fontFamily: "var(--font-family)",
-                  background: filter === value ? "#dc2626" : "transparent",
-                  color: filter === value ? "#fff" : "var(--text-muted)",
-                  boxShadow:
-                    filter === value
-                      ? "0 4px 16px rgba(220,38,38,0.25)"
-                      : "none",
-                }}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
+          {/* Filter tabs: hidden for focused user view */}
+          {(!isUserViewer || !activeEmergency) && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "4px",
+                background: "var(--bg-glass)",
+                borderRadius: "14px",
+                border: "1px solid var(--border-glass)",
+              }}
+            >
+              {["all", "available", "dispatched"].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setFilter(value)}
+                  className="cursor-pointer"
+                  style={{
+                    padding: "8px 20px",
+                    borderRadius: "10px",
+                    border: "none",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.02em",
+                    transition: "all 0.2s",
+                    fontFamily: "var(--font-family)",
+                    background: filter === value ? "#dc2626" : "transparent",
+                    color: filter === value ? "#fff" : "var(--text-muted)",
+                    boxShadow:
+                      filter === value
+                        ? "0 4px 16px rgba(220,38,38,0.25)"
+                        : "none",
+                  }}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {isUserViewer && (
@@ -255,8 +258,7 @@ export default function TrackingPage() {
                 User Visibility Mode
               </p>
               <p style={{ fontSize: "0.875rem", fontWeight: 700 }}>
-                Showing all available ambulances and only your dispatched
-                ambulance.
+                Privacy Mode: Displaying only your assigned medical assets.
               </p>
             </div>
             {activeEmergency ? (
@@ -278,6 +280,16 @@ export default function TrackingPage() {
                 >
                   Status: {activeEmergency.status}
                 </span>
+                {activeEmergency.status === 'en_route' && (
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase' }}>
+                    🚑 Ambulance heading to you
+                  </span>
+                )}
+                {activeEmergency.status === 'at_scene' && (
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' }}>
+                    🏥 En route to hospital
+                  </span>
+                )}
               </div>
             ) : (
               <span
@@ -293,7 +305,7 @@ export default function TrackingPage() {
           style={{
             flex: 1,
             display: "grid",
-            gridTemplateColumns: "1fr 320px",
+            gridTemplateColumns: (isUserViewer && activeEmergency) ? "1fr" : "1fr 320px",
             gap: "20px",
             minHeight: 0,
             marginBottom: "16px",
@@ -308,22 +320,27 @@ export default function TrackingPage() {
             isUserViewer={isUserViewer}
             focusPoint={mapFocusPoint}
             onOpenDispatchPanel={openDispatchPanel}
+            activeEmergency={activeEmergency}
+            assignedHospital={assignedHospital}
           />
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              overflow: "hidden",
-            }}
-          >
-            <FleetTelemetryCard
-              filteredAmbulances={filteredAmbulances}
-              assignedAmbulanceId={assignedAmbulanceId}
-              onOpenDispatchPanel={openDispatchPanel}
-            />
-          </div>
+          {/* Fleet sidebar: hidden for focused user view */}
+          {(!isUserViewer || !activeEmergency) && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+                overflow: "hidden",
+              }}
+            >
+              <FleetTelemetryCard
+                filteredAmbulances={filteredAmbulances}
+                assignedAmbulanceId={assignedAmbulanceId}
+                onOpenDispatchPanel={openDispatchPanel}
+              />
+            </div>
+          )}
         </div>
 
         <DispatchControlModal

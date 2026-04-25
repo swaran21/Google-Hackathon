@@ -19,6 +19,8 @@ import HospitalPage from "./pages/HospitalPage";
 import HospitalSignupPage from "./pages/HospitalSignupPage";
 import UserLoginPage from "./pages/UserLoginPage";
 import DriverLoginPage from "./pages/DriverLoginPage";
+import BookingsPage from "./pages/BookingsPage";
+import DriverBookingsPage from "./pages/DriverBookingsPage";
 
 function UserOnlyRoute({ children }) {
   const { user, isAuthenticated, loading } = useAuth();
@@ -30,6 +32,24 @@ function UserOnlyRoute({ children }) {
     const roleHome = {
       admin: "/admin",
       driver: "/driver",
+      hospital: "/hospital",
+    };
+    return <Navigate to={roleHome[user?.role] || "/"} replace />;
+  }
+
+  return children;
+}
+
+function DriverOnlyRoute({ children }) {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) return null;
+  if (!isAuthenticated) return <Navigate to="/driver-login" replace />;
+
+  if (user?.role !== "driver") {
+    const roleHome = {
+      admin: "/admin",
+      user: "/",
       hospital: "/hospital",
     };
     return <Navigate to={roleHome[user?.role] || "/"} replace />;
@@ -65,9 +85,32 @@ export default function App() {
                       </UserOnlyRoute>
                     }
                   />
+                  <Route
+                    path="/bookings"
+                    element={
+                      <UserOnlyRoute>
+                        <BookingsPage />
+                      </UserOnlyRoute>
+                    }
+                  />
                   <Route path="/tracking" element={<TrackingPage />} />
                   <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/driver" element={<DriverPage />} />
+                  <Route
+                    path="/driver"
+                    element={
+                      <DriverOnlyRoute>
+                        <DriverPage />
+                      </DriverOnlyRoute>
+                    }
+                  />
+                  <Route
+                    path="/driver/bookings"
+                    element={
+                      <DriverOnlyRoute>
+                        <DriverBookingsPage />
+                      </DriverOnlyRoute>
+                    }
+                  />
                   <Route path="/hospital" element={<HospitalPage />} />
                   <Route
                     path="/hospital-login"

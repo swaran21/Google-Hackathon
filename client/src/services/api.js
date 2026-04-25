@@ -26,7 +26,9 @@ export const selectHospitalForEmergency = (emergencyId, hospitalId) =>
 export const bookAmbulanceForEmergency = (emergencyId) =>
   api.post(`/emergency/${emergencyId}/book-ambulance`);
 export const getEmergency = (id) => api.get(`/emergency/${id}`);
+export const getMyEmergencies = () => api.get("/emergency/mine");
 export const getMyActiveEmergency = () => api.get("/emergency/mine/active");
+export const getDriverEmergencies = () => api.get("/emergency/driver/mine");
 export const cancelEmergencyRequest = (id) =>
   api.post(`/emergency/${id}/cancel`);
 export const updateEmergencyStatus = (id, status) =>

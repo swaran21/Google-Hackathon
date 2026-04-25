@@ -4,14 +4,16 @@ import { useTheme } from '../context/ThemeContext';
 import {
   Home, AlertCircle, Navigation, Activity,
   Building2, LayoutDashboard, LogOut, User as UserIcon,
-  Sun, Moon
+  Sun, Moon, ClipboardList
 } from 'lucide-react';
 
 const NAV_LINKS = [
   { path: '/', label: 'Home', Icon: Home, public: true },
   { path: '/sos', label: 'SOS', Icon: AlertCircle, roles: ['user'] },
+  { path: '/bookings', label: 'My Bookings', Icon: ClipboardList, roles: ['user'] },
   { path: '/tracking', label: 'Live Track', Icon: Navigation, public: true },
-  { path: '/driver', label: 'Driver', Icon: Activity, roles: ['driver', 'admin'] },
+  { path: '/driver', label: 'Driver Dashboard', Icon: Activity, roles: ['driver', 'admin'] },
+  { path: '/driver/bookings', label: 'Mission History', Icon: ClipboardList, roles: ['driver'] },
   { path: '/hospital', label: 'Hospital', Icon: Building2, roles: ['hospital', 'admin'] },
   { path: '/admin', label: 'Dashboard', Icon: LayoutDashboard, roles: ['admin'] },
 ];

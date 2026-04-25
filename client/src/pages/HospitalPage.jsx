@@ -13,10 +13,15 @@ import {
   Stethoscope,
   User,
   X,
+  MapPin,
 } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import DispatchControlModal from "../components/common/DispatchControlModal";
 import { showToast } from "../components/Toast";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { useSocket } from "../hooks/useSocket";
 import {
   addMyHospitalTreatment,
@@ -90,6 +95,7 @@ const formatCurrency = (value) => {
 
 export default function HospitalPage() {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const hospitalId = useMemo(
     () => getHospitalId(user?.assignedHospital),
     [user],
@@ -220,6 +226,21 @@ export default function HospitalPage() {
     }
 
     refreshDashboard();
+  });
+
+  // Live ambulance location updates for tracking mini-map
+  useSocket(socket, "ambulance:tracking", (payload) => {
+    if (!payload?.ambulanceId || !payload?.location) return;
+    setRequests((prev) =>
+      prev.map((req) => {
+        if (req.assignedAmbulance?._id?.toString() !== payload.ambulanceId?.toString()) return req;
+        return {
+          ...req,
+          assignedAmbulance: { ...req.assignedAmbulance, location: payload.location },
+          status: payload.status || req.status,
+        };
+      })
+    );
   });
 
   useSocket(socket, "hospital:beds-update", (payload) => {
@@ -836,6 +857,21 @@ export default function HospitalPage() {
                       <MessageCircle size={14} /> Chat + Call Panel
                     </button>
                   </div>
+
+                  {/* Live Tracking Mini Map */}
+                  {selectedRequest.assignedAmbulance?.location && (
+                    <div style={{ borderTop: "1px solid var(--border-glass)", paddingTop: "14px" }}>
+                      <p style={{ margin: "0 0 10px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Activity size={12} style={{ color: "#ef4444" }} /> Live Ambulance Tracking
+                      </p>
+                      <HospitalTrackingMap
+                        ambulance={selectedRequest.assignedAmbulance}
+                        emergency={selectedRequest}
+                        hospital={hospital}
+                        isDark={isDark}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1297,4 +1333,49 @@ function actionButtonStyle(kind, disabled = false) {
   }
 
   return base;
+}
+
+/* ---- Live tracking mini-map for Hospital ---- */
+
+const createMiniIcon = (emoji, color) => L.divIcon({
+  html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:8px;border:2px solid ${color};box-shadow:0 0 10px ${color}50;font-size:13px;">${emoji}</div>`,
+  className: '', iconSize: [28, 28], iconAnchor: [14, 14],
+});
+const miniAmbIcon = createMiniIcon('🚑', '#ef4444');
+const miniPatientIcon = createMiniIcon('🆘', '#f97316');
+const miniHospIcon = createMiniIcon('🏥', '#3b82f6');
+
+function HospitalTrackingMap({ ambulance, emergency, hospital, isDark }) {
+  if (!ambulance?.location?.coordinates) return null;
+
+  const ambCoords = ambulance.location.coordinates;
+  const ambPos = [ambCoords[1], ambCoords[0]];
+
+  const emCoords = emergency?.location?.coordinates;
+  const emPos = emCoords ? [emCoords[1], emCoords[0]] : null;
+
+  const hospCoords = hospital?.location?.coordinates;
+  const hospPos = hospCoords ? [hospCoords[1], hospCoords[0]] : null;
+
+  const isPhase2 = emergency?.status === 'at_scene' && hospPos;
+
+  const tileUrl = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+  return (
+    <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border-glass)', height: '220px' }}>
+      <MapContainer center={ambPos} zoom={13} zoomControl={false} style={{ height: '100%', width: '100%' }}>
+        <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
+        <Marker position={ambPos} icon={miniAmbIcon} />
+        {emPos && !isPhase2 && <Marker position={emPos} icon={miniPatientIcon} />}
+        {hospPos && <Marker position={hospPos} icon={miniHospIcon} />}
+        {isPhase2 && hospPos ? (
+          <Polyline positions={[ambPos, hospPos]} pathOptions={{ color: '#3b82f6', weight: 3, dashArray: '8, 6', opacity: 0.7 }} />
+        ) : emPos ? (
+          <Polyline positions={[ambPos, emPos]} pathOptions={{ color: '#ef4444', weight: 3, dashArray: '8, 6', opacity: 0.7 }} />
+        ) : null}
+      </MapContainer>
+    </div>
+  );
 }
