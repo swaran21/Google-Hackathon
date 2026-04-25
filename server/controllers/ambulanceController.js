@@ -2,7 +2,7 @@ const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
 const { findNearestAmbulance } = require("../services/dispatchService");
 const { ApiError } = require("../middleware/errorHandler");
-const { getRouteWithPath } = require("../services/routingService");
+const { getRouteWithFallback } = require("../services/routingService");
 
 const USER_ACTIVE_STATUSES = ["pending", "dispatched", "en_route", "at_scene"];
 
@@ -24,7 +24,7 @@ const buildEmergencyRoute = async (ambulance, emergency) => {
   const toLat = isPhase2 ? hospLat : emLat;
   const toLng = isPhase2 ? hospLng : emLng;
 
-  const routeResult = await getRouteWithPath(ambLat, ambLng, toLat, toLng);
+  const routeResult = await getRouteWithFallback(ambLat, ambLng, toLat, toLng);
 
   return {
     phase: isPhase2 ? "to_hospital" : "to_patient",

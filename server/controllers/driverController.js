@@ -2,7 +2,7 @@ const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
 const { haversine } = require("../utils/haversine");
 const { ApiError } = require("../middleware/errorHandler");
-const { getRouteWithPath } = require("../services/routingService");
+const { getRouteWithFallback } = require("../services/routingService");
 
 const getNavigationTarget = (ambulance, emergency) => {
   if (!ambulance?.location?.coordinates || !emergency?.location?.coordinates) {
@@ -62,7 +62,7 @@ const getDriverStatus = async (req, res, next) => {
 
       const navTarget = getNavigationTarget(ambulance, emergency);
       if (navTarget) {
-        const routeResult = await getRouteWithPath(
+        const routeResult = await getRouteWithFallback(
           navTarget.fromLat,
           navTarget.fromLng,
           navTarget.toLat,
@@ -241,7 +241,12 @@ const updateDriverStatus = async (req, res, next) => {
       });
       io.emit("emergency:status-change", {
         emergencyId: ambulance.currentEmergency,
-        status: status === "at_scene" ? "at_scene" : status === "available" ? "resolved" : status,
+        status:
+          status === "at_scene"
+            ? "at_scene"
+            : status === "available"
+              ? "resolved"
+              : status,
       });
     }
 
@@ -319,7 +324,7 @@ const simulateMove = async (req, res, next) => {
 
     await ambulance.save();
 
-    const routeResult = await getRouteWithPath(
+    const routeResult = await getRouteWithFallback(
       newLat,
       newLng,
       targetLat,

@@ -9,6 +9,7 @@
  */
 
 const OSRM_BASE_URL = "https://router.project-osrm.org";
+const { haversine, calculateETA } = require("../utils/haversine");
 
 const toLeafletPath = (geometry, fromLat, fromLng, toLat, toLng) => {
   const coordinates = geometry?.coordinates;
@@ -30,6 +31,25 @@ const getRouteWithPath = async (fromLat, fromLng, toLat, toLng) => {
   return {
     route,
     path: toLeafletPath(route?.geometry, fromLat, fromLng, toLat, toLng),
+  };
+};
+
+const getRouteWithFallback = async (fromLat, fromLng, toLat, toLng) => {
+  const withPath = await getRouteWithPath(fromLat, fromLng, toLat, toLng);
+  if (withPath.route) return withPath;
+
+  const fallbackDistance = haversine(fromLat, fromLng, toLat, toLng);
+  const fallbackDuration = calculateETA(fallbackDistance);
+
+  return {
+    route: {
+      distance: Math.round(fallbackDistance * 100) / 100,
+      duration: fallbackDuration,
+      geometry: null,
+      steps: [],
+      source: "haversine_fallback",
+    },
+    path: toLeafletPath(null, fromLat, fromLng, toLat, toLng),
   };
 };
 
@@ -110,4 +130,10 @@ const getFullRoute = async (
   }
 };
 
-module.exports = { getRoute, getFullRoute, toLeafletPath, getRouteWithPath };
+module.exports = {
+  getRoute,
+  getFullRoute,
+  toLeafletPath,
+  getRouteWithPath,
+  getRouteWithFallback,
+};

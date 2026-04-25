@@ -8,7 +8,7 @@ const {
 const { suggestHospitals } = require("../services/hospitalService");
 const { classifyEmergency } = require("../services/triageService");
 const { notifyDispatch } = require("../services/notificationService");
-const { getRoute, getFullRoute } = require("../services/routingService");
+const { getRouteWithFallback, getFullRoute } = require("../services/routingService");
 const { ApiError } = require("../middleware/errorHandler");
 
 const HOSPITAL_RADIUS_KM = 5;
@@ -381,7 +381,13 @@ const bookAmbulanceAfterHospitalApproval = async (req, res, next) => {
     );
 
     const [ambLng, ambLat] = ambulanceMatch.ambulance.location.coordinates;
-    const routeData = await getRoute(ambLat, ambLng, patientLat, patientLng);
+    const routeResult = await getRouteWithFallback(
+      ambLat,
+      ambLng,
+      patientLat,
+      patientLng,
+    );
+    const routeData = routeResult?.route;
 
     if (routeData?.duration) {
       assignedEmergency.eta = routeData.duration;

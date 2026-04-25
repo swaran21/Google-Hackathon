@@ -2,7 +2,7 @@ const { suggestHospitals } = require("../services/hospitalService");
 const Hospital = require("../models/Hospital");
 const Emergency = require("../models/Emergency");
 const { ApiError } = require("../middleware/errorHandler");
-const { getRouteWithPath } = require("../services/routingService");
+const { getRouteWithFallback } = require("../services/routingService");
 
 const sanitizeSpecialties = (specialties = []) =>
   Array.isArray(specialties)
@@ -100,7 +100,7 @@ const buildRequestRoute = async (request, hospital) => {
   const toLat = isPhase2 ? hospLat : emLat;
   const toLng = isPhase2 ? hospLng : emLng;
 
-  const routeResult = await getRouteWithPath(ambLat, ambLng, toLat, toLng);
+  const routeResult = await getRouteWithFallback(ambLat, ambLng, toLat, toLng);
 
   return {
     phase: isPhase2 ? "to_hospital" : "to_patient",
