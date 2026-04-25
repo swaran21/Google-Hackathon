@@ -24,3 +24,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Local ambulance GPS simulator workspace (intentionally untracked)
+tools/local-ambulance-sim/
