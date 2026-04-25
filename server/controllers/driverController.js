@@ -676,6 +676,51 @@ const serveSimulator = async (_req, res, next) => {
   }
 };
 
+/**
+ * @desc    Toggle ambulance online/offline status
+ * @route   PUT /api/driver/ambulance/toggle-status
+ * @access  Private (Driver)
+ */
+const toggleAmbulanceStatus = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    // Find ambulance assigned to this driver
+    const ambulance = await Ambulance.findOne({ assignedDriver: userId });
+    if (!ambulance) {
+      return next(new ApiError(404, "No ambulance assigned to this driver"));
+    }
+
+    // Toggle the isActive status (online/offline)
+    ambulance.isActive = !ambulance.isActive;
+
+    // If going offline, update status to offline
+    if (!ambulance.isActive) {
+      ambulance.status = "offline";
+    } else {
+      // If going online, set to available if offline
+      if (ambulance.status === "offline") {
+        ambulance.status = "available";
+      }
+    }
+
+    await ambulance.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Ambulance is now ${ambulance.isActive ? "online" : "offline"}`,
+      ambulance: {
+        _id: ambulance._id,
+        vehicleNumber: ambulance.vehicleNumber,
+        status: ambulance.status,
+        isActive: ambulance.isActive,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDriverStatus,
   acceptDispatch,
@@ -685,4 +730,5 @@ module.exports = {
   manualMove,
   getDriverHistory,
   serveSimulator,
+  toggleAmbulanceStatus,
 };

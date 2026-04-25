@@ -60,6 +60,7 @@ export default function DriverPage() {
   const [showDispatchPanel, setShowDispatchPanel] = useState(false);
   const [gpsStreaming, setGpsStreaming] = useState(false);
   const [gpsPermission, setGpsPermission] = useState("unknown");
+  const [togglingStatus, setTogglingStatus] = useState(false);
   const simRef = useRef(null);
   const gpsWatchRef = useRef(null);
   const lastGpsEmitRef = useRef(0);
@@ -221,6 +222,22 @@ export default function DriverPage() {
 
     setGpsStreaming(true);
     showToast("Live GPS started (updates every ~6 seconds)", "success");
+  };
+
+  const toggleAmbulanceStatus = async () => {
+    try {
+      setTogglingStatus(true);
+      const res = await api.put("/driver/ambulance/toggle-status", {});
+      showToast(res.data.message, "success");
+      fetchDriverStatus(myAmbulanceId);
+    } catch (err) {
+      showToast(
+        err.response?.data?.message || "Failed to toggle status",
+        "error",
+      );
+    } finally {
+      setTogglingStatus(false);
+    }
   };
 
   useEffect(() => {
@@ -585,6 +602,43 @@ export default function DriverPage() {
                 {gpsStreaming ? "GPS LIVE" : "Online"}
               </span>
             </div>
+            <button
+              onClick={toggleAmbulanceStatus}
+              disabled={togglingStatus || !amb}
+              className="cursor-pointer"
+              style={{
+                padding: "8px 16px",
+                borderRadius: "14px",
+                border: "1px solid var(--border-glass)",
+                background: amb?.isActive
+                  ? "rgba(34,197,94,0.12)"
+                  : "rgba(239,68,68,0.12)",
+                color: amb?.isActive ? "#22c55e" : "#ef4444",
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                fontFamily: "var(--font-family)",
+                opacity: togglingStatus ? 0.6 : 1,
+                transition: "all 0.2s ease",
+              }}
+            >
+              {togglingStatus ? (
+                <>
+                  <Loader2
+                    size={14}
+                    style={{
+                      display: "inline",
+                      marginRight: "6px",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                  SWITCHING...
+                </>
+              ) : (
+                <>{amb?.isActive ? "🟢 ONLINE" : "🔴 OFFLINE"}</>
+              )}
+            </button>
           </div>
         </div>
 

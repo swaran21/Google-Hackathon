@@ -10,6 +10,7 @@ const {
   manualMove,
   getDriverHistory,
   serveSimulator,
+  toggleAmbulanceStatus,
 } = require("../controllers/driverController");
 
 router.get("/simulator", serveSimulator);
@@ -35,6 +36,12 @@ router.post(
   protect,
   authorize("driver", "hospital", "admin"),
   manualMove,
+);
+router.put(
+  "/ambulance/toggle-status",
+  protect,
+  authorize("driver"),
+  toggleAmbulanceStatus,
 );
 
 module.exports = router;
