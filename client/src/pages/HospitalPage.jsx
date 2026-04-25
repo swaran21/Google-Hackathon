@@ -233,13 +233,33 @@ export default function HospitalPage() {
     if (!payload?.ambulanceId || !payload?.location) return;
     setRequests((prev) =>
       prev.map((req) => {
-        if (req.assignedAmbulance?._id?.toString() !== payload.ambulanceId?.toString()) return req;
+        if (
+          req.assignedAmbulance?._id?.toString() !==
+          payload.ambulanceId?.toString()
+        )
+          return req;
         return {
           ...req,
-          assignedAmbulance: { ...req.assignedAmbulance, location: payload.location },
+          assignedAmbulance: {
+            ...req.assignedAmbulance,
+            location: payload.location,
+          },
           status: payload.status || req.status,
+          activeRoute: Array.isArray(payload.routePath)
+            ? {
+                ...(req.activeRoute || {}),
+                phase: payload.phase || req.activeRoute?.phase || null,
+                distanceKm: Number.isFinite(payload.routeDistanceKm)
+                  ? payload.routeDistanceKm
+                  : (req.activeRoute?.distanceKm ?? null),
+                etaMinutes: Number.isFinite(payload.routeEtaMinutes)
+                  ? payload.routeEtaMinutes
+                  : (req.activeRoute?.etaMinutes ?? null),
+                path: payload.routePath,
+              }
+            : req.activeRoute,
         };
-      })
+      }),
     );
   });
 
@@ -860,15 +880,34 @@ export default function HospitalPage() {
 
                   {/* Live Tracking Mini Map */}
                   {selectedRequest.assignedAmbulance?.location && (
-                    <div style={{ borderTop: "1px solid var(--border-glass)", paddingTop: "14px" }}>
-                      <p style={{ margin: "0 0 10px", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", color: "var(--text-muted)", letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <Activity size={12} style={{ color: "#ef4444" }} /> Live Ambulance Tracking
+                    <div
+                      style={{
+                        borderTop: "1px solid var(--border-glass)",
+                        paddingTop: "14px",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: "0 0 10px",
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          color: "var(--text-muted)",
+                          letterSpacing: "0.1em",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Activity size={12} style={{ color: "#ef4444" }} /> Live
+                        Ambulance Tracking
                       </p>
                       <HospitalTrackingMap
                         ambulance={selectedRequest.assignedAmbulance}
                         emergency={selectedRequest}
                         hospital={hospital}
                         isDark={isDark}
+                        activeRoute={selectedRequest.activeRoute}
                       />
                     </div>
                   )}
@@ -1337,15 +1376,24 @@ function actionButtonStyle(kind, disabled = false) {
 
 /* ---- Live tracking mini-map for Hospital ---- */
 
-const createMiniIcon = (emoji, color) => L.divIcon({
-  html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:8px;border:2px solid ${color};box-shadow:0 0 10px ${color}50;font-size:13px;">${emoji}</div>`,
-  className: '', iconSize: [28, 28], iconAnchor: [14, 14],
-});
-const miniAmbIcon = createMiniIcon('🚑', '#ef4444');
-const miniPatientIcon = createMiniIcon('🆘', '#f97316');
-const miniHospIcon = createMiniIcon('🏥', '#3b82f6');
+const createMiniIcon = (emoji, color) =>
+  L.divIcon({
+    html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#0a0a0f;border-radius:8px;border:2px solid ${color};box-shadow:0 0 10px ${color}50;font-size:13px;">${emoji}</div>`,
+    className: "",
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+const miniAmbIcon = createMiniIcon("🚑", "#ef4444");
+const miniPatientIcon = createMiniIcon("🆘", "#f97316");
+const miniHospIcon = createMiniIcon("🏥", "#3b82f6");
 
-function HospitalTrackingMap({ ambulance, emergency, hospital, isDark }) {
+function HospitalTrackingMap({
+  ambulance,
+  emergency,
+  hospital,
+  isDark,
+  activeRoute,
+}) {
   if (!ambulance?.location?.coordinates) return null;
 
   const ambCoords = ambulance.location.coordinates;
@@ -1357,23 +1405,56 @@ function HospitalTrackingMap({ ambulance, emergency, hospital, isDark }) {
   const hospCoords = hospital?.location?.coordinates;
   const hospPos = hospCoords ? [hospCoords[1], hospCoords[0]] : null;
 
-  const isPhase2 = emergency?.status === 'at_scene' && hospPos;
+  const isPhase2 = emergency?.status === "at_scene" && hospPos;
+  const routePath =
+    Array.isArray(activeRoute?.path) && activeRoute.path.length > 1
+      ? activeRoute.path
+      : isPhase2 && hospPos
+        ? [ambPos, hospPos]
+        : emPos
+          ? [ambPos, emPos]
+          : null;
+  const routeColor =
+    (activeRoute?.phase || (isPhase2 ? "to_hospital" : "to_patient")) ===
+    "to_hospital"
+      ? "#3b82f6"
+      : "#ef4444";
 
   const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
   return (
-    <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border-glass)', height: '220px' }}>
-      <MapContainer center={ambPos} zoom={13} zoomControl={false} style={{ height: '100%', width: '100%' }}>
+    <div
+      style={{
+        borderRadius: "14px",
+        overflow: "hidden",
+        border: "1px solid var(--border-glass)",
+        height: "220px",
+      }}
+    >
+      <MapContainer
+        center={ambPos}
+        zoom={13}
+        zoomControl={false}
+        style={{ height: "100%", width: "100%" }}
+      >
         <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
         <Marker position={ambPos} icon={miniAmbIcon} />
-        {emPos && !isPhase2 && <Marker position={emPos} icon={miniPatientIcon} />}
+        {emPos && !isPhase2 && (
+          <Marker position={emPos} icon={miniPatientIcon} />
+        )}
         {hospPos && <Marker position={hospPos} icon={miniHospIcon} />}
-        {isPhase2 && hospPos ? (
-          <Polyline positions={[ambPos, hospPos]} pathOptions={{ color: '#3b82f6', weight: 3, dashArray: '8, 6', opacity: 0.7 }} />
-        ) : emPos ? (
-          <Polyline positions={[ambPos, emPos]} pathOptions={{ color: '#ef4444', weight: 3, dashArray: '8, 6', opacity: 0.7 }} />
+        {routePath ? (
+          <Polyline
+            positions={routePath}
+            pathOptions={{
+              color: routeColor,
+              weight: 3,
+              dashArray: "8, 6",
+              opacity: 0.7,
+            }}
+          />
         ) : null}
       </MapContainer>
     </div>

@@ -2,8 +2,37 @@ const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
 const { findNearestAmbulance } = require("../services/dispatchService");
 const { ApiError } = require("../middleware/errorHandler");
+const { getRouteWithPath } = require("../services/routingService");
 
 const USER_ACTIVE_STATUSES = ["pending", "dispatched", "en_route", "at_scene"];
+
+const buildEmergencyRoute = async (ambulance, emergency) => {
+  if (!ambulance?.location?.coordinates || !emergency?.location?.coordinates) {
+    return null;
+  }
+
+  const [ambLng, ambLat] = ambulance.location.coordinates;
+  const [emLng, emLat] = emergency.location.coordinates;
+  const [hospLng, hospLat] =
+    emergency.assignedHospital?.location?.coordinates || [];
+
+  const isPhase2 =
+    emergency.status === "at_scene" &&
+    Number.isFinite(hospLat) &&
+    Number.isFinite(hospLng);
+
+  const toLat = isPhase2 ? hospLat : emLat;
+  const toLng = isPhase2 ? hospLng : emLng;
+
+  const routeResult = await getRouteWithPath(ambLat, ambLng, toLat, toLng);
+
+  return {
+    phase: isPhase2 ? "to_hospital" : "to_patient",
+    distanceKm: routeResult.route?.distance ?? null,
+    etaMinutes: routeResult.route?.duration ?? null,
+    path: routeResult.path,
+  };
+};
 
 /**
  * @desc    Get nearest available ambulance to coordinates
@@ -90,6 +119,13 @@ const getUserVisibleAmbulances = async (req, res, next) => {
     }
 
     const visibleAmbulances = Array.from(visibleById.values());
+    const activeRoute =
+      activeEmergency?.assignedAmbulance && activeEmergency
+        ? await buildEmergencyRoute(
+            activeEmergency.assignedAmbulance,
+            activeEmergency,
+          )
+        : null;
 
     res.json({
       success: true,
@@ -97,6 +133,7 @@ const getUserVisibleAmbulances = async (req, res, next) => {
       data: {
         ambulances: visibleAmbulances,
         activeEmergency,
+        activeRoute,
       },
     });
   } catch (error) {
@@ -131,6 +168,17 @@ const updateLocation = async (req, res, next) => {
       throw new ApiError(404, "Ambulance not found");
     }
 
+    let emergency = null;
+    if (ambulance.currentEmergency) {
+      emergency = await Emergency.findById(ambulance.currentEmergency).populate(
+        "assignedHospital",
+      );
+    }
+
+    const route = emergency
+      ? await buildEmergencyRoute(ambulance, emergency)
+      : null;
+
     // Broadcast location update in real-time
     const io = req.app.get("io");
     if (io) {
@@ -138,6 +186,10 @@ const updateLocation = async (req, res, next) => {
         ambulanceId: ambulance._id,
         location: ambulance.location,
         status: ambulance.status,
+        phase: route?.phase || null,
+        routePath: route?.path || null,
+        routeDistanceKm: route?.distanceKm ?? null,
+        routeEtaMinutes: route?.etaMinutes ?? null,
       });
     }
 

@@ -8,7 +8,30 @@
  * - Route geometry (polyline) for map drawing
  */
 
-const OSRM_BASE_URL = 'https://router.project-osrm.org';
+const OSRM_BASE_URL = "https://router.project-osrm.org";
+
+const toLeafletPath = (geometry, fromLat, fromLng, toLat, toLng) => {
+  const coordinates = geometry?.coordinates;
+
+  if (Array.isArray(coordinates) && coordinates.length > 1) {
+    return coordinates
+      .filter((entry) => Array.isArray(entry) && entry.length >= 2)
+      .map(([lng, lat]) => [lat, lng]);
+  }
+
+  return [
+    [fromLat, fromLng],
+    [toLat, toLng],
+  ];
+};
+
+const getRouteWithPath = async (fromLat, fromLng, toLat, toLng) => {
+  const route = await getRoute(fromLat, fromLng, toLat, toLng);
+  return {
+    route,
+    path: toLeafletPath(route?.geometry, fromLat, fromLng, toLat, toLng),
+  };
+};
 
 /**
  * Get driving route between two points.
@@ -27,8 +50,8 @@ const getRoute = async (fromLat, fromLng, toLat, toLng) => {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
-      console.warn('OSRM routing failed, falling back to Haversine');
+    if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
+      console.warn("OSRM routing failed, falling back to Haversine");
       return null;
     }
 
@@ -46,7 +69,7 @@ const getRoute = async (fromLat, fromLng, toLat, toLng) => {
       })),
     };
   } catch (error) {
-    console.error('OSRM routing error:', error.message);
+    console.error("OSRM routing error:", error.message);
     return null;
   }
 };
@@ -54,14 +77,21 @@ const getRoute = async (fromLat, fromLng, toLat, toLng) => {
 /**
  * Get route with multiple waypoints (ambulance → emergency → hospital).
  */
-const getFullRoute = async (ambulanceLat, ambulanceLng, emergencyLat, emergencyLng, hospitalLat, hospitalLng) => {
+const getFullRoute = async (
+  ambulanceLat,
+  ambulanceLng,
+  emergencyLat,
+  emergencyLng,
+  hospitalLat,
+  hospitalLng,
+) => {
   try {
     const url = `${OSRM_BASE_URL}/route/v1/driving/${ambulanceLng},${ambulanceLat};${emergencyLng},${emergencyLat};${hospitalLng},${hospitalLat}?overview=full&geometries=geojson&steps=true`;
 
     const response = await fetch(url);
     const data = await response.json();
 
-    if (data.code !== 'Ok') return null;
+    if (data.code !== "Ok") return null;
 
     const route = data.routes[0];
     return {
@@ -69,15 +99,15 @@ const getFullRoute = async (ambulanceLat, ambulanceLng, emergencyLat, emergencyL
       totalDuration: Math.round(route.duration / 60),
       geometry: route.geometry,
       legs: route.legs.map((leg, i) => ({
-        segment: i === 0 ? 'ambulance → emergency' : 'emergency → hospital',
+        segment: i === 0 ? "ambulance → emergency" : "emergency → hospital",
         distance: Math.round(leg.distance / 10) / 100,
         duration: Math.round(leg.duration / 60),
       })),
     };
   } catch (error) {
-    console.error('OSRM full route error:', error.message);
+    console.error("OSRM full route error:", error.message);
     return null;
   }
 };
 
-module.exports = { getRoute, getFullRoute };
+module.exports = { getRoute, getFullRoute, toLeafletPath, getRouteWithPath };
