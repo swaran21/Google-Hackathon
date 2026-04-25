@@ -191,7 +191,13 @@ const rejectDispatch = async (req, res, next) => {
 const updateDriverStatus = async (req, res, next) => {
   try {
     const { ambulanceId, status } = req.body;
-    const validStatuses = ["en_route", "at_scene", "returning", "available"];
+    const validStatuses = [
+      "en_route",
+      "at_scene",
+      "returning",
+      "available",
+      "offline",
+    ];
 
     if (!validStatuses.includes(status)) {
       throw new ApiError(
@@ -217,9 +223,10 @@ const updateDriverStatus = async (req, res, next) => {
         at_scene: "at_scene",
         returning: "resolved",
         available: "resolved",
+        offline: undefined,
       };
 
-      if (ambulance.currentEmergency) {
+      if (ambulance.currentEmergency && emergencyStatus[status]) {
         await Emergency.findByIdAndUpdate(ambulance.currentEmergency, {
           status: emergencyStatus[status],
         });
@@ -234,12 +241,7 @@ const updateDriverStatus = async (req, res, next) => {
       });
       io.emit("emergency:status-change", {
         emergencyId: ambulance.currentEmergency,
-        status:
-          status === "at_scene"
-            ? "at_scene"
-            : status === "available"
-              ? "resolved"
-              : status,
+        status: status === "at_scene" ? "at_scene" : status === "available" ? "resolved" : status,
       });
     }
 

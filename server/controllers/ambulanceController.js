@@ -212,6 +212,7 @@ const updateAmbulanceStatus = async (req, res, next) => {
       "en_route",
       "at_scene",
       "returning",
+      "offline",
     ];
 
     if (!validStatuses.includes(status)) {

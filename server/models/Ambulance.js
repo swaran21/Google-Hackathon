@@ -1,5 +1,30 @@
 const mongoose = require('mongoose');
 
+const LEVEL_EQUIPMENT = {
+  basic: ['First Aid Kit', 'Oxygen Cylinder', 'BP Monitor', 'Stretcher'],
+  advanced: [
+    'First Aid Kit',
+    'Oxygen Cylinder',
+    'BP Monitor',
+    'Stretcher',
+    'Cardiac Monitor',
+    'Portable Suction',
+    'Nebulizer',
+  ],
+  critical_care: [
+    'First Aid Kit',
+    'Oxygen Cylinder',
+    'BP Monitor',
+    'Stretcher',
+    'Cardiac Monitor',
+    'Portable Suction',
+    'Nebulizer',
+    'Ventilator',
+    'Defibrillator',
+    'Infusion Pump',
+  ],
+};
+
 const ambulanceSchema = new mongoose.Schema(
   {
     vehicleNumber: {
@@ -28,7 +53,7 @@ const ambulanceSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['available', 'dispatched', 'en_route', 'at_scene', 'returning'],
+      enum: ['available', 'dispatched', 'en_route', 'at_scene', 'returning', 'offline'],
       default: 'available',
     },
     currentEmergency: {
@@ -40,6 +65,10 @@ const ambulanceSchema = new mongoose.Schema(
       type: String,
       enum: ['basic', 'advanced', 'critical_care'],
       default: 'basic',
+    },
+    equipmentInventory: {
+      type: [String],
+      default: [],
     },
     // Link to the User account for this driver
     assignedDriver: {
@@ -60,5 +89,13 @@ const ambulanceSchema = new mongoose.Schema(
 // Geospatial index for nearest-ambulance queries
 ambulanceSchema.index({ location: '2dsphere' });
 ambulanceSchema.index({ status: 1 });
+
+ambulanceSchema.pre('validate', function (next) {
+  const level = this.equipmentLevel || 'basic';
+  if (!Array.isArray(this.equipmentInventory) || this.equipmentInventory.length === 0) {
+    this.equipmentInventory = LEVEL_EQUIPMENT[level] || LEVEL_EQUIPMENT.basic;
+  }
+  next();
+});
 
 module.exports = mongoose.model('Ambulance', ambulanceSchema);
