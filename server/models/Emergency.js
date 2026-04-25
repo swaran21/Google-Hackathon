@@ -185,6 +185,41 @@ const emergencySchema = new mongoose.Schema(
       type: Number, // in minutes
       default: null,
     },
+    // User Feedback & Ratings
+    feedback: {
+      isSubmitted: {
+        type: Boolean,
+        default: false,
+      },
+      driverRating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null,
+      },
+      hospitalRating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null,
+      },
+      experienceRating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null,
+      },
+      comments: {
+        type: String,
+        trim: true,
+        maxlength: 1000,
+        default: "",
+      },
+      submittedAt: {
+        type: Date,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

@@ -8,7 +8,10 @@ const {
 const { suggestHospitals } = require("../services/hospitalService");
 const { classifyEmergency } = require("../services/triageService");
 const { notifyDispatch } = require("../services/notificationService");
-const { getRouteWithFallback, getFullRoute } = require("../services/routingService");
+const {
+  getRouteWithFallback,
+  getFullRoute,
+} = require("../services/routingService");
 const { ApiError } = require("../middleware/errorHandler");
 
 const HOSPITAL_RADIUS_KM = 5;
@@ -789,6 +792,102 @@ const updateStatus = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Submit feedback and ratings for completed emergency
+ * @route   POST /api/emergency/:emergencyId/feedback
+ * @access  Private (Owner/User)
+ */
+const submitFeedback = async (req, res, next) => {
+  try {
+    const { emergencyId } = req.params;
+    const { driverRating, hospitalRating, experienceRating, comments } =
+      req.body;
+    const userId = req.user._id;
+
+    // Validate emergency exists
+    const emergency = await Emergency.findById(emergencyId);
+    if (!emergency) {
+      return next(new ApiError(404, "Emergency not found"));
+    }
+
+    // Verify user is the one who reported the emergency
+    if (!isEmergencyOwner(emergency, userId)) {
+      return next(
+        new ApiError(
+          403,
+          "Not authorized to submit feedback for this emergency",
+        ),
+      );
+    }
+
+    // Validate emergency is resolved or cancelled
+    if (!["resolved", "cancelled"].includes(emergency.status)) {
+      return next(
+        new ApiError(
+          400,
+          "Can only submit feedback for resolved or cancelled emergencies",
+        ),
+      );
+    }
+
+    // Validate ratings are within 1-5 range
+    if (driverRating && (driverRating < 1 || driverRating > 5)) {
+      return next(new ApiError(400, "Driver rating must be between 1 and 5"));
+    }
+    if (hospitalRating && (hospitalRating < 1 || hospitalRating > 5)) {
+      return next(new ApiError(400, "Hospital rating must be between 1 and 5"));
+    }
+    if (experienceRating && (experienceRating < 1 || experienceRating > 5)) {
+      return next(
+        new ApiError(400, "Experience rating must be between 1 and 5"),
+      );
+    }
+
+    // Update feedback
+    emergency.feedback = {
+      isSubmitted: true,
+      driverRating: driverRating || null,
+      hospitalRating: hospitalRating || null,
+      experienceRating: experienceRating || null,
+      comments: comments || "",
+      submittedAt: new Date(),
+    };
+
+    await emergency.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Feedback submitted successfully",
+      feedback: emergency.feedback,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get feedback for an emergency
+ * @route   GET /api/emergency/:emergencyId/feedback
+ * @access  Private
+ */
+const getFeedback = async (req, res, next) => {
+  try {
+    const { emergencyId } = req.params;
+
+    const emergency = await Emergency.findById(emergencyId);
+    if (!emergency) {
+      return next(new ApiError(404, "Emergency not found"));
+    }
+
+    res.status(200).json({
+      success: true,
+      feedback: emergency.feedback,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createEmergency,
   selectHospitalAndDispatch,
@@ -799,4 +898,6 @@ module.exports = {
   cancelEmergencyRequest,
   getEmergency,
   updateStatus,
+  submitFeedback,
+  getFeedback,
 };

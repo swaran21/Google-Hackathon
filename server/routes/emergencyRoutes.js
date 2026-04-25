@@ -10,6 +10,8 @@ const {
   cancelEmergencyRequest,
   getEmergency,
   updateStatus,
+  submitFeedback,
+  getFeedback,
 } = require("../controllers/emergencyController");
 const { protect, authorize } = require("../middleware/auth");
 
@@ -32,5 +34,12 @@ router.post(
 router.post("/:id/cancel", protect, authorize("user"), cancelEmergencyRequest);
 router.get("/:id", protect, getEmergency);
 router.patch("/:id/status", protect, updateStatus);
+router.post(
+  "/:emergencyId/feedback",
+  protect,
+  authorize("user"),
+  submitFeedback,
+);
+router.get("/:emergencyId/feedback", protect, getFeedback);
 
 module.exports = router;

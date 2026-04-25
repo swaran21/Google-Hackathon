@@ -10,6 +10,7 @@ import {
 } from "../services/api";
 import EmergencyForm from "../components/EmergencyForm";
 import SOSResult from "../components/SOSResult";
+import FeedbackForm from "../components/FeedbackForm";
 import socket from "../services/socket";
 import {
   AlertCircle,
@@ -84,6 +85,8 @@ export default function SOSPage() {
   const [selectingHospitalId, setSelectingHospitalId] = useState(null);
   const [cancellingEmergency, setCancellingEmergency] = useState(false);
   const [bookingAmbulance, setBookingAmbulance] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   const mergeEmergencyIntoResult = useCallback((emergencyData) => {
     if (!emergencyData?._id) return;
@@ -196,6 +199,15 @@ export default function SOSPage() {
       try {
         const res = await getEmergency(activeEmergencyId);
         mergeEmergencyIntoResult(res.data.data);
+
+        // Show feedback form if emergency is resolved or cancelled and feedback not submitted yet
+        if (
+          ["resolved", "cancelled"].includes(res.data.data?.status) &&
+          !feedbackSubmitted &&
+          !showFeedbackForm
+        ) {
+          setShowFeedbackForm(true);
+        }
       } catch {
         // Ignore intermittent polling failures.
       }
@@ -867,6 +879,19 @@ export default function SOSPage() {
             cancellingEmergency={cancellingEmergency}
             bookingAmbulance={bookingAmbulance}
           />
+
+          {showFeedbackForm && result?.emergency?._id && (
+            <FeedbackForm
+              emergencyId={result.emergency._id}
+              onSubmitSuccess={() => {
+                setShowFeedbackForm(false);
+                setFeedbackSubmitted(true);
+              }}
+              onCancel={() => {
+                setShowFeedbackForm(false);
+              }}
+            />
+          )}
         </div>
       )}
     </div>
