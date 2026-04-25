@@ -2,6 +2,7 @@ const { suggestHospitals } = require("../services/hospitalService");
 const Hospital = require("../models/Hospital");
 const Emergency = require("../models/Emergency");
 const { ApiError } = require("../middleware/errorHandler");
+const { getRouteWithPath } = require("../services/routingService");
 
 const sanitizeSpecialties = (specialties = []) =>
   Array.isArray(specialties)
@@ -77,6 +78,37 @@ const DEFAULT_HOSPITAL_REQUEST_STATUSES = [
   "released",
   "rejected",
 ];
+
+const hasPoint = (entity) =>
+  Array.isArray(entity?.location?.coordinates) &&
+  entity.location.coordinates.length === 2;
+
+const buildRequestRoute = async (request, hospital) => {
+  if (!hasPoint(request?.assignedAmbulance) || !hasPoint(request)) {
+    return null;
+  }
+
+  const [ambLng, ambLat] = request.assignedAmbulance.location.coordinates;
+  const [emLng, emLat] = request.location.coordinates;
+  const [hospLng, hospLat] = hospital?.location?.coordinates || [];
+
+  const isPhase2 =
+    request?.status === "at_scene" &&
+    Number.isFinite(hospLat) &&
+    Number.isFinite(hospLng);
+
+  const toLat = isPhase2 ? hospLat : emLat;
+  const toLng = isPhase2 ? hospLng : emLng;
+
+  const routeResult = await getRouteWithPath(ambLat, ambLng, toLat, toLng);
+
+  return {
+    phase: isPhase2 ? "to_hospital" : "to_patient",
+    distanceKm: routeResult.route?.distance ?? null,
+    etaMinutes: routeResult.route?.duration ?? null,
+    path: routeResult.path,
+  };
+};
 
 const emitHospitalBedUpdate = (req, hospital) => {
   const io = req.app.get("io");
@@ -361,27 +393,34 @@ const getMyHospitalDashboard = async (req, res, next) => {
       .populate("reportedBy", "name email phone role")
       .lean();
 
+    const requestsWithRoute = await Promise.all(
+      emergencyRequests.map(async (entry) => ({
+        ...entry,
+        activeRoute: await buildRequestRoute(entry, hospital),
+      })),
+    );
+
     const summary = {
-      pending: emergencyRequests.filter(
+      pending: requestsWithRoute.filter(
         (entry) => entry?.hospitalRequest?.status === "pending",
       ).length,
-      accepted: emergencyRequests.filter(
+      accepted: requestsWithRoute.filter(
         (entry) => entry?.hospitalRequest?.status === "accepted",
       ).length,
-      released: emergencyRequests.filter(
+      released: requestsWithRoute.filter(
         (entry) => entry?.hospitalRequest?.status === "released",
       ).length,
-      rejected: emergencyRequests.filter(
+      rejected: requestsWithRoute.filter(
         (entry) => entry?.hospitalRequest?.status === "rejected",
       ).length,
-      total: emergencyRequests.length,
+      total: requestsWithRoute.length,
     };
 
     res.json({
       success: true,
       data: {
         hospital,
-        requests: emergencyRequests,
+        requests: requestsWithRoute,
         summary,
       },
     });

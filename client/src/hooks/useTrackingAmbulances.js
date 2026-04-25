@@ -15,6 +15,7 @@ export default function useTrackingAmbulances({ isUserViewer }) {
   const [ambulances, setAmbulances] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const [activeEmergency, setActiveEmergency] = useState(null);
+  const [activeRoute, setActiveRoute] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const assignedAmbulanceId =
@@ -50,6 +51,7 @@ export default function useTrackingAmbulances({ isUserViewer }) {
         setActiveEmergency(
           visibleAmbulancesRes.data.data?.activeEmergency || null,
         );
+        setActiveRoute(visibleAmbulancesRes.data.data?.activeRoute || null);
       } else {
         const [ambulancesRes, hospitalsRes] = await Promise.all([
           getAllAmbulances(),
@@ -59,6 +61,7 @@ export default function useTrackingAmbulances({ isUserViewer }) {
         setAmbulances((ambulancesRes.data.data || []).filter(hasCoords));
         setHospitals((hospitalsRes.data.data || []).filter(hasCoords));
         setActiveEmergency(null);
+        setActiveRoute(null);
       }
     } catch (error) {
       console.error("Error fetching tracking data:", error);
@@ -91,6 +94,25 @@ export default function useTrackingAmbulances({ isUserViewer }) {
 
       return isUserViewer ? updated.filter(isVisibleForUser) : updated;
     });
+
+    if (
+      isUserViewer &&
+      assignedAmbulanceId &&
+      data.ambulanceId?.toString() === assignedAmbulanceId.toString() &&
+      Array.isArray(data.routePath)
+    ) {
+      setActiveRoute((prev) => ({
+        ...(prev || {}),
+        phase: data.phase || prev?.phase || null,
+        distanceKm: Number.isFinite(data.routeDistanceKm)
+          ? data.routeDistanceKm
+          : (prev?.distanceKm ?? null),
+        etaMinutes: Number.isFinite(data.routeEtaMinutes)
+          ? data.routeEtaMinutes
+          : (prev?.etaMinutes ?? null),
+        path: data.routePath,
+      }));
+    }
   });
 
   useSocket(socket, "ambulance:status-change", (data) => {
@@ -111,6 +133,7 @@ export default function useTrackingAmbulances({ isUserViewer }) {
     ambulances,
     hospitals,
     activeEmergency,
+    activeRoute,
     assignedAmbulanceId,
     loading,
     refreshTrackingData,

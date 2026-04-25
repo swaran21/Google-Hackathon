@@ -21,6 +21,7 @@ export default function TrackingPage() {
     ambulances,
     hospitals,
     activeEmergency,
+    activeRoute,
     assignedAmbulanceId,
     loading,
     refreshTrackingData,
@@ -280,13 +281,27 @@ export default function TrackingPage() {
                 >
                   Status: {activeEmergency.status}
                 </span>
-                {activeEmergency.status === 'en_route' && (
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase' }}>
+                {activeEmergency.status === "en_route" && (
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: "#ef4444",
+                      textTransform: "uppercase",
+                    }}
+                  >
                     🚑 Ambulance heading to you
                   </span>
                 )}
-                {activeEmergency.status === 'at_scene' && (
-                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase' }}>
+                {activeEmergency.status === "at_scene" && (
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: "#3b82f6",
+                      textTransform: "uppercase",
+                    }}
+                  >
                     🏥 En route to hospital
                   </span>
                 )}
@@ -305,7 +320,8 @@ export default function TrackingPage() {
           style={{
             flex: 1,
             display: "grid",
-            gridTemplateColumns: (isUserViewer && activeEmergency) ? "1fr" : "1fr 320px",
+            gridTemplateColumns:
+              isUserViewer && activeEmergency ? "1fr" : "1fr 320px",
             gap: "20px",
             minHeight: 0,
             marginBottom: "16px",
@@ -322,6 +338,7 @@ export default function TrackingPage() {
             onOpenDispatchPanel={openDispatchPanel}
             activeEmergency={activeEmergency}
             assignedHospital={assignedHospital}
+            activeRoute={activeRoute}
           />
 
           {/* Fleet sidebar: hidden for focused user view */}

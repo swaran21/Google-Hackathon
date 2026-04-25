@@ -1,6 +1,48 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
+const SAVED_LOCATION_KEY = "resqnet_user_location";
+
+const readSavedLocation = () => {
+  try {
+    const raw = localStorage.getItem(SAVED_LOCATION_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (
+      !Number.isFinite(parsed?.latitude) ||
+      !Number.isFinite(parsed?.longitude)
+    ) {
+      return null;
+    }
+
+    return {
+      latitude: parsed.latitude,
+      longitude: parsed.longitude,
+      permissionAsked: true,
+      granted: true,
+      isFallback: !!parsed.isFallback,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const persistLocation = (next) => {
+  if (!Number.isFinite(next?.latitude) || !Number.isFinite(next?.longitude)) {
+    return;
+  }
+
+  localStorage.setItem(
+    SAVED_LOCATION_KEY,
+    JSON.stringify({
+      latitude: next.latitude,
+      longitude: next.longitude,
+      isFallback: !!next.isFallback,
+    }),
+  );
+};
+
 /**
  * Custom hook for Socket.io event listening.
  * Automatically subscribes/unsubscribes on mount/unmount.
@@ -23,13 +65,16 @@ export const useGeolocation = () => {
     longitude: 78.533894,
   };
 
+  const savedLocation = readSavedLocation();
+
   const [location, setLocation] = useState({
-    latitude: null,
-    longitude: null,
+    latitude: savedLocation?.latitude ?? null,
+    longitude: savedLocation?.longitude ?? null,
     loading: false,
     error: null,
-    permissionAsked: false,
-    granted: false,
+    permissionAsked: savedLocation?.permissionAsked ?? false,
+    granted: savedLocation?.granted ?? false,
+    isFallback: savedLocation?.isFallback ?? false,
   });
 
   const requestLocation = () => {
@@ -60,9 +105,11 @@ export const useGeolocation = () => {
             loading: false,
             permissionAsked: true,
             granted: true,
+            isFallback: false,
             error: null,
           };
           setLocation(next);
+          persistLocation(next);
           resolve(next);
         },
         (err) => {
@@ -84,14 +131,16 @@ export const useGeolocation = () => {
   };
 
   const useTestLocation = () => {
-    setLocation({
+    const next = {
       ...DEFAULT_TEST_LOCATION,
       loading: false,
       permissionAsked: true,
       granted: false,
       error: null,
       isFallback: true,
-    });
+    };
+    setLocation(next);
+    persistLocation(next);
   };
 
   return {

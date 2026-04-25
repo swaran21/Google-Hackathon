@@ -184,6 +184,7 @@ export default function TrackingMapCard({
   onOpenDispatchPanel,
   activeEmergency,
   assignedHospital,
+  activeRoute,
 }) {
   const [zoomLevel, setZoomLevel] = useState(12);
   const [mapBounds, setMapBounds] = useState(null);
@@ -250,7 +251,14 @@ export default function TrackingMapCard({
 
     if (!Number.isFinite(mapDensity.maxHospitals)) return fallback;
     return fallback.slice(0, mapDensity.maxHospitals);
-  }, [hospitals, mapBounds, mapDensity.maxHospitals, mapDensity.showHospitals, isUserViewer, assignedHospital]);
+  }, [
+    hospitals,
+    mapBounds,
+    mapDensity.maxHospitals,
+    mapDensity.showHospitals,
+    isUserViewer,
+    assignedHospital,
+  ]);
 
   return (
     <div
@@ -276,297 +284,354 @@ export default function TrackingMapCard({
         <ViewportTracker onViewportChange={handleViewportChange} />
 
         {/* Phase-aware route polyline for user's active emergency */}
-        {isUserViewer && activeEmergency && assignedAmbulanceId && (() => {
-          const dispAmb = filteredAmbulances.find(a => a._id?.toString() === assignedAmbulanceId);
-          if (!dispAmb || !hasValidCoords(dispAmb)) return null;
+        {isUserViewer &&
+          activeEmergency &&
+          assignedAmbulanceId &&
+          (() => {
+            const dispAmb = filteredAmbulances.find(
+              (a) => a._id?.toString() === assignedAmbulanceId,
+            );
+            if (!dispAmb || !hasValidCoords(dispAmb)) return null;
 
-          const ambPos = [dispAmb.location.coordinates[1], dispAmb.location.coordinates[0]];
-          const emCoords = activeEmergency.location?.coordinates;
-          const emPos = emCoords ? [emCoords[1], emCoords[0]] : null;
-          const hospCoords = assignedHospital?.location?.coordinates;
-          const hospPos = hospCoords ? [hospCoords[1], hospCoords[0]] : null;
-          const status = activeEmergency.status;
+            const ambPos = [
+              dispAmb.location.coordinates[1],
+              dispAmb.location.coordinates[0],
+            ];
+            const emCoords = activeEmergency.location?.coordinates;
+            const emPos = emCoords ? [emCoords[1], emCoords[0]] : null;
+            const hospCoords = assignedHospital?.location?.coordinates;
+            const hospPos = hospCoords ? [hospCoords[1], hospCoords[0]] : null;
+            const status = activeEmergency.status;
 
-          const isPhase2 = status === 'at_scene' && hospPos;
+            const isPhase2 = status === "at_scene" && hospPos;
 
-          return (
-            <>
-              {/* SOS marker for patient location (Phase 1 only) */}
-              {emPos && !isPhase2 && (
-                <Marker position={emPos} icon={emergencyIcon}>
-                  <Popup>
-                    <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
-                      <span style={{ fontWeight: 800, color: '#f97316' }}>Your SOS Location</span>
-                    </div>
-                  </Popup>
-                </Marker>
-              )}
-
-              {/* Assigned hospital highlighted marker */}
-              {hospPos && (
-                <Marker position={hospPos} icon={assignedHospitalIcon}>
-                  <Popup>
-                    <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
-                      <span style={{ fontWeight: 800, color: '#3b82f6' }}>Destination: {assignedHospital?.name}</span>
-                    </div>
-                  </Popup>
-                </Marker>
-              )}
-
-              {/* Ambulance marker */}
-              <Marker
-                position={ambPos}
-                icon={createIcon(status === "at_scene" ? "🚨" : "🚑", 36, true)}
-              >
-                <Popup>
-                  <div style={{ padding: '4px', fontFamily: 'var(--font-family)' }}>
-                    <span style={{ fontWeight: 800, color: '#ef4444' }}>
-                      {dispAmb.vehicleNumber} • {status === "at_scene" ? "Transporting" : "En Route"}
-                    </span>
-                  </div>
-                </Popup>
-              </Marker>
-
-              {/* Phase-aware route polyline */}
-              {isPhase2 && hospPos ? (
-                <Polyline
-                  positions={[ambPos, hospPos]}
-                  pathOptions={{ color: '#3b82f6', weight: 4, dashArray: '12, 8', opacity: 0.7 }}
-                />
-              ) : emPos ? (
-                <Polyline
-                  positions={[ambPos, emPos]}
-                  pathOptions={{ color: '#ef4444', weight: 4, dashArray: '12, 8', opacity: 0.7 }}
-                />
-              ) : null}
-            </>
-          );
-        })()}
-
-        {/* Generic ambulance markers — hidden for focused user view */}
-        {(!isUserViewer || !activeEmergency) && visibleAmbulances.map((amb) => (
-          <Marker
-            key={amb._id}
-            position={[
-              amb.location.coordinates[1],
-              amb.location.coordinates[0],
-            ]}
-            icon={
-              amb.status === "available"
-                ? createIcon("🚑", 32, false)
-                : createIcon("🚨", 36, true)
-            }
-          >
-            <Popup>
-              <div
-                style={{
-                  padding: "4px",
-                  minWidth: "200px",
-                  fontFamily: "var(--font-family)",
-                }}
-              >
-                {assignedAmbulanceId && amb._id === assignedAmbulanceId && (
-                  <div
-                    style={{
-                      marginBottom: "8px",
-                      fontSize: "9px",
-                      fontWeight: 800,
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                      color: "#ef4444",
-                    }}
-                  >
-                    Linked To Your SOS
-                  </div>
+            return (
+              <>
+                {/* SOS marker for patient location (Phase 1 only) */}
+                {emPos && !isPhase2 && (
+                  <Marker position={emPos} icon={emergencyIcon}>
+                    <Popup>
+                      <div
+                        style={{
+                          padding: "4px",
+                          fontFamily: "var(--font-family)",
+                        }}
+                      >
+                        <span style={{ fontWeight: 800, color: "#f97316" }}>
+                          Your SOS Location
+                        </span>
+                      </div>
+                    </Popup>
+                  </Marker>
                 )}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 900,
-                      fontSize: "0.875rem",
-                      color: "#1e293b",
-                    }}
-                  >
-                    {amb.vehicleNumber}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      padding: "2px 10px",
-                      borderRadius: "9999px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      background:
-                        amb.status === "available" ? "#dcfce7" : "#fee2e2",
-                      color: amb.status === "available" ? "#166534" : "#991b1b",
-                    }}
-                  >
-                    {amb.status}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    borderTop: "1px solid #f1f5f9",
-                    paddingTop: "8px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontSize: "12px",
-                      color: "#64748b",
-                    }}
-                  >
-                    <User size={12} /> {amb.driverName}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontSize: "12px",
-                      color: "#64748b",
-                    }}
-                  >
-                    <Shield size={12} /> {amb.equipmentLevel?.replace("_", " ")}
-                  </div>
 
-                  {isUserViewer && amb._id === assignedAmbulanceId && (
-                    <button
-                      onClick={() => onOpenDispatchPanel(amb._id)}
-                      className="cursor-pointer"
+                {/* Assigned hospital highlighted marker */}
+                {hospPos && (
+                  <Marker position={hospPos} icon={assignedHospitalIcon}>
+                    <Popup>
+                      <div
+                        style={{
+                          padding: "4px",
+                          fontFamily: "var(--font-family)",
+                        }}
+                      >
+                        <span style={{ fontWeight: 800, color: "#3b82f6" }}>
+                          Destination: {assignedHospital?.name}
+                        </span>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+
+                {/* Ambulance marker */}
+                <Marker
+                  position={ambPos}
+                  icon={createIcon(
+                    status === "at_scene" ? "🚨" : "🚑",
+                    36,
+                    true,
+                  )}
+                >
+                  <Popup>
+                    <div
                       style={{
-                        marginTop: "8px",
-                        border: "none",
-                        borderRadius: "8px",
-                        padding: "8px 10px",
-                        background: "#1d4ed8",
-                        color: "#fff",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
+                        padding: "4px",
                         fontFamily: "var(--font-family)",
                       }}
                     >
-                      <MessageSquare size={12} /> Dispatch Interface
-                    </button>
-                  )}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+                      <span style={{ fontWeight: 800, color: "#ef4444" }}>
+                        {dispAmb.vehicleNumber} •{" "}
+                        {status === "at_scene" ? "Transporting" : "En Route"}
+                      </span>
+                    </div>
+                  </Popup>
+                </Marker>
 
-        {/* Generic hospital markers — hidden for focused user view */}
-        {(!isUserViewer || !activeEmergency) && visibleHospitals.map((hosp) => (
-          <Marker
-            key={hosp._id}
-            position={[
-              hosp.location.coordinates[1],
-              hosp.location.coordinates[0],
-            ]}
-            icon={hospitalIcon}
-          >
-            <Popup>
-              <div
-                style={{
-                  padding: "4px",
-                  minWidth: "200px",
-                  fontFamily: "var(--font-family)",
-                }}
-              >
-                <h4
-                  style={{
-                    fontWeight: 700,
-                    color: "#1e293b",
-                    borderBottom: "1px solid #f1f5f9",
-                    paddingBottom: "6px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  🏥 {hosp.name}
-                </h4>
+                {/* Phase-aware route polyline */}
+                {(() => {
+                  const routePositions =
+                    Array.isArray(activeRoute?.path) &&
+                    activeRoute.path.length > 1
+                      ? activeRoute.path
+                      : isPhase2 && hospPos
+                        ? [ambPos, hospPos]
+                        : emPos
+                          ? [ambPos, emPos]
+                          : null;
+
+                  if (!routePositions) return null;
+
+                  const routeColor =
+                    (activeRoute?.phase ||
+                      (isPhase2 ? "to_hospital" : "to_patient")) ===
+                    "to_hospital"
+                      ? "#3b82f6"
+                      : "#ef4444";
+
+                  return (
+                    <Polyline
+                      positions={routePositions}
+                      pathOptions={{
+                        color: routeColor,
+                        weight: 4,
+                        dashArray: "12, 8",
+                        opacity: 0.7,
+                      }}
+                    />
+                  );
+                })()}
+              </>
+            );
+          })()}
+
+        {/* Generic ambulance markers — hidden for focused user view */}
+        {(!isUserViewer || !activeEmergency) &&
+          visibleAmbulances.map((amb) => (
+            <Marker
+              key={amb._id}
+              position={[
+                amb.location.coordinates[1],
+                amb.location.coordinates[0],
+              ]}
+              icon={
+                amb.status === "available"
+                  ? createIcon("🚑", 32, false)
+                  : createIcon("🚨", 36, true)
+              }
+            >
+              <Popup>
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
+                    padding: "4px",
+                    minWidth: "200px",
+                    fontFamily: "var(--font-family)",
                   }}
                 >
+                  {assignedAmbulanceId && amb._id === assignedAmbulanceId && (
+                    <div
+                      style={{
+                        marginBottom: "8px",
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "#ef4444",
+                      }}
+                    >
+                      Linked To Your SOS
+                    </div>
+                  )}
                   <div
                     style={{
-                      background: "#eff6ff",
-                      padding: "8px",
-                      borderRadius: "10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
                     }}
                   >
-                    <p
+                    <span
+                      style={{
+                        fontWeight: 900,
+                        fontSize: "0.875rem",
+                        color: "#1e293b",
+                      }}
+                    >
+                      {amb.vehicleNumber}
+                    </span>
+                    <span
                       style={{
                         fontSize: "10px",
-                        textTransform: "uppercase",
-                        color: "#2563eb",
+                        padding: "2px 10px",
+                        borderRadius: "9999px",
                         fontWeight: 700,
+                        textTransform: "uppercase",
+                        background:
+                          amb.status === "available" ? "#dcfce7" : "#fee2e2",
+                        color:
+                          amb.status === "available" ? "#166534" : "#991b1b",
                       }}
                     >
-                      Beds
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "0.875rem",
-                        fontWeight: 900,
-                        color: "#1e3a5f",
-                      }}
-                    >
-                      {hosp.availableBeds}/{hosp.totalBeds}
-                    </p>
+                      {amb.status}
+                    </span>
                   </div>
                   <div
                     style={{
-                      background: "#fef2f2",
-                      padding: "8px",
-                      borderRadius: "10px",
+                      borderTop: "1px solid #f1f5f9",
+                      paddingTop: "8px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
                     }}
                   >
-                    <p
+                    <div
                       style={{
-                        fontSize: "10px",
-                        textTransform: "uppercase",
-                        color: "#dc2626",
-                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "12px",
+                        color: "#64748b",
                       }}
                     >
-                      ICU
-                    </p>
-                    <p
+                      <User size={12} /> {amb.driverName}
+                    </div>
+                    <div
                       style={{
-                        fontSize: "0.875rem",
-                        fontWeight: 900,
-                        color: "#7f1d1d",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "12px",
+                        color: "#64748b",
                       }}
                     >
-                      {hosp.icuAvailable}/{hosp.icuTotal}
-                    </p>
+                      <Shield size={12} />{" "}
+                      {amb.equipmentLevel?.replace("_", " ")}
+                    </div>
+
+                    {isUserViewer && amb._id === assignedAmbulanceId && (
+                      <button
+                        onClick={() => onOpenDispatchPanel(amb._id)}
+                        className="cursor-pointer"
+                        style={{
+                          marginTop: "8px",
+                          border: "none",
+                          borderRadius: "8px",
+                          padding: "8px 10px",
+                          background: "#1d4ed8",
+                          color: "#fff",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          fontFamily: "var(--font-family)",
+                        }}
+                      >
+                        <MessageSquare size={12} /> Dispatch Interface
+                      </button>
+                    )}
                   </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          ))}
+
+        {/* Generic hospital markers — hidden for focused user view */}
+        {(!isUserViewer || !activeEmergency) &&
+          visibleHospitals.map((hosp) => (
+            <Marker
+              key={hosp._id}
+              position={[
+                hosp.location.coordinates[1],
+                hosp.location.coordinates[0],
+              ]}
+              icon={hospitalIcon}
+            >
+              <Popup>
+                <div
+                  style={{
+                    padding: "4px",
+                    minWidth: "200px",
+                    fontFamily: "var(--font-family)",
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontWeight: 700,
+                      color: "#1e293b",
+                      borderBottom: "1px solid #f1f5f9",
+                      paddingBottom: "6px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    🏥 {hosp.name}
+                  </h4>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#eff6ff",
+                        padding: "8px",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          textTransform: "uppercase",
+                          color: "#2563eb",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Beds
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "0.875rem",
+                          fontWeight: 900,
+                          color: "#1e3a5f",
+                        }}
+                      >
+                        {hosp.availableBeds}/{hosp.totalBeds}
+                      </p>
+                    </div>
+                    <div
+                      style={{
+                        background: "#fef2f2",
+                        padding: "8px",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          textTransform: "uppercase",
+                          color: "#dc2626",
+                          fontWeight: 700,
+                        }}
+                      >
+                        ICU
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "0.875rem",
+                          fontWeight: 900,
+                          color: "#7f1d1d",
+                        }}
+                      >
+                        {hosp.icuAvailable}/{hosp.icuTotal}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
       </MapContainer>
 
       {/* HUD Overlays */}
@@ -578,7 +643,9 @@ export default function TrackingMapCard({
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              background: isDark ? "rgba(10,10,15,0.85)" : "rgba(255,255,255,0.9)",
+              background: isDark
+                ? "rgba(10,10,15,0.85)"
+                : "rgba(255,255,255,0.9)",
               backdropFilter: "blur(20px)",
               border: "1px solid var(--border-glass)",
               padding: "12px 16px",
@@ -591,8 +658,19 @@ export default function TrackingMapCard({
               color: "var(--text-secondary)",
             }}
           >
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444', animation: 'pulse-glow 2s ease-in-out infinite' }} />
-            <span style={{ color: "var(--text-primary)" }}>Emergency Active</span>
+            <div
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "#ef4444",
+                boxShadow: "0 0 8px #ef4444",
+                animation: "pulse-glow 2s ease-in-out infinite",
+              }}
+            />
+            <span style={{ color: "var(--text-primary)" }}>
+              Emergency Active
+            </span>
           </div>
           <div
             style={{
@@ -600,7 +678,9 @@ export default function TrackingMapCard({
               bottom: "16px",
               left: "16px",
               zIndex: 1000,
-              background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
+              background: isDark
+                ? "rgba(10,10,15,0.88)"
+                : "rgba(255,255,255,0.9)",
               backdropFilter: "blur(16px)",
               border: "1px solid var(--border-glass)",
               padding: "10px 12px",
@@ -615,7 +695,7 @@ export default function TrackingMapCard({
           >
             <span>🚑 Ambulance</span>
             <span>•</span>
-            <span>🏥 {assignedHospital?.name || 'Hospital'}</span>
+            <span>🏥 {assignedHospital?.name || "Hospital"}</span>
             <span>•</span>
             <span>🆘 Your Location</span>
           </div>
@@ -628,7 +708,9 @@ export default function TrackingMapCard({
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              background: isDark ? "rgba(10,10,15,0.85)" : "rgba(255,255,255,0.9)",
+              background: isDark
+                ? "rgba(10,10,15,0.85)"
+                : "rgba(255,255,255,0.9)",
               backdropFilter: "blur(20px)",
               border: "1px solid var(--border-glass)",
               padding: "12px 16px",
@@ -650,7 +732,9 @@ export default function TrackingMapCard({
               bottom: "16px",
               left: "16px",
               zIndex: 1000,
-              background: isDark ? "rgba(10,10,15,0.88)" : "rgba(255,255,255,0.9)",
+              background: isDark
+                ? "rgba(10,10,15,0.88)"
+                : "rgba(255,255,255,0.9)",
               backdropFilter: "blur(16px)",
               border: "1px solid var(--border-glass)",
               padding: "10px 12px",
