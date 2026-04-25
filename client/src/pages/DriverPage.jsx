@@ -7,6 +7,7 @@ import { useSocket } from '../hooks/useSocket';
 import { useAuth } from '../context/AuthContext';
 import { showToast } from '../components/Toast';
 import { useTheme } from '../context/ThemeContext';
+import DispatchControlModal from '../components/common/DispatchControlModal';
 import { Navigation, CheckCircle2, XCircle, Play, Pause, MapPin, Activity, Shield, Radio, Loader2, Truck } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
@@ -26,6 +27,7 @@ export default function DriverPage() {
   const [loading, setLoading] = useState(true);
   const [simulating, setSimulating] = useState(false);
   const [simPhase, setSimPhase] = useState(null);
+  const [showDispatchPanel, setShowDispatchPanel] = useState(false);
   const simRef = useRef(null);
   const { isDark } = useTheme();
 
@@ -264,6 +266,16 @@ export default function DriverPage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+                  {em && (
+                    actionBtn(
+                      () => setShowDispatchPanel(true),
+                      'rgba(37,99,235,0.12)',
+                      '#93c5fd',
+                      <Truck size={16} />,
+                      'OPEN CHAT & CALL',
+                      { border: '1px solid rgba(37,99,235,0.35)' }
+                    )
+                  )}
                   {amb.status === 'dispatched' && (<>
                     {actionBtn(() => handleAction('accept', { ambulanceId: amb._id }, 'Mission Accepted'), '#16a34a', '#fff', <CheckCircle2 size={16} />, 'ACCEPT DISPATCH')}
                     {actionBtn(() => handleAction('reject', { ambulanceId: amb._id }, 'Mission Rejected', 'warning'), 'var(--bg-glass)', 'var(--text-secondary)', <XCircle size={16} />, 'REJECT', { border: '1px solid var(--border-glass)' })}
@@ -292,6 +304,17 @@ export default function DriverPage() {
           </div>
         </div>
       </div>
+
+      <DispatchControlModal
+        isOpen={showDispatchPanel}
+        emergencyId={em?._id || null}
+        emergencyChatSeed={em?.chatThread || []}
+        ambulance={amb || null}
+        hospitalPhone={em?.assignedHospital?.phone || ''}
+        patientPhone={em?.patientPhone || ''}
+        onClose={() => setShowDispatchPanel(false)}
+        title="Driver Dispatch Console"
+      />
     </div>
   );
 }
