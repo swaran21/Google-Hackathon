@@ -1,5 +1,10 @@
 const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
+const { getRouteWithFallback } = require("../services/routingService");
+
+const hasPoint = (entity) =>
+  Array.isArray(entity?.location?.coordinates) &&
+  entity.location.coordinates.length === 2;
 
 /**
  * Socket.io event handler setup.
@@ -169,6 +174,133 @@ const setupSocket = (io) => {
         console.error("❌ Socket ambulance update error:", error.message);
         socket.emit("error", {
           message: "Failed to update ambulance location",
+        });
+      }
+    });
+
+    // Driver live GPS update (real device telemetry)
+    socket.on("driver:locationUpdate", async (data) => {
+      try {
+        const { ambulanceId, latitude, longitude, status } = data || {};
+
+        if (!ambulanceId) {
+          socket.emit("error", {
+            message: "ambulanceId is required",
+          });
+          return;
+        }
+
+        const update = {};
+
+        if (
+          Number.isFinite(Number(latitude)) &&
+          Number.isFinite(Number(longitude))
+        ) {
+          update.location = {
+            type: "Point",
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          };
+        }
+
+        if (
+          status &&
+          [
+            "available",
+            "dispatched",
+            "en_route",
+            "at_scene",
+            "returning",
+            "offline",
+          ].includes(status)
+        ) {
+          update.status = status;
+        }
+
+        const ambulance = await Ambulance.findByIdAndUpdate(
+          ambulanceId,
+          update,
+          {
+            new: true,
+          },
+        );
+
+        if (!ambulance) {
+          socket.emit("error", { message: "Ambulance not found" });
+          return;
+        }
+
+        let emergency = null;
+        let routeMeta = {
+          phase: null,
+          routePath: null,
+          routeDistanceKm: null,
+          routeEtaMinutes: null,
+        };
+
+        if (ambulance.currentEmergency) {
+          emergency = await Emergency.findById(
+            ambulance.currentEmergency,
+          ).populate("assignedHospital");
+
+          if (emergency && hasPoint(emergency) && hasPoint(ambulance)) {
+            const [ambLng, ambLat] = ambulance.location.coordinates;
+            const [emLng, emLat] = emergency.location.coordinates;
+            const [hospLng, hospLat] =
+              emergency.assignedHospital?.location?.coordinates || [];
+
+            const isPhase2 =
+              ambulance.status === "at_scene" &&
+              Number.isFinite(hospLat) &&
+              Number.isFinite(hospLng);
+
+            const toLat = isPhase2 ? hospLat : emLat;
+            const toLng = isPhase2 ? hospLng : emLng;
+
+            const routeResult = await getRouteWithFallback(
+              ambLat,
+              ambLng,
+              toLat,
+              toLng,
+            );
+
+            routeMeta = {
+              phase: isPhase2 ? "to_hospital" : "to_patient",
+              routePath: routeResult.path,
+              routeDistanceKm: routeResult.route?.distance ?? null,
+              routeEtaMinutes: routeResult.route?.duration ?? null,
+            };
+          }
+        }
+
+        const payload = {
+          ambulanceId: ambulance._id,
+          location: ambulance.location,
+          vehicleNumber: ambulance.vehicleNumber,
+          status: ambulance.status,
+          source: "driver-gps",
+          ...routeMeta,
+        };
+
+        io.emit("ambulance:location-update", payload);
+        io.to("admin").emit("ambulance:location-update", payload);
+
+        if (emergency?._id) {
+          io.to(`emergency:${emergency._id}`).emit(
+            "ambulance:tracking",
+            payload,
+          );
+        }
+
+        if (emergency?.assignedHospital?._id) {
+          io.to(`hospital:${emergency.assignedHospital._id}`).emit(
+            "ambulance:tracking",
+            payload,
+          );
+        }
+      } catch (error) {
+        console.error("❌ Driver GPS update error:", error.message);
+        socket.emit("error", {
+          message: "Failed to process driver GPS update",
         });
       }
     });

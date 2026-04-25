@@ -55,7 +55,11 @@ export default function DriverPage() {
   const [simulating, setSimulating] = useState(false);
   const [simPhase, setSimPhase] = useState(null);
   const [showDispatchPanel, setShowDispatchPanel] = useState(false);
+  const [gpsStreaming, setGpsStreaming] = useState(false);
+  const [gpsPermission, setGpsPermission] = useState("unknown");
   const simRef = useRef(null);
+  const gpsWatchRef = useRef(null);
+  const lastGpsEmitRef = useRef(0);
   const { isDark } = useTheme();
 
   // Auto-detect driver's own ambulance from their user profile
@@ -130,6 +134,84 @@ export default function DriverPage() {
     setSimulating(false);
     showToast("GPS Stream Paused", "warning");
   };
+
+  const stopLiveGps = () => {
+    if (gpsWatchRef.current !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(gpsWatchRef.current);
+      gpsWatchRef.current = null;
+    }
+    setGpsStreaming(false);
+    socket.emit("driver:locationUpdate", {
+      ambulanceId: myAmbulanceId,
+      status: "offline",
+    });
+    showToast("Live GPS stopped", "warning");
+  };
+
+  const startLiveGps = () => {
+    if (!myAmbulanceId) return;
+    if (!navigator.geolocation) {
+      setGpsPermission("unsupported");
+      showToast("Geolocation not supported on this device", "error");
+      return;
+    }
+
+    if (gpsStreaming) return;
+
+    const minIntervalMs = 6000;
+    setGpsPermission("requesting");
+
+    gpsWatchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setGpsPermission("granted");
+
+        const now = Date.now();
+        if (now - lastGpsEmitRef.current < minIntervalMs) return;
+        lastGpsEmitRef.current = now;
+
+        const latitude = pos.coords.latitude;
+        const longitude = pos.coords.longitude;
+
+        socket.emit("driver:locationUpdate", {
+          ambulanceId: myAmbulanceId,
+          latitude,
+          longitude,
+          status: amb?.status || "en_route",
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading,
+          timestamp: new Date().toISOString(),
+        });
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsPermission("denied");
+          showToast("Location permission denied. Enable GPS permission.", "error");
+        } else {
+          setGpsPermission("error");
+          showToast("Unable to read live GPS location", "error");
+        }
+        stopLiveGps();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 2000,
+      },
+    );
+
+    setGpsStreaming(true);
+    showToast("Live GPS started (updates every ~6 seconds)", "success");
+  };
+
+  useEffect(() => {
+    return () => {
+      clearInterval(simRef.current);
+      if (gpsWatchRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current);
+      }
+    };
+  }, []);
 
   // Live socket updates for THIS ambulance only
   useSocket(socket, "ambulance:location-update", (data) => {
@@ -481,7 +563,7 @@ export default function DriverPage() {
                   color: "var(--text-secondary)",
                 }}
               >
-                Online
+                {gpsStreaming ? "GPS LIVE" : "Online"}
               </span>
             </div>
           </div>
@@ -745,6 +827,18 @@ export default function DriverPage() {
                       "OPEN CHAT & CALL",
                       { border: "1px solid rgba(37,99,235,0.35)" },
                     )}
+                  {actionBtn(
+                    gpsStreaming ? stopLiveGps : startLiveGps,
+                    gpsStreaming ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.14)",
+                    gpsStreaming ? "#86efac" : "#fcd34d",
+                    gpsStreaming ? <Pause size={16} /> : <Play size={16} />,
+                    gpsStreaming ? "STOP LIVE GPS" : "START LIVE GPS",
+                    {
+                      border: gpsStreaming
+                        ? "1px solid rgba(34,197,94,0.35)"
+                        : "1px solid rgba(245,158,11,0.35)",
+                    },
+                  )}
                   {amb.status === "dispatched" && (
                     <>
                       {actionBtn(
@@ -866,6 +960,19 @@ export default function DriverPage() {
                         }}
                       />{" "}
                       Monitoring Emergency Frequencies...
+                    </div>
+                  )}
+                  {gpsPermission === "denied" && (
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "#fca5a5",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      GPS permission denied on this browser
                     </div>
                   )}
                 </div>
