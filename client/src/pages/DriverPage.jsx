@@ -51,6 +51,9 @@ function RecenterMap({ center }) {
 export default function DriverPage() {
   const { user } = useAuth();
   const [driverData, setDriverData] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [activeView, setActiveView] = useState("live");
   const [loading, setLoading] = useState(true);
   const [simulating, setSimulating] = useState(false);
   const [simPhase, setSimPhase] = useState(null);
@@ -73,7 +76,20 @@ export default function DriverPage() {
       return;
     }
     fetchDriverStatus(myAmbulanceId);
+    fetchDriverHistory();
   }, [myAmbulanceId]);
+
+  const fetchDriverHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const res = await api.get("/driver/history");
+      setHistory(res.data.data || []);
+    } catch {
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const fetchDriverStatus = async (ambId) => {
     try {
@@ -186,7 +202,10 @@ export default function DriverPage() {
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
           setGpsPermission("denied");
-          showToast("Location permission denied. Enable GPS permission.", "error");
+          showToast(
+            "Location permission denied. Enable GPS permission.",
+            "error",
+          );
         } else {
           setGpsPermission("error");
           showToast("Unable to read live GPS location", "error");
@@ -569,433 +588,689 @@ export default function DriverPage() {
           </div>
         </div>
 
-        {/* Full-width map + controls (NO sidebar fleet list) */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-            flex: 1,
-            minHeight: "500px",
+            gap: "10px",
+            marginBottom: "14px",
           }}
         >
+          {[
+            { key: "live", label: "Live Navigation" },
+            { key: "history", label: "Case History" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveView(tab.key)}
+              className="cursor-pointer"
+              style={{
+                borderRadius: "10px",
+                border: "1px solid var(--border-glass)",
+                background:
+                  activeView === tab.key
+                    ? "rgba(220,38,38,0.18)"
+                    : "var(--bg-glass)",
+                color:
+                  activeView === tab.key ? "#fecaca" : "var(--text-secondary)",
+                padding: "9px 14px",
+                fontSize: "11px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontFamily: "var(--font-family)",
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeView === "live" ? (
           <div
             style={{
-              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
               flex: 1,
-              borderRadius: "28px",
-              overflow: "hidden",
-              border: "1px solid var(--border-glass)",
-              minHeight: "400px",
-              background: isDark ? "#0f172a" : "#f8fafc",
+              minHeight: "500px",
             }}
           >
-            <MapContainer
-              center={coords.amb || [17.385, 78.4867]}
-              zoom={14}
-              zoomControl={false}
-              style={{
-                height: "100%",
-                width: "100%",
-                position: "absolute",
-                top: 0,
-                left: 0,
-              }}
-            >
-              <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
-              {coords.amb && <RecenterMap center={coords.amb} />}
-
-              {/* Only 3 markers ever: own ambulance, patient, hospital */}
-              {coords.amb && <Marker position={coords.amb} icon={ambIcon} />}
-              {coords.em && !isPhase2 && (
-                <Marker position={coords.em} icon={emIcon} />
-              )}
-              {coords.hosp && <Marker position={coords.hosp} icon={hospIcon} />}
-
-              {/* Phase-aware route polyline */}
-              {routeLine && (
-                <Polyline
-                  positions={routeLine.positions}
-                  pathOptions={{
-                    color: routeLine.color,
-                    weight: 3,
-                    dashArray: "10, 10",
-                    opacity: 0.6,
-                  }}
-                />
-              )}
-            </MapContainer>
-
-            {/* GPS coordinates overlay */}
-            {coords.amb && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "20px",
-                  left: "20px",
-                  zIndex: 1000,
-                  background: isDark
-                    ? "rgba(10,10,15,0.85)"
-                    : "rgba(255,255,255,0.9)",
-                  backdropFilter: "blur(20px)",
-                  border: "1px solid var(--border-glass)",
-                  padding: "12px 16px",
-                  borderRadius: "14px",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.15em",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Satellite Lock
-                </p>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <div
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: "#ef4444",
-                      boxShadow: "0 0 8px #ef4444",
-                      animation: "pulse-glow 2s ease-in-out infinite",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontFamily: "monospace",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {coords.amb[0].toFixed(5)}, {coords.amb[1].toFixed(5)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Phase indicator on map */}
-            {phaseInfo && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "20px",
-                  right: "20px",
-                  zIndex: 1000,
-                  background: isDark
-                    ? "rgba(10,10,15,0.85)"
-                    : "rgba(255,255,255,0.9)",
-                  backdropFilter: "blur(20px)",
-                  border: `1px solid ${phaseInfo.color}30`,
-                  padding: "10px 14px",
-                  borderRadius: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <Truck size={14} style={{ color: phaseInfo.color }} />
-                <span
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    color: phaseInfo.color,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
-                >
-                  {isPhase2 ? "→ Hospital" : "→ Patient"}
-                </span>
-              </div>
-            )}
-
-            {/* Map legend */}
             <div
               style={{
-                position: "absolute",
-                bottom: "16px",
-                left: "16px",
-                zIndex: 1000,
-                background: isDark
-                  ? "rgba(10,10,15,0.88)"
-                  : "rgba(255,255,255,0.9)",
-                backdropFilter: "blur(16px)",
+                position: "relative",
+                flex: 1,
+                borderRadius: "28px",
+                overflow: "hidden",
                 border: "1px solid var(--border-glass)",
-                padding: "10px 14px",
-                borderRadius: "12px",
-                fontSize: "11px",
-                fontWeight: 700,
-                color: "var(--text-secondary)",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
+                minHeight: "400px",
+                background: isDark ? "#0f172a" : "#f8fafc",
               }}
             >
-              {coords.amb ? (
-                <>
-                  <span>🚑 You</span>
-                  {coords.em && !isPhase2 && (
-                    <>
-                      <span>•</span>
-                      <span>🆘 Patient</span>
-                    </>
-                  )}
-                  {coords.hosp && (
-                    <>
-                      <span>•</span>
-                      <span>🏥 Hospital</span>
-                    </>
-                  )}
-                </>
-              ) : (
-                <span style={{ color: "#ef4444" }}>⚠️ GPS Signal Offline</span>
-              )}
-            </div>
-          </div>
-
-          {/* Action control panel */}
-          <div
-            className="glass-card"
-            style={{ padding: "28px", borderRadius: "24px" }}
-          >
-            {amb ? (
-              <div
+              <MapContainer
+                center={coords.amb || [17.385, 78.4867]}
+                zoom={14}
+                zoomControl={false}
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "24px",
+                  height: "100%",
+                  width: "100%",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
                 }}
               >
+                <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
+                {coords.amb && <RecenterMap center={coords.amb} />}
+
+                {/* Only 3 markers ever: own ambulance, patient, hospital */}
+                {coords.amb && <Marker position={coords.amb} icon={ambIcon} />}
+                {coords.em && !isPhase2 && (
+                  <Marker position={coords.em} icon={emIcon} />
+                )}
+                {coords.hosp && (
+                  <Marker position={coords.hosp} icon={hospIcon} />
+                )}
+
+                {/* Phase-aware route polyline */}
+                {routeLine && (
+                  <Polyline
+                    positions={routeLine.positions}
+                    pathOptions={{
+                      color: routeLine.color,
+                      weight: 3,
+                      dashArray: "10, 10",
+                      opacity: 0.6,
+                    }}
+                  />
+                )}
+              </MapContainer>
+
+              {/* GPS coordinates overlay */}
+              {coords.amb && (
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "20px" }}
+                  style={{
+                    position: "absolute",
+                    top: "20px",
+                    left: "20px",
+                    zIndex: 1000,
+                    background: isDark
+                      ? "rgba(10,10,15,0.85)"
+                      : "rgba(255,255,255,0.9)",
+                    backdropFilter: "blur(20px)",
+                    border: "1px solid var(--border-glass)",
+                    padding: "12px 16px",
+                    borderRadius: "14px",
+                  }}
                 >
-                  <div
+                  <p
                     style={{
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "18px",
-                      background: "var(--bg-glass)",
-                      border: "1px solid var(--border-glass)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#ef4444",
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.15em",
+                      marginBottom: "4px",
                     }}
                   >
-                    <Navigation size={28} />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: "1.35rem", fontWeight: 900 }}>
-                      {amb.vehicleNumber}
-                    </h3>
-                    <p
+                    Satellite Lock
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
                       style={{
-                        fontSize: "11px",
-                        color: "var(--text-muted)",
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background: "#ef4444",
+                        boxShadow: "0 0 8px #ef4444",
+                        animation: "pulse-glow 2s ease-in-out infinite",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        fontFamily: "monospace",
                         fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.15em",
                       }}
                     >
-                      {amb.driverName} • {amb.equipmentLevel?.replace("_", " ")}
-                    </p>
+                      {coords.amb[0].toFixed(5)}, {coords.amb[1].toFixed(5)}
+                    </span>
                   </div>
                 </div>
+              )}
+
+              {/* Phase indicator on map */}
+              {phaseInfo && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "20px",
+                    right: "20px",
+                    zIndex: 1000,
+                    background: isDark
+                      ? "rgba(10,10,15,0.85)"
+                      : "rgba(255,255,255,0.9)",
+                    backdropFilter: "blur(20px)",
+                    border: `1px solid ${phaseInfo.color}30`,
+                    padding: "10px 14px",
+                    borderRadius: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <Truck size={14} style={{ color: phaseInfo.color }} />
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      color: phaseInfo.color,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    {isPhase2 ? "→ Hospital" : "→ Patient"}
+                  </span>
+                </div>
+              )}
+
+              {/* Map legend */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "16px",
+                  left: "16px",
+                  zIndex: 1000,
+                  background: isDark
+                    ? "rgba(10,10,15,0.88)"
+                    : "rgba(255,255,255,0.9)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid var(--border-glass)",
+                  padding: "10px 14px",
+                  borderRadius: "12px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "var(--text-secondary)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                {coords.amb ? (
+                  <>
+                    <span>🚑 You</span>
+                    {coords.em && !isPhase2 && (
+                      <>
+                        <span>•</span>
+                        <span>🆘 Patient</span>
+                      </>
+                    )}
+                    {coords.hosp && (
+                      <>
+                        <span>•</span>
+                        <span>🏥 Hospital</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span style={{ color: "#ef4444" }}>
+                    ⚠️ GPS Signal Offline
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Action control panel */}
+            <div
+              className="glass-card"
+              style={{ padding: "28px", borderRadius: "24px" }}
+            >
+              {amb ? (
                 <div
                   style={{
                     display: "flex",
                     flexWrap: "wrap",
                     alignItems: "center",
-                    gap: "12px",
+                    justifyContent: "space-between",
+                    gap: "24px",
                   }}
                 >
-                  {em &&
-                    actionBtn(
-                      () => setShowDispatchPanel(true),
-                      "rgba(37,99,235,0.12)",
-                      "#93c5fd",
-                      <Truck size={16} />,
-                      "OPEN CHAT & CALL",
-                      { border: "1px solid rgba(37,99,235,0.35)" },
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "20px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "56px",
+                        height: "56px",
+                        borderRadius: "18px",
+                        background: "var(--bg-glass)",
+                        border: "1px solid var(--border-glass)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ef4444",
+                      }}
+                    >
+                      <Navigation size={28} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "1.35rem", fontWeight: 900 }}>
+                        {amb.vehicleNumber}
+                      </h3>
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: "var(--text-muted)",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.15em",
+                        }}
+                      >
+                        {amb.driverName} •{" "}
+                        {amb.equipmentLevel?.replace("_", " ")}
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    {em &&
+                      actionBtn(
+                        () => setShowDispatchPanel(true),
+                        "rgba(37,99,235,0.12)",
+                        "#93c5fd",
+                        <Truck size={16} />,
+                        "OPEN CHAT & CALL",
+                        { border: "1px solid rgba(37,99,235,0.35)" },
+                      )}
+                    {actionBtn(
+                      gpsStreaming ? stopLiveGps : startLiveGps,
+                      gpsStreaming
+                        ? "rgba(34,197,94,0.15)"
+                        : "rgba(245,158,11,0.14)",
+                      gpsStreaming ? "#86efac" : "#fcd34d",
+                      gpsStreaming ? <Pause size={16} /> : <Play size={16} />,
+                      gpsStreaming ? "STOP LIVE GPS" : "START LIVE GPS",
+                      {
+                        border: gpsStreaming
+                          ? "1px solid rgba(34,197,94,0.35)"
+                          : "1px solid rgba(245,158,11,0.35)",
+                      },
                     )}
-                  {actionBtn(
-                    gpsStreaming ? stopLiveGps : startLiveGps,
-                    gpsStreaming ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.14)",
-                    gpsStreaming ? "#86efac" : "#fcd34d",
-                    gpsStreaming ? <Pause size={16} /> : <Play size={16} />,
-                    gpsStreaming ? "STOP LIVE GPS" : "START LIVE GPS",
-                    {
-                      border: gpsStreaming
-                        ? "1px solid rgba(34,197,94,0.35)"
-                        : "1px solid rgba(245,158,11,0.35)",
-                    },
-                  )}
-                  {amb.status === "dispatched" && (
-                    <>
-                      {actionBtn(
-                        () =>
-                          handleAction(
-                            "accept",
-                            { ambulanceId: amb._id },
-                            "Mission Accepted",
-                          ),
-                        "#16a34a",
-                        "#fff",
-                        <CheckCircle2 size={16} />,
-                        "ACCEPT DISPATCH",
-                      )}
-                      {actionBtn(
-                        () =>
-                          handleAction(
-                            "reject",
-                            { ambulanceId: amb._id },
-                            "Mission Rejected",
-                            "warning",
-                          ),
-                        "var(--bg-glass)",
-                        "var(--text-secondary)",
-                        <XCircle size={16} />,
-                        "REJECT",
-                        { border: "1px solid var(--border-glass)" },
-                      )}
-                    </>
-                  )}
-                  {amb.status === "en_route" && (
-                    <>
-                      {actionBtn(
-                        simulating ? stopSimulation : startSimulation,
-                        simulating ? "rgba(234,179,8,0.12)" : "#2563eb",
-                        simulating ? "#eab308" : "#fff",
-                        simulating ? <Pause size={16} /> : <Play size={16} />,
-                        simulating ? "PAUSE GPS" : "NAVIGATE TO PATIENT",
-                        simulating
-                          ? { border: "1px solid rgba(234,179,8,0.3)" }
-                          : {},
-                      )}
-                      {actionBtn(
-                        () =>
-                          handleAction(
-                            "update-status",
-                            { ambulanceId: amb._id, status: "at_scene" },
-                            "Unit At Scene — Patient Picked Up",
-                          ),
-                        "var(--bg-glass)",
-                        "var(--text-primary)",
-                        <MapPin size={16} />,
-                        "MARK PATIENT PICKED UP",
-                        { border: "1px solid var(--border-glass)" },
-                      )}
-                    </>
-                  )}
-                  {amb.status === "at_scene" && em?.assignedHospital && (
-                    <>
-                      {actionBtn(
-                        simulating ? stopSimulation : startSimulation,
-                        simulating ? "rgba(234,179,8,0.12)" : "#3b82f6",
-                        simulating ? "#eab308" : "#fff",
-                        simulating ? <Pause size={16} /> : <Play size={16} />,
-                        simulating ? "PAUSE GPS" : "NAVIGATE TO HOSPITAL",
-                        simulating
-                          ? { border: "1px solid rgba(234,179,8,0.3)" }
-                          : {},
-                      )}
-                      {actionBtn(
+                    {amb.status === "dispatched" && (
+                      <>
+                        {actionBtn(
+                          () =>
+                            handleAction(
+                              "accept",
+                              { ambulanceId: amb._id },
+                              "Mission Accepted",
+                            ),
+                          "#16a34a",
+                          "#fff",
+                          <CheckCircle2 size={16} />,
+                          "ACCEPT DISPATCH",
+                        )}
+                        {actionBtn(
+                          () =>
+                            handleAction(
+                              "reject",
+                              { ambulanceId: amb._id },
+                              "Mission Rejected",
+                              "warning",
+                            ),
+                          "var(--bg-glass)",
+                          "var(--text-secondary)",
+                          <XCircle size={16} />,
+                          "REJECT",
+                          { border: "1px solid var(--border-glass)" },
+                        )}
+                      </>
+                    )}
+                    {amb.status === "en_route" && (
+                      <>
+                        {actionBtn(
+                          simulating ? stopSimulation : startSimulation,
+                          simulating ? "rgba(234,179,8,0.12)" : "#2563eb",
+                          simulating ? "#eab308" : "#fff",
+                          simulating ? <Pause size={16} /> : <Play size={16} />,
+                          simulating ? "PAUSE GPS" : "NAVIGATE TO PATIENT",
+                          simulating
+                            ? { border: "1px solid rgba(234,179,8,0.3)" }
+                            : {},
+                        )}
+                        {actionBtn(
+                          () =>
+                            handleAction(
+                              "update-status",
+                              { ambulanceId: amb._id, status: "at_scene" },
+                              "Unit At Scene — Patient Picked Up",
+                            ),
+                          "var(--bg-glass)",
+                          "var(--text-primary)",
+                          <MapPin size={16} />,
+                          "MARK PATIENT PICKED UP",
+                          { border: "1px solid var(--border-glass)" },
+                        )}
+                      </>
+                    )}
+                    {amb.status === "at_scene" && em?.assignedHospital && (
+                      <>
+                        {actionBtn(
+                          simulating ? stopSimulation : startSimulation,
+                          simulating ? "rgba(234,179,8,0.12)" : "#3b82f6",
+                          simulating ? "#eab308" : "#fff",
+                          simulating ? <Pause size={16} /> : <Play size={16} />,
+                          simulating ? "PAUSE GPS" : "NAVIGATE TO HOSPITAL",
+                          simulating
+                            ? { border: "1px solid rgba(234,179,8,0.3)" }
+                            : {},
+                        )}
+                        {actionBtn(
+                          () =>
+                            handleAction(
+                              "update-status",
+                              { ambulanceId: amb._id, status: "available" },
+                              "Emergency Resolved — Patient Delivered",
+                            ),
+                          "#16a34a",
+                          "#fff",
+                          <Shield size={16} />,
+                          "COMPLETE MISSION",
+                        )}
+                      </>
+                    )}
+                    {amb.status === "at_scene" &&
+                      !em?.assignedHospital &&
+                      actionBtn(
                         () =>
                           handleAction(
                             "update-status",
                             { ambulanceId: amb._id, status: "available" },
-                            "Emergency Resolved — Patient Delivered",
+                            "Emergency Resolved",
                           ),
                         "#16a34a",
                         "#fff",
                         <Shield size={16} />,
-                        "COMPLETE MISSION",
+                        "COMPLETE MISSION & RETURN",
                       )}
-                    </>
-                  )}
-                  {amb.status === "at_scene" &&
-                    !em?.assignedHospital &&
-                    actionBtn(
-                      () =>
-                        handleAction(
-                          "update-status",
-                          { ambulanceId: amb._id, status: "available" },
-                          "Emergency Resolved",
-                        ),
-                      "#16a34a",
-                      "#fff",
-                      <Shield size={16} />,
-                      "COMPLETE MISSION & RETURN",
+                    {!em && amb.status === "available" && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "12px 24px",
+                          borderRadius: "9999px",
+                          background: "var(--bg-glass)",
+                          fontSize: "10px",
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.15em",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        <Loader2
+                          size={14}
+                          style={{
+                            color: "#ef4444",
+                            animation: "spin 1s linear infinite",
+                          }}
+                        />{" "}
+                        Monitoring Emergency Frequencies...
+                      </div>
                     )}
-                  {!em && amb.status === "available" && (
-                    <div
+                    {gpsPermission === "denied" && (
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 800,
+                          color: "#fca5a5",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        GPS permission denied on this browser
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    height: "72px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--text-muted)",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    fontSize: "12px",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  Loading unit telemetry...
+                </div>
+              )}
+            </div>
+
+            {em && (
+              <div
+                className="glass-card"
+                style={{ padding: "18px", borderRadius: "18px" }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 10px",
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  Patient Details
+                </p>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    gap: "10px",
+                  }}
+                >
+                  <div>
+                    <p
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        padding: "12px 24px",
-                        borderRadius: "9999px",
-                        background: "var(--bg-glass)",
-                        fontSize: "10px",
-                        fontWeight: 800,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.15em",
+                        margin: 0,
+                        fontSize: "11px",
                         color: "var(--text-muted)",
                       }}
                     >
-                      <Loader2
-                        size={14}
-                        style={{
-                          color: "#ef4444",
-                          animation: "spin 1s linear infinite",
-                        }}
-                      />{" "}
-                      Monitoring Emergency Frequencies...
-                    </div>
-                  )}
-                  {gpsPermission === "denied" && (
-                    <div
+                      Name
+                    </p>
+                    <p style={{ margin: "4px 0 0", fontWeight: 800 }}>
+                      {em.patientName || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p
                       style={{
-                        fontSize: "10px",
-                        fontWeight: 800,
-                        color: "#fca5a5",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
+                        margin: 0,
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
                       }}
                     >
-                      GPS permission denied on this browser
-                    </div>
-                  )}
+                      Phone
+                    </p>
+                    <p style={{ margin: "4px 0 0", fontWeight: 800 }}>
+                      {em.patientPhone || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Type
+                    </p>
+                    <p
+                      style={{
+                        margin: "4px 0 0",
+                        fontWeight: 800,
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {em.type || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Severity
+                    </p>
+                    <p style={{ margin: "4px 0 0", fontWeight: 800 }}>
+                      {em.severity || "-"}/5
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div
-                style={{
-                  height: "72px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--text-muted)",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  fontSize: "12px",
-                  letterSpacing: "0.15em",
-                }}
-              >
-                Loading unit telemetry...
+                <p
+                  style={{
+                    margin: "12px 0 0",
+                    color: "var(--text-secondary)",
+                    fontSize: "13px",
+                  }}
+                >
+                  {em.description ||
+                    "No additional description provided by user."}
+                </p>
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div
+            className="glass-card"
+            style={{ padding: "18px", borderRadius: "18px" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <p style={{ margin: 0, fontWeight: 900, fontSize: "1rem" }}>
+                Completed Cases
+              </p>
+              <button
+                onClick={fetchDriverHistory}
+                className="cursor-pointer"
+                style={{
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-glass)",
+                  background: "var(--bg-glass)",
+                  color: "var(--text-secondary)",
+                  padding: "8px 12px",
+                  fontWeight: 700,
+                }}
+              >
+                Refresh
+              </button>
+            </div>
+
+            {historyLoading ? (
+              <p style={{ margin: 0, color: "var(--text-muted)" }}>
+                Loading history...
+              </p>
+            ) : history.length === 0 ? (
+              <p style={{ margin: 0, color: "var(--text-muted)" }}>
+                No completed cases yet.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                {history.map((entry) => (
+                  <div
+                    key={entry._id}
+                    style={{
+                      border: "1px solid var(--border-glass)",
+                      borderRadius: "12px",
+                      padding: "12px",
+                      background: "var(--bg-glass)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <p style={{ margin: 0, fontWeight: 800 }}>
+                        {entry.patientName || "Unknown"}
+                      </p>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12px",
+                          color: "var(--text-muted)",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {entry.status} • Severity {entry.severity || "-"}/5
+                      </p>
+                    </div>
+                    <p
+                      style={{
+                        margin: "6px 0 0",
+                        fontSize: "13px",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      {entry.description || "No description"}
+                    </p>
+                    <p
+                      style={{
+                        margin: "6px 0 0",
+                        fontSize: "12px",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Hospital: {entry.assignedHospital?.name || "N/A"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <DispatchControlModal

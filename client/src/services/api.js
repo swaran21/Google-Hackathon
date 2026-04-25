@@ -71,6 +71,7 @@ export const updateHospitalBeds = (id, data) =>
 // ─── Driver APIs ─────────────────────────────────────────────────
 export const getDriverStatus = (ambulanceId) =>
   api.get(`/driver/status?ambulanceId=${ambulanceId}`);
+export const getDriverHistory = () => api.get("/driver/history");
 export const acceptDispatch = (ambulanceId) =>
   api.post("/driver/accept", { ambulanceId });
 export const rejectDispatch = (ambulanceId) =>

@@ -56,9 +56,8 @@ const getDriverStatus = async (req, res, next) => {
       throw new ApiError(400, "ambulanceId query param is required");
     }
 
-    const ambulance = await Ambulance.findById(ambulanceId).populate(
-      "currentEmergency",
-    );
+    const ambulance =
+      await Ambulance.findById(ambulanceId).populate("currentEmergency");
     if (!ambulance) throw new ApiError(404, "Ambulance not found");
 
     let emergency = null;
@@ -240,7 +239,10 @@ const updateDriverStatus = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("ambulance:status-change", { ambulanceId: ambulance._id, status });
+      io.emit("ambulance:status-change", {
+        ambulanceId: ambulance._id,
+        status,
+      });
       io.emit("emergency:status-change", {
         emergencyId: ambulance.currentEmergency,
         status:
@@ -267,9 +269,8 @@ const simulateMove = async (req, res, next) => {
     const { ambulanceId } = req.body;
     if (!ambulanceId) throw new ApiError(400, "ambulanceId is required");
 
-    const ambulance = await Ambulance.findById(ambulanceId).populate(
-      "currentEmergency",
-    );
+    const ambulance =
+      await Ambulance.findById(ambulanceId).populate("currentEmergency");
     if (!ambulance) throw new ApiError(404, "Ambulance not found");
     if (!ambulance.currentEmergency) {
       throw new ApiError(400, "No active emergency assigned");
@@ -290,7 +291,8 @@ const simulateMove = async (req, res, next) => {
     let arrivalLabel;
 
     if (isPhase2) {
-      const [hospLng, hospLat] = emergency.assignedHospital.location.coordinates;
+      const [hospLng, hospLat] =
+        emergency.assignedHospital.location.coordinates;
       targetLat = hospLat;
       targetLng = hospLng;
       arrivalLabel = "hospital";
@@ -342,7 +344,10 @@ const simulateMove = async (req, res, next) => {
       };
 
       io.emit("ambulance:location-update", locationPayload);
-      io.to(`emergency:${emergency._id}`).emit("ambulance:tracking", locationPayload);
+      io.to(`emergency:${emergency._id}`).emit(
+        "ambulance:tracking",
+        locationPayload,
+      );
 
       if (emergency.assignedHospital?._id) {
         io.to(`hospital:${emergency.assignedHospital._id}`).emit(
@@ -360,7 +365,9 @@ const simulateMove = async (req, res, next) => {
           emergencyId: emergency._id,
           status: "at_scene",
         });
-        await Emergency.findByIdAndUpdate(emergency._id, { status: "at_scene" });
+        await Emergency.findByIdAndUpdate(emergency._id, {
+          status: "at_scene",
+        });
       } else if (arrived && isPhase2) {
         io.emit("ambulance:status-change", {
           ambulanceId: ambulance._id,
@@ -404,14 +411,22 @@ const manualMove = async (req, res, next) => {
     const validDirections = ["up", "down", "left", "right"];
 
     if (!validDirections.includes(direction)) {
-      throw new ApiError(400, "direction must be one of: up, down, left, right");
+      throw new ApiError(
+        400,
+        "direction must be one of: up, down, left, right",
+      );
     }
 
     const ambulanceId =
-      req.body.ambulanceId || req.user?.assignedAmbulance?._id || req.user?.assignedAmbulance;
+      req.body.ambulanceId ||
+      req.user?.assignedAmbulance?._id ||
+      req.user?.assignedAmbulance;
 
     if (!ambulanceId) {
-      throw new ApiError(400, "No ambulance associated with current user/session");
+      throw new ApiError(
+        400,
+        "No ambulance associated with current user/session",
+      );
     }
 
     const ambulance = await Ambulance.findById(ambulanceId);
@@ -501,6 +516,42 @@ const manualMove = async (req, res, next) => {
             }
           : null,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get completed emergency history for a driver
+ * @route   GET /api/driver/history
+ */
+const getDriverHistory = async (req, res, next) => {
+  try {
+    const requestedAmbulanceId = req.query?.ambulanceId;
+    const assignedAmbulanceId =
+      req.user?.assignedAmbulance?._id || req.user?.assignedAmbulance;
+
+    const ambulanceId = requestedAmbulanceId || assignedAmbulanceId;
+    if (!ambulanceId) {
+      throw new ApiError(400, "No ambulance found for this driver account");
+    }
+
+    const history = await Emergency.find({
+      assignedAmbulance: ambulanceId,
+      status: { $in: ["resolved", "cancelled"] },
+    })
+      .sort({ updatedAt: -1 })
+      .populate("assignedHospital", "name phone address")
+      .select(
+        "type status severity triageResult patientName patientPhone description createdAt updatedAt assignedHospital",
+      )
+      .lean();
+
+    res.json({
+      success: true,
+      count: history.length,
+      data: history,
     });
   } catch (error) {
     next(error);
@@ -632,5 +683,6 @@ module.exports = {
   updateDriverStatus,
   simulateMove,
   manualMove,
+  getDriverHistory,
   serveSimulator,
 };

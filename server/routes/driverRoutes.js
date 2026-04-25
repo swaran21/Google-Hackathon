@@ -8,6 +8,7 @@ const {
   updateDriverStatus,
   simulateMove,
   manualMove,
+  getDriverHistory,
   serveSimulator,
 } = require("../controllers/driverController");
 
@@ -28,6 +29,7 @@ router.post(
   authorize("driver", "admin"),
   simulateMove,
 );
+router.get("/history", protect, authorize("driver", "admin"), getDriverHistory);
 router.post(
   "/manual-move",
   protect,
