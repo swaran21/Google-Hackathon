@@ -52,6 +52,7 @@ const createEmergency = async (req, res, next) => {
       description,
       patientName,
       patientPhone,
+      vitals,
     } = req.body;
 
     if (!type || !latitude || !longitude || !patientName || !patientPhone) {
@@ -67,7 +68,7 @@ const createEmergency = async (req, res, next) => {
       throw new ApiError(400, "latitude and longitude must be valid numbers");
     }
 
-    const triage = classifyEmergency(type, description);
+    const triage = classifyEmergency(type, description, { vitals });
     const bedRequirement = getBedRequirementFromSeverity(triage.severity);
 
     const emergency = await Emergency.create({

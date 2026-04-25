@@ -49,8 +49,79 @@ const EQUIPMENT_RECOMMENDATION = {
  * @param {string} description - Free text description
  * @returns {Object} { severity, confidence, reasoning, recommendedEquipment, responseLevel }
  */
-const classifyEmergency = (type, description = '') => {
-  const desc = description.toLowerCase();
+const VITAL_THRESHOLDS = {
+  critical: {
+    spo2Max: 90,
+    systolicBpMax: 90,
+    heartRateMin: 40,
+    heartRateMax: 130,
+  },
+  high: {
+    spo2Max: 94,
+    systolicBpMax: 100,
+    heartRateMin: 50,
+    heartRateMax: 120,
+  },
+};
+
+const parseVitals = (vitals = {}) => ({
+  heartRate: Number(vitals?.heartRate),
+  spo2: Number(vitals?.spo2),
+  systolicBp: Number(vitals?.systolicBp),
+});
+
+const inferVitalsSeverity = (vitals = {}) => {
+  const parsed = parseVitals(vitals);
+
+  let inferredSeverity = 1;
+  const indicators = [];
+
+  if (Number.isFinite(parsed.spo2) && parsed.spo2 <= VITAL_THRESHOLDS.critical.spo2Max) {
+    inferredSeverity = Math.max(inferredSeverity, 5);
+    indicators.push(`low oxygen saturation (${parsed.spo2})`);
+  } else if (Number.isFinite(parsed.spo2) && parsed.spo2 <= VITAL_THRESHOLDS.high.spo2Max) {
+    inferredSeverity = Math.max(inferredSeverity, 4);
+    indicators.push(`reduced oxygen saturation (${parsed.spo2})`);
+  }
+
+  if (
+    Number.isFinite(parsed.systolicBp) &&
+    parsed.systolicBp <= VITAL_THRESHOLDS.critical.systolicBpMax
+  ) {
+    inferredSeverity = Math.max(inferredSeverity, 5);
+    indicators.push(`low systolic BP (${parsed.systolicBp})`);
+  } else if (
+    Number.isFinite(parsed.systolicBp) &&
+    parsed.systolicBp <= VITAL_THRESHOLDS.high.systolicBpMax
+  ) {
+    inferredSeverity = Math.max(inferredSeverity, 4);
+    indicators.push(`borderline systolic BP (${parsed.systolicBp})`);
+  }
+
+  if (
+    Number.isFinite(parsed.heartRate) &&
+    (parsed.heartRate <= VITAL_THRESHOLDS.critical.heartRateMin ||
+      parsed.heartRate >= VITAL_THRESHOLDS.critical.heartRateMax)
+  ) {
+    inferredSeverity = Math.max(inferredSeverity, 5);
+    indicators.push(`critical heart rate (${parsed.heartRate})`);
+  } else if (
+    Number.isFinite(parsed.heartRate) &&
+    (parsed.heartRate <= VITAL_THRESHOLDS.high.heartRateMin ||
+      parsed.heartRate >= VITAL_THRESHOLDS.high.heartRateMax)
+  ) {
+    inferredSeverity = Math.max(inferredSeverity, 4);
+    indicators.push(`elevated heart rate risk (${parsed.heartRate})`);
+  }
+
+  return {
+    severity: inferredSeverity,
+    indicators,
+  };
+};
+
+const classifyEmergency = (type, description = '', options = {}) => {
+  const desc = String(description || '').toLowerCase();
 
   // Start with base severity from type
   let severity = TYPE_BASE_SEVERITY[type] || 2;
@@ -67,15 +138,28 @@ const classifyEmergency = (type, description = '') => {
     }
   }
 
+  const vitalsInference = inferVitalsSeverity(options?.vitals || {});
+  severity = Math.max(severity, vitalsInference.severity);
+
   // Clamp to 1-5
   severity = Math.min(5, Math.max(1, severity));
 
   // Calculate confidence (higher when more keywords matched)
-  const confidence = Math.min(0.98, 0.7 + matchedKeywords.length * 0.08);
+  const confidence = Math.min(
+    0.98,
+    0.68 +
+      matchedKeywords.length * 0.08 +
+      vitalsInference.indicators.length * 0.05,
+  );
 
   // Generate reasoning (mimics AI response format)
   const responseLevel = severity >= 4 ? 'IMMEDIATE' : severity >= 3 ? 'URGENT' : 'STANDARD';
-  const reasoning = generateReasoning(type, severity, matchedKeywords);
+  const reasoning = generateReasoning(
+    type,
+    severity,
+    matchedKeywords,
+    vitalsInference.indicators,
+  );
 
   return {
     severity,
@@ -84,7 +168,10 @@ const classifyEmergency = (type, description = '') => {
     reasoning,
     responseLevel,
     recommendedEquipment: EQUIPMENT_RECOMMENDATION[severity],
-    matchedIndicators: matchedKeywords.map((k) => k.keyword),
+    matchedIndicators: [
+      ...matchedKeywords.map((k) => k.keyword),
+      ...vitalsInference.indicators,
+    ],
     timestamp: new Date().toISOString(),
 
     // Mark this as the integration point for Gemini API
@@ -94,12 +181,16 @@ const classifyEmergency = (type, description = '') => {
   };
 };
 
-function generateReasoning(type, severity, keywords) {
+function generateReasoning(type, severity, keywords, vitalsIndicators = []) {
   const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
   let reasoning = `Emergency type "${typeLabel}" classified as severity ${severity}/5. `;
 
   if (keywords.length > 0) {
     reasoning += `Detected critical indicators: ${keywords.map((k) => `"${k.keyword}"`).join(', ')}. `;
+  }
+
+  if (vitalsIndicators.length > 0) {
+    reasoning += `Vitals risk factors: ${vitalsIndicators.join(', ')}. `;
   }
 
   if (severity >= 4) {
