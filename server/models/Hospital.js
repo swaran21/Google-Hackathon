@@ -108,6 +108,24 @@ const hospitalSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    ratingSummary: {
+      average: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0,
+      },
+      totalRatings: {
+        type: Number,
+        min: 0,
+        default: 0,
+      },
+      totalScore: {
+        type: Number,
+        min: 0,
+        default: 0,
+      },
+    },
   },
   {
     timestamps: true,

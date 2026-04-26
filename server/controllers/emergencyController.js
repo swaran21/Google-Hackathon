@@ -49,6 +49,25 @@ const buildTriageSummary = (emergency) => ({
   aiModel: emergency.triageResult?.aiModel || "",
 });
 
+const applyAggregateRating = (entity, ratingValue) => {
+  if (!entity || !Number.isFinite(Number(ratingValue))) return;
+
+  const summary = entity.ratingSummary || {
+    average: 0,
+    totalRatings: 0,
+    totalScore: 0,
+  };
+
+  const nextTotalRatings = Number(summary.totalRatings || 0) + 1;
+  const nextTotalScore = Number(summary.totalScore || 0) + Number(ratingValue);
+
+  entity.ratingSummary = {
+    totalRatings: nextTotalRatings,
+    totalScore: nextTotalScore,
+    average: Math.round((nextTotalScore / nextTotalRatings) * 100) / 100,
+  };
+};
+
 /**
  * @desc    Create emergency and return hospitals in 5km for user selection
  * @route   POST /api/emergency
@@ -823,9 +842,17 @@ const submitFeedback = async (req, res, next) => {
     const userId = req.user._id;
 
     // Validate emergency exists
-    const emergency = await Emergency.findById(emergencyId);
+    const emergency = await Emergency.findById(emergencyId)
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
     if (!emergency) {
       return next(new ApiError(404, "Emergency not found"));
+    }
+
+    if (emergency.feedback?.isSubmitted) {
+      return next(
+        new ApiError(409, "Feedback already submitted for this emergency"),
+      );
     }
 
     // Verify user is the one who reported the emergency
@@ -871,12 +898,26 @@ const submitFeedback = async (req, res, next) => {
       submittedAt: new Date(),
     };
 
+    if (emergency.assignedAmbulance && Number.isFinite(Number(driverRating))) {
+      applyAggregateRating(emergency.assignedAmbulance, Number(driverRating));
+      await emergency.assignedAmbulance.save();
+    }
+
+    if (emergency.assignedHospital && Number.isFinite(Number(hospitalRating))) {
+      applyAggregateRating(emergency.assignedHospital, Number(hospitalRating));
+      await emergency.assignedHospital.save();
+    }
+
     await emergency.save();
 
     res.status(200).json({
       success: true,
       message: "Feedback submitted successfully",
       feedback: emergency.feedback,
+      updatedRatings: {
+        ambulance: emergency.assignedAmbulance?.ratingSummary || null,
+        hospital: emergency.assignedHospital?.ratingSummary || null,
+      },
     });
   } catch (error) {
     next(error);
