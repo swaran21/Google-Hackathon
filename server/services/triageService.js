@@ -1,17 +1,7 @@
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 /**
- * AI Triage Service — Emergency Severity Classification
- *
- * In a real production system, this would call Google Gemini API.
- * For the hackathon, we use a sophisticated rule-based classifier
- * that mimics AI output format. The Gemini API integration point
- * is clearly marked for future upgrade.
- *
- * Severity Levels:
- *   1 - Low       (non-urgent, can wait)
- *   2 - Moderate  (needs attention within 30 min)
- *   3 - High      (needs attention within 15 min)
- *   4 - Critical  (life-threatening, needs immediate response)
- *   5 - Extreme   (mass casualty / cardiac arrest / severe trauma)
+ * AI Triage Service — Gemini-first with deterministic fallback.
  */
 
 // Keywords that indicate higher severity
@@ -120,7 +110,128 @@ const inferVitalsSeverity = (vitals = {}) => {
   };
 };
 
-const classifyEmergency = (type, description = '', options = {}) => {
+const EQUIPMENT_ENUM = new Set(["basic", "advanced", "critical_care"]);
+const RESPONSE_LEVEL_ENUM = new Set(["STANDARD", "URGENT", "IMMEDIATE"]);
+
+const coerceNumber = (value, min, max, fallback) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.min(max, Math.max(min, num));
+};
+
+const toStringArray = (value, limit = 8) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
+    .slice(0, limit);
+};
+
+const normalizeGeminiPayload = (raw, fallback) => {
+  const severity = coerceNumber(raw?.severity, 1, 5, fallback.severity);
+  const confidence = coerceNumber(raw?.confidence, 0, 1, fallback.confidence);
+  const recommendedEquipment = EQUIPMENT_ENUM.has(raw?.recommendedEquipment)
+    ? raw.recommendedEquipment
+    : fallback.recommendedEquipment;
+  const responseLevel = RESPONSE_LEVEL_ENUM.has(raw?.responseLevel)
+    ? raw.responseLevel
+    : fallback.responseLevel;
+
+  const bedType = raw?.hospitalPreferences?.bedType === "icu" ? "icu" : "general";
+
+  return {
+    severity,
+    severityLabel:
+      String(raw?.severityLabel || "").trim() ||
+      ["", "Low", "Moderate", "High", "Critical", "Extreme"][severity],
+    confidence: Math.round(confidence * 100) / 100,
+    reasoning: String(raw?.reasoning || fallback.reasoning || "").trim(),
+    responseLevel,
+    recommendedEquipment,
+    matchedIndicators: toStringArray(raw?.matchedIndicators, 12),
+    recommendedProtocols: toStringArray(raw?.recommendedProtocols, 8),
+    potentialComplications: toStringArray(raw?.potentialComplications, 8),
+    hospitalPreferences: {
+      requiredSpecialties: toStringArray(
+        raw?.hospitalPreferences?.requiredSpecialties,
+        8,
+      ),
+      treatmentCapabilities: toStringArray(
+        raw?.hospitalPreferences?.treatmentCapabilities,
+        8,
+      ),
+      bedType,
+    },
+  };
+};
+
+const extractJsonFromGeminiText = (text) => {
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Ignore and try markdown fenced JSON extraction below.
+  }
+
+  const fenced = text.match(/```json\s*([\s\S]*?)\s*```/i);
+  if (fenced?.[1]) {
+    try {
+      return JSON.parse(fenced[1]);
+    } catch {
+      return null;
+    }
+  }
+
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+};
+
+const getGeminiPrompt = ({ type, description, vitals }) => {
+  return [
+    "You are an emergency triage model for a live ambulance dispatch system.",
+    "Return ONLY valid JSON. No markdown or prose outside JSON.",
+    "",
+    "Input:",
+    `- emergencyType: ${type || "other"}`,
+    `- description: ${String(description || "").trim() || "N/A"}`,
+    `- vitals: ${JSON.stringify(vitals || {})}`,
+    "",
+    "JSON schema:",
+    "{",
+    '  "severity": 1-5,',
+    '  "severityLabel": "Low|Moderate|High|Critical|Extreme",',
+    '  "confidence": 0-1,',
+    '  "reasoning": "short clinical summary",',
+    '  "responseLevel": "STANDARD|URGENT|IMMEDIATE",',
+    '  "recommendedEquipment": "basic|advanced|critical_care",',
+    '  "matchedIndicators": ["string"],',
+    '  "recommendedProtocols": ["string"],',
+    '  "potentialComplications": ["string"],',
+    '  "hospitalPreferences": {',
+    '    "requiredSpecialties": ["string"],',
+    '    "treatmentCapabilities": ["string"],',
+    '    "bedType": "general|icu"',
+    "  }",
+    "}",
+    "",
+    "Rules:",
+    "- Prioritize severe breathing/cardiac/neuro red flags.",
+    "- Keep recommendations operational for ambulance + hospital teams.",
+    "- Confidence must reflect ambiguity in description/vitals.",
+  ].join("\n");
+};
+
+const classifyEmergencyRuleBased = (type, description = "", options = {}) => {
   const desc = String(description || '').toLowerCase();
 
   // Start with base severity from type
@@ -172,13 +283,81 @@ const classifyEmergency = (type, description = '', options = {}) => {
       ...matchedKeywords.map((k) => k.keyword),
       ...vitalsInference.indicators,
     ],
+    recommendedProtocols:
+      severity >= 4
+        ? [
+            "Activate critical transport protocol",
+            "Pre-alert nearest capable hospital",
+          ]
+        : ["Stabilize patient and monitor vitals continuously"],
+    potentialComplications:
+      severity >= 4
+        ? ["Respiratory failure", "Hemodynamic instability"]
+        : ["Condition escalation if delayed"],
+    hospitalPreferences: {
+      requiredSpecialties:
+        type === "cardiac"
+          ? ["Cardiology", "Critical Care"]
+          : type === "stroke"
+            ? ["Neurology", "Critical Care"]
+            : ["Emergency Medicine"],
+      treatmentCapabilities:
+        severity >= 4
+          ? ["Advanced airway", "Critical care stabilization"]
+          : ["Emergency stabilization"],
+      bedType: severity >= 4 ? "icu" : "general",
+    },
     timestamp: new Date().toISOString(),
 
     // Mark this as the integration point for Gemini API
     // In production: replace classifyEmergency() with a call to
     // Gemini API: POST https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent
-    aiModel: 'ResQNet-Triage-v1 (Rule-based | Gemini-ready)',
+    aiModel: 'ResQNet-Triage-v1 (Rule-based fallback)',
   };
+};
+
+const classifyEmergency = async (type, description = "", options = {}) => {
+  const fallback = classifyEmergencyRuleBased(type, description, options);
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    return fallback;
+  }
+
+  try {
+    const client = new GoogleGenerativeAI(apiKey);
+    const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = getGeminiPrompt({
+      type,
+      description,
+      vitals: options?.vitals || {},
+    });
+
+    const result = await model.generateContent(prompt);
+    const text = result?.response?.text?.() || "";
+    const parsed = extractJsonFromGeminiText(text);
+
+    if (!parsed) {
+      return {
+        ...fallback,
+        aiModel: "Gemini-1.5-Flash (parse-fallback)",
+      };
+    }
+
+    const normalized = normalizeGeminiPayload(parsed, fallback);
+
+    return {
+      ...normalized,
+      timestamp: new Date().toISOString(),
+      aiModel: "Gemini-1.5-Flash",
+    };
+  } catch {
+    return {
+      ...fallback,
+      aiModel: "Gemini-1.5-Flash (error-fallback)",
+    };
+  }
 };
 
 function generateReasoning(type, severity, keywords, vitalsIndicators = []) {

@@ -87,6 +87,17 @@ const emergencySchema = new mongoose.Schema(
         default: "",
       },
       matchedIndicators: { type: [String], default: [] },
+      recommendedProtocols: { type: [String], default: [] },
+      potentialComplications: { type: [String], default: [] },
+      hospitalPreferences: {
+        requiredSpecialties: { type: [String], default: [] },
+        treatmentCapabilities: { type: [String], default: [] },
+        bedType: {
+          type: String,
+          enum: ["general", "icu", ""],
+          default: "",
+        },
+      },
       aiModel: { type: String, default: "" },
     },
     assignedAmbulance: {
