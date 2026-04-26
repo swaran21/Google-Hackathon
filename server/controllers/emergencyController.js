@@ -39,6 +39,13 @@ const buildTriageSummary = (emergency) => ({
   responseLevel: emergency.triageResult?.responseLevel || "",
   recommendedEquipment: emergency.triageResult?.recommendedEquipment || "basic",
   matchedIndicators: emergency.triageResult?.matchedIndicators || [],
+  recommendedProtocols: emergency.triageResult?.recommendedProtocols || [],
+  potentialComplications: emergency.triageResult?.potentialComplications || [],
+  hospitalPreferences: emergency.triageResult?.hospitalPreferences || {
+    requiredSpecialties: [],
+    treatmentCapabilities: [],
+    bedType: "",
+  },
   aiModel: emergency.triageResult?.aiModel || "",
 });
 
@@ -71,7 +78,7 @@ const createEmergency = async (req, res, next) => {
       throw new ApiError(400, "latitude and longitude must be valid numbers");
     }
 
-    const triage = classifyEmergency(type, description, { vitals });
+    const triage = await classifyEmergency(type, description, { vitals });
     const bedRequirement = getBedRequirementFromSeverity(triage.severity);
 
     const emergency = await Emergency.create({
@@ -92,6 +99,13 @@ const createEmergency = async (req, res, next) => {
         recommendedEquipment: triage.recommendedEquipment,
         responseLevel: triage.responseLevel,
         matchedIndicators: triage.matchedIndicators || [],
+        recommendedProtocols: triage.recommendedProtocols || [],
+        potentialComplications: triage.potentialComplications || [],
+        hospitalPreferences: triage.hospitalPreferences || {
+          requiredSpecialties: [],
+          treatmentCapabilities: [],
+          bedType: "",
+        },
         aiModel: triage.aiModel || "",
       },
       hospitalRequest: {
@@ -113,6 +127,8 @@ const createEmergency = async (req, res, next) => {
     const hospitals = await suggestHospitals(lat, lng, type, {
       radiusKm: HOSPITAL_RADIUS_KM,
       limit: HOSPITAL_LIMIT,
+      description: description || "",
+      triageResult: triage,
     });
 
     const io = req.app.get("io");
@@ -189,6 +205,8 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       {
         radiusKm: HOSPITAL_RADIUS_KM,
         limit: HOSPITAL_LIMIT,
+        description: emergency.description || "",
+        triageResult: emergency.triageResult || null,
       },
     );
 
