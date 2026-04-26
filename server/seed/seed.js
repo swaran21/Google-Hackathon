@@ -266,6 +266,19 @@ const buildHospitals = (count, usedEmails) => {
       treatments: buildTreatments(),
       emergencyDepartment: true,
       isActive: true,
+      ratingSummary: (() => {
+        const totalRatings = faker.number.int({ min: 12, max: 220 });
+        const average = faker.number.float({
+          min: 3.2,
+          max: 4.9,
+          fractionDigits: 2,
+        });
+        return {
+          average,
+          totalRatings,
+          totalScore: Math.round(average * totalRatings),
+        };
+      })(),
     });
 
     hospitalUsers.push({
@@ -321,6 +334,19 @@ const buildAmbulances = (count, usedEmails) => {
         "critical_care",
       ]),
       isActive,
+      ratingSummary: (() => {
+        const totalRatings = faker.number.int({ min: 8, max: 180 });
+        const average = faker.number.float({
+          min: 3.3,
+          max: 4.95,
+          fractionDigits: 2,
+        });
+        return {
+          average,
+          totalRatings,
+          totalScore: Math.round(average * totalRatings),
+        };
+      })(),
     });
 
     driverUsers.push({

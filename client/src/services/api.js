@@ -33,6 +33,10 @@ export const cancelEmergencyRequest = (id) =>
   api.post(`/emergency/${id}/cancel`);
 export const updateEmergencyStatus = (id, status) =>
   api.patch(`/emergency/${id}/status`, { status });
+export const submitEmergencyFeedback = (id, payload) =>
+  api.post(`/emergency/${id}/feedback`, payload);
+export const getEmergencyFeedback = (id) =>
+  api.get(`/emergency/${id}/feedback`);
 
 // ─── Ambulance APIs ──────────────────────────────────────────────
 export const getNearestAmbulance = (lat, lng) =>
