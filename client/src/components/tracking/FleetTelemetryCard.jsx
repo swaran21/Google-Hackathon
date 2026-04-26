@@ -1,4 +1,77 @@
-import { Activity, Navigation } from "lucide-react";
+import {
+  Activity,
+  Navigation,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Zap,
+} from "lucide-react";
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case "available":
+      return {
+        bg: "rgba(34,197,94,0.12)",
+        color: "#22c55e",
+        label: "AVAILABLE",
+      };
+    case "dispatched":
+      return {
+        bg: "rgba(59,130,246,0.12)",
+        color: "#3b82f6",
+        label: "DISPATCHED",
+      };
+    case "en_route":
+      return {
+        bg: "rgba(245,158,11,0.12)",
+        color: "#f59e0b",
+        label: "EN ROUTE",
+      };
+    case "at_scene":
+      return {
+        bg: "rgba(251,146,60,0.12)",
+        color: "#fb923c",
+        label: "AT SCENE",
+      };
+    case "returning":
+      return {
+        bg: "rgba(168,85,247,0.12)",
+        color: "#a855f7",
+        label: "RETURNING",
+      };
+    case "offline":
+      return {
+        bg: "rgba(107,114,128,0.12)",
+        color: "#6b7280",
+        label: "OFFLINE",
+      };
+    default:
+      return {
+        bg: "var(--bg-badge)",
+        color: "var(--text-secondary)",
+        label: status.toUpperCase(),
+      };
+  }
+};
+
+const getStatusIcon = (status) => {
+  switch (status) {
+    case "available":
+      return "✓";
+    case "dispatched":
+      return "→";
+    case "en_route":
+      return "🚑";
+    case "at_scene":
+      return "⚠";
+    case "returning":
+      return "↩";
+    case "offline":
+      return "✕";
+    default:
+      return "•";
+  }
+};
 
 export default function FleetTelemetryCard({
   filteredAmbulances,
@@ -64,120 +137,159 @@ export default function FleetTelemetryCard({
             paddingRight: "4px",
           }}
         >
-          {filteredAmbulances.map((amb) => {
-            const isAssignedToUser =
-              assignedAmbulanceId && amb._id === assignedAmbulanceId;
+          {filteredAmbulances.length === 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+                padding: "40px 20px",
+                textAlign: "center",
+              }}
+            >
+              <AlertCircle size={32} style={{ color: "var(--text-muted)" }} />
+              <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>
+                No ambulances in selected filter
+              </p>
+            </div>
+          ) : (
+            filteredAmbulances.map((amb) => {
+              const isAssignedToUser =
+                assignedAmbulanceId && amb._id === assignedAmbulanceId;
+              const statusInfo = getStatusColor(amb.status);
+              const statusIcon = getStatusIcon(amb.status);
 
-            return (
-              <div
-                key={amb._id}
-                className="glass-card glass-card-hover"
-                onClick={
-                  isAssignedToUser
-                    ? () => onOpenDispatchPanel(amb._id)
-                    : undefined
-                }
-                style={{
-                  padding: "14px",
-                  borderRadius: "14px",
-                  background: "var(--bg-glass)",
-                  cursor: isAssignedToUser ? "pointer" : "default",
-                  border: isAssignedToUser
-                    ? "1px solid rgba(37,99,235,0.35)"
-                    : "1px solid var(--border-glass)",
-                }}
-              >
+              return (
                 <div
+                  key={amb._id}
+                  className="glass-card glass-card-hover"
+                  onClick={
+                    isAssignedToUser
+                      ? () => onOpenDispatchPanel(amb._id)
+                      : undefined
+                  }
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: "10px",
+                    padding: "14px",
+                    borderRadius: "14px",
+                    background: "var(--bg-glass)",
+                    cursor: isAssignedToUser ? "pointer" : "default",
+                    border: isAssignedToUser
+                      ? "1px solid rgba(37,99,235,0.35)"
+                      : "1px solid var(--border-glass)",
+                    transition: "all 0.2s ease",
                   }}
                 >
-                  <div>
-                    <p
-                      style={{
-                        fontSize: "0.875rem",
-                        fontWeight: 900,
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      {amb.vehicleNumber}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "10px",
-                        color: "var(--text-muted)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      DRIVER: {amb.driverName.toUpperCase()}
-                    </p>
-                  </div>
                   <div
                     style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background:
-                        amb.status === "available" ? "#22c55e" : "#ef4444",
-                      boxShadow: `0 0 8px ${amb.status === "available" ? "#22c55e" : "#ef4444"}`,
-                    }}
-                  />
-                </div>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <span
-                    style={{
-                      fontSize: "9px",
-                      fontWeight: 700,
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                      background: "var(--bg-badge)",
-                      color: "var(--text-secondary)",
-                      textTransform: "uppercase",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: "10px",
                     }}
                   >
-                    {amb.equipmentLevel?.replace("_", " ")}
-                  </span>
-                  {amb.status !== "available" && (
-                    <span
+                    <div>
+                      <p
+                        style={{
+                          fontSize: "0.875rem",
+                          fontWeight: 900,
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {amb.vehicleNumber}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          color: "var(--text-muted)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {amb.driverName.toUpperCase()}
+                      </p>
+                    </div>
+                    <div
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 700,
-                        padding: "4px 8px",
-                        borderRadius: "6px",
-                        background: "rgba(239,68,68,0.1)",
-                        color: "#ef4444",
-                        animation: "pulse-glow 2s ease-in-out infinite",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        background: statusInfo.bg,
+                        color: statusInfo.color,
+                        fontSize: "14px",
+                        fontWeight: "bold",
                       }}
                     >
-                      ON MISSION
-                    </span>
-                  )}
-                  {isAssignedToUser && (
+                      {statusIcon}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
                     <span
                       style={{
                         fontSize: "9px",
                         fontWeight: 700,
                         padding: "4px 8px",
                         borderRadius: "6px",
-                        background: "rgba(37,99,235,0.12)",
-                        color: "#3b82f6",
+                        background: statusInfo.bg,
+                        color: statusInfo.color,
                         textTransform: "uppercase",
                       }}
                     >
-                      Your Dispatch
+                      {statusInfo.label}
                     </span>
-                  )}
-                </div>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        background: "var(--bg-badge)",
+                        color: "var(--text-secondary)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {amb.equipmentLevel?.replace("_", " ")}
+                    </span>
+                    {!amb.isActive && (
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                          background: "rgba(107,114,128,0.12)",
+                          color: "#6b7280",
+                        }}
+                      >
+                        OFFLINE
+                      </span>
+                    )}
+                    {isAssignedToUser && (
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                          background: "rgba(37,99,235,0.12)",
+                          color: "#3b82f6",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        ASSIGNED
+                      </span>
+                    )}
+                  </div>
 
-                {isAssignedToUser && (
-                  <p
-                    style={{
-                      marginTop: "8px",
-                      fontSize: "10px",
-                      fontWeight: 800,
+                  {isAssignedToUser && (
+                    <p
+                      style={{
+                        marginTop: "8px",
+                        fontSize: "10px",
+                        fontWeight: 800,
                       color: "#93c5fd",
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
@@ -188,7 +300,7 @@ export default function FleetTelemetryCard({
                 )}
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
 

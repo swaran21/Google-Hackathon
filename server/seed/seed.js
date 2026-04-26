@@ -23,11 +23,11 @@ const AMBULANCE_COUNT = 50;
 const PATIENT_COUNT = 50;
 const GLOBAL_PASSWORD = "12345678";
 
-const KNR_BOUNDS = {
-  latMin: 18.35,
-  latMax: 18.50,
-  lngMin: 79.05,
-  lngMax: 79.25,
+const HYD_BOUNDS = {
+  latMin: 17.2,
+  latMax: 17.6,
+  lngMin: 78.2,
+  lngMax: 78.7,
 };
 
 const HYD_LOCALITIES = [
@@ -131,13 +131,13 @@ const TREATMENT_LIBRARY = [
 
 const randomPointInHyderabad = () => {
   const latitude = faker.number.float({
-    min: KNR_BOUNDS.latMin,
-    max: KNR_BOUNDS.latMax,
+    min: HYD_BOUNDS.latMin,
+    max: HYD_BOUNDS.latMax,
     fractionDigits: 6,
   });
   const longitude = faker.number.float({
-    min: KNR_BOUNDS.lngMin,
-    max: KNR_BOUNDS.lngMax,
+    min: HYD_BOUNDS.lngMin,
+    max: HYD_BOUNDS.lngMax,
     fractionDigits: 6,
   });
 
@@ -281,6 +281,20 @@ const buildHospitals = (count, usedEmails) => {
   return { hospitals, hospitalUsers };
 };
 
+const AMBULANCE_STATUSES = [
+  "available",
+  "available",
+  "available",
+  "available",
+  "available",
+  "dispatched",
+  "en_route",
+  "en_route",
+  "at_scene",
+  "returning",
+  "offline",
+];
+
 const buildAmbulances = (count, usedEmails) => {
   const ambulances = [];
   const driverUsers = [];
@@ -292,18 +306,21 @@ const buildAmbulances = (count, usedEmails) => {
     const vehicleSuffix = String.fromCharCode(65 + (i % 26));
     const vehicleNumber = `TS09${vehicleSuffix}${vehicleSeries}`;
 
+    const status = AMBULANCE_STATUSES[i % AMBULANCE_STATUSES.length];
+    const isActive = status !== "offline";
+
     ambulances.push({
       vehicleNumber,
       driverName,
       driverPhone: randomIndianPhone(),
       location: randomPointInHyderabad(),
-      status: "available",
+      status,
       equipmentLevel: faker.helpers.arrayElement([
         "basic",
         "advanced",
         "critical_care",
       ]),
-      isActive: true,
+      isActive,
     });
 
     driverUsers.push({
