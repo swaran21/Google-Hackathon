@@ -219,6 +219,19 @@ export default function DispatchControlModal({
                   fontWeight: 600,
                 }}
               >
+                <div
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "4px",
+                    color:
+                      item.from === "user" ? "#93c5fd" : "var(--text-muted)",
+                  }}
+                >
+                  {item.senderName || "Unknown"} • {item.senderRole || "system"}
+                </div>
                 {item.text}
               </div>
             ))}

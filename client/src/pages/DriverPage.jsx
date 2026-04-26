@@ -832,6 +832,55 @@ export default function DriverPage() {
                 </div>
               )}
 
+              {(Number.isFinite(activeRoute?.distanceKm) ||
+                Number.isFinite(activeRoute?.etaMinutes)) && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "74px",
+                    right: "20px",
+                    zIndex: 1000,
+                    background: isDark
+                      ? "rgba(10,10,15,0.85)"
+                      : "rgba(255,255,255,0.9)",
+                    backdropFilter: "blur(20px)",
+                    border: "1px solid var(--border-glass)",
+                    padding: "8px 12px",
+                    borderRadius: "12px",
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "center",
+                  }}
+                >
+                  {Number.isFinite(activeRoute?.distanceKm) && (
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "var(--text-secondary)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      Distance {activeRoute.distanceKm.toFixed(2)} km
+                    </span>
+                  )}
+                  {Number.isFinite(activeRoute?.etaMinutes) && (
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: "#f59e0b",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      ETA {Math.max(1, Math.round(activeRoute.etaMinutes))} min
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Map legend */}
               <div
                 style={{

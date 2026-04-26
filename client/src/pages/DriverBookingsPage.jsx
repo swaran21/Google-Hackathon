@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Clock, CheckCircle2, XCircle, Activity, MapPin, Truck, Building2, User, Phone, Navigation } from "lucide-react";
-import { getDriverEmergencies } from "../services/api";
+import { getDriverEmergencies, getDriverHistory } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const EMERGENCY_LABELS = {
@@ -36,8 +36,24 @@ export default function DriverBookingsPage() {
   const fetchDriverEmergencies = async () => {
     try {
       setLoading(true);
-      const res = await getDriverEmergencies();
-      setEmergencies(res.data?.data || []);
+      const [assignedRes, historyRes] = await Promise.all([
+        getDriverEmergencies(),
+        getDriverHistory(),
+      ]);
+
+      const assignedList = assignedRes.data?.data || [];
+      const historyList = historyRes.data?.data || [];
+
+      const mergedById = new Map();
+      [...assignedList, ...historyList].forEach((item) => {
+        if (item?._id) mergedById.set(String(item._id), item);
+      });
+
+      const merged = Array.from(mergedById.values()).sort(
+        (a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt),
+      );
+
+      setEmergencies(merged);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -48,7 +64,7 @@ export default function DriverBookingsPage() {
   };
 
   const ongoing = emergencies.filter(e => ["pending", "dispatched", "en_route", "at_scene"].includes(e.status));
-  const completed = emergencies.filter(e => e.status === "completed");
+  const completed = emergencies.filter(e => ["completed", "resolved"].includes(e.status));
   const cancelled = emergencies.filter(e => e.status === "cancelled");
 
   if (loading) {

@@ -222,6 +222,25 @@ export default function SOSPage() {
     mergeEmergencyIntoResult,
   ]);
 
+  useEffect(() => {
+    const status = result?.emergency?.status;
+    const isFeedbackSubmitted = Boolean(result?.emergency?.feedback?.isSubmitted);
+
+    if (
+      step === "result" &&
+      ["resolved", "cancelled"].includes(status) &&
+      !feedbackSubmitted &&
+      !isFeedbackSubmitted
+    ) {
+      setShowFeedbackForm(true);
+    }
+  }, [
+    step,
+    result?.emergency?.status,
+    result?.emergency?.feedback?.isSubmitted,
+    feedbackSubmitted,
+  ]);
+
   const handleRequestLocation = async () => {
     setLocationError("");
     const location = await geo.requestLocation();
@@ -369,6 +388,8 @@ export default function SOSPage() {
     setLoadingText("Querying nearest fleets...");
     setCancellingEmergency(false);
     setBookingAmbulance(false);
+    setShowFeedbackForm(false);
+    setFeedbackSubmitted(false);
   };
 
   return (
