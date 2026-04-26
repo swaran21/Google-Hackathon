@@ -8,6 +8,7 @@ const {
   updateDriverStatus,
   simulateMove,
   manualMove,
+  manualMoveByDriverId,
   getDriverHistory,
   serveSimulator,
   toggleAmbulanceStatus,
@@ -36,6 +37,12 @@ router.post(
   protect,
   authorize("driver", "hospital", "admin"),
   manualMove,
+);
+router.post(
+  "/manual-move/:driverId",
+  protect,
+  authorize("driver", "hospital", "admin"),
+  manualMoveByDriverId,
 );
 router.put(
   "/ambulance/toggle-status",

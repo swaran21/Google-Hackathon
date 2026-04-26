@@ -11,6 +11,20 @@ const metersToLng = (meters, latitude) => {
   return meters / divisor;
 };
 
+const DEFAULT_MANUAL_SPEED_KMPH = 40;
+
+const clampSpeed = (value) => {
+  const speed = Number(value);
+  if (!Number.isFinite(speed)) return DEFAULT_MANUAL_SPEED_KMPH;
+  return Math.min(140, Math.max(5, speed));
+};
+
+const calculateEtaMinutes = (distanceKm, speedKmph) => {
+  if (!Number.isFinite(distanceKm) || distanceKm < 0) return null;
+  const safeSpeed = clampSpeed(speedKmph);
+  return Math.max(1, Math.round((distanceKm / safeSpeed) * 60));
+};
+
 const getNavigationTarget = (ambulance, emergency) => {
   if (!ambulance?.location?.coordinates || !emergency?.location?.coordinates) {
     return null;
@@ -401,13 +415,121 @@ const simulateMove = async (req, res, next) => {
   }
 };
 
+const executeManualMove = async ({
+  req,
+  ambulance,
+  direction,
+  stepMeters = 35,
+  speedKmph = DEFAULT_MANUAL_SPEED_KMPH,
+}) => {
+  const [currentLng, currentLat] = ambulance.location.coordinates;
+  const step = Number(stepMeters);
+
+  let nextLat = currentLat;
+  let nextLng = currentLng;
+
+  if (direction === "up") nextLat += metersToLat(step);
+  if (direction === "down") nextLat -= metersToLat(step);
+  if (direction === "right") nextLng += metersToLng(step, currentLat);
+  if (direction === "left") nextLng -= metersToLng(step, currentLat);
+
+  ambulance.location.coordinates = [nextLng, nextLat];
+  if (ambulance.status === "offline") {
+    ambulance.status = "available";
+  }
+  await ambulance.save();
+
+  let emergency = null;
+  let routeResult = null;
+  let distanceKm = null;
+  let phase = null;
+
+  if (ambulance.currentEmergency) {
+    emergency = await Emergency.findById(ambulance.currentEmergency).populate(
+      "assignedHospital",
+    );
+
+    if (emergency?.location?.coordinates) {
+      const [emLng, emLat] = emergency.location.coordinates;
+      const [hospLng, hospLat] =
+        emergency.assignedHospital?.location?.coordinates || [];
+      const isPhase2 =
+        ambulance.status === "at_scene" &&
+        Number.isFinite(hospLat) &&
+        Number.isFinite(hospLng);
+
+      const targetLat = isPhase2 ? hospLat : emLat;
+      const targetLng = isPhase2 ? hospLng : emLng;
+      phase = isPhase2 ? "to_hospital" : "to_patient";
+
+      routeResult = await getRouteWithFallback(
+        nextLat,
+        nextLng,
+        targetLat,
+        targetLng,
+      );
+      distanceKm =
+        routeResult?.route?.distance ??
+        haversine(nextLat, nextLng, targetLat, targetLng);
+    }
+  }
+
+  const computedEtaMinutes = calculateEtaMinutes(distanceKm, speedKmph);
+
+  const io = req.app.get("io");
+  if (io) {
+    const payload = {
+      ambulanceId: ambulance._id,
+      location: ambulance.location,
+      vehicleNumber: ambulance.vehicleNumber,
+      status: ambulance.status,
+      source: "manual-simulator",
+      phase,
+      speedKmph: clampSpeed(speedKmph),
+      routePath: routeResult?.path || null,
+      routeDistanceKm: distanceKm,
+      routeEtaMinutes: computedEtaMinutes,
+    };
+
+    io.emit("ambulance:location-update", payload);
+    io.to("admin").emit("ambulance:location-update", payload);
+
+    if (emergency?._id) {
+      io.to(`emergency:${emergency._id}`).emit("ambulance:tracking", payload);
+    }
+
+    if (emergency?.assignedHospital?._id) {
+      io.to(`hospital:${emergency.assignedHospital._id}`).emit(
+        "ambulance:tracking",
+        payload,
+      );
+    }
+  }
+
+  return {
+    ambulance,
+    route: routeResult
+      ? {
+          distanceKm,
+          etaMinutes: computedEtaMinutes,
+          speedKmph: clampSpeed(speedKmph),
+          path: routeResult.path,
+        }
+      : null,
+  };
+};
+
 /**
  * @desc    Move ambulance manually by arrow direction (for simulator)
  * @route   POST /api/driver/manual-move
  */
 const manualMove = async (req, res, next) => {
   try {
-    const { direction, stepMeters = 35 } = req.body;
+    const {
+      direction,
+      stepMeters = 35,
+      speedKmph = DEFAULT_MANUAL_SPEED_KMPH,
+    } = req.body;
     const validDirections = ["up", "down", "left", "right"];
 
     if (!validDirections.includes(direction)) {
@@ -431,91 +553,67 @@ const manualMove = async (req, res, next) => {
 
     const ambulance = await Ambulance.findById(ambulanceId);
     if (!ambulance) throw new ApiError(404, "Ambulance not found");
-
-    const [currentLng, currentLat] = ambulance.location.coordinates;
-    const step = Number(stepMeters);
-
-    let nextLat = currentLat;
-    let nextLng = currentLng;
-
-    if (direction === "up") nextLat += metersToLat(step);
-    if (direction === "down") nextLat -= metersToLat(step);
-    if (direction === "right") nextLng += metersToLng(step, currentLat);
-    if (direction === "left") nextLng -= metersToLng(step, currentLat);
-
-    ambulance.location.coordinates = [nextLng, nextLat];
-    if (ambulance.status === "offline") {
-      ambulance.status = "available";
-    }
-    await ambulance.save();
-
-    let emergency = null;
-    let routeResult = null;
-
-    if (ambulance.currentEmergency) {
-      emergency = await Emergency.findById(ambulance.currentEmergency).populate(
-        "assignedHospital",
-      );
-
-      if (emergency?.location?.coordinates) {
-        const [emLng, emLat] = emergency.location.coordinates;
-        const [hospLng, hospLat] =
-          emergency.assignedHospital?.location?.coordinates || [];
-        const isPhase2 =
-          ambulance.status === "at_scene" &&
-          Number.isFinite(hospLat) &&
-          Number.isFinite(hospLng);
-
-        routeResult = await getRouteWithFallback(
-          nextLat,
-          nextLng,
-          isPhase2 ? hospLat : emLat,
-          isPhase2 ? hospLng : emLng,
-        );
-      }
-    }
-
-    const io = req.app.get("io");
-    if (io) {
-      const payload = {
-        ambulanceId: ambulance._id,
-        location: ambulance.location,
-        vehicleNumber: ambulance.vehicleNumber,
-        status: ambulance.status,
-        source: "manual-simulator",
-        phase: ambulance.status === "at_scene" ? "to_hospital" : "to_patient",
-        routePath: routeResult?.path || null,
-        routeDistanceKm: routeResult?.route?.distance ?? null,
-        routeEtaMinutes: routeResult?.route?.duration ?? null,
-      };
-
-      io.emit("ambulance:location-update", payload);
-      io.to("admin").emit("ambulance:location-update", payload);
-
-      if (emergency?._id) {
-        io.to(`emergency:${emergency._id}`).emit("ambulance:tracking", payload);
-      }
-
-      if (emergency?.assignedHospital?._id) {
-        io.to(`hospital:${emergency.assignedHospital._id}`).emit(
-          "ambulance:tracking",
-          payload,
-        );
-      }
-    }
+    const data = await executeManualMove({
+      req,
+      ambulance,
+      direction,
+      stepMeters,
+      speedKmph,
+    });
 
     res.json({
       success: true,
-      data: {
-        ambulance,
-        route: routeResult
-          ? {
-              distanceKm: routeResult.route?.distance ?? null,
-              etaMinutes: routeResult.route?.duration ?? null,
-              path: routeResult.path,
-            }
-          : null,
-      },
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Move ambulance for a specific driver in real-time
+ * @route   POST /api/driver/manual-move/:driverId
+ */
+const manualMoveByDriverId = async (req, res, next) => {
+  try {
+    const { driverId } = req.params;
+    const {
+      direction,
+      stepMeters = 35,
+      speedKmph = DEFAULT_MANUAL_SPEED_KMPH,
+    } = req.body;
+    const validDirections = ["up", "down", "left", "right"];
+
+    if (!validDirections.includes(direction)) {
+      throw new ApiError(
+        400,
+        "direction must be one of: up, down, left, right",
+      );
+    }
+
+    if (
+      req.user?.role === "driver" &&
+      req.user?._id?.toString() !== String(driverId)
+    ) {
+      throw new ApiError(403, "Drivers can only move their own ambulance");
+    }
+
+    const ambulance = await Ambulance.findOne({ assignedDriver: driverId });
+    if (!ambulance) {
+      throw new ApiError(404, "No ambulance assigned to the specified driver");
+    }
+
+    const data = await executeManualMove({
+      req,
+      ambulance,
+      direction,
+      stepMeters,
+      speedKmph,
+    });
+
+    res.json({
+      success: true,
+      data,
     });
   } catch (error) {
     next(error);
@@ -593,8 +691,12 @@ const serveSimulator = async (_req, res, next) => {
       <button id="loginBtn">Login</button>
     </div>
     <div class="row">
+      <input id="driverId" placeholder="Driver ID (optional, for targeted move endpoint)" style="min-width:360px" />
       <input id="ambulanceId" placeholder="Ambulance ID (optional if driver assigned)" style="min-width:360px" />
+    </div>
+    <div class="row">
       <input id="stepMeters" placeholder="Step meters" value="35" style="width:120px" />
+      <input id="speedKmph" placeholder="Speed km/h" value="40" style="width:120px" />
     </div>
     <p id="status" class="hint">Not logged in</p>
     <pre id="log">Awaiting input...</pre>
@@ -648,16 +750,21 @@ const serveSimulator = async (_req, res, next) => {
       e.preventDefault();
 
       try {
+        const driverId = document.getElementById('driverId').value.trim();
         const ambulanceId = document.getElementById('ambulanceId').value.trim();
         const stepMeters = Number(document.getElementById('stepMeters').value || 35);
+        const speedKmph = Number(document.getElementById('speedKmph').value || 40);
+        const moveUrl = driverId
+          ? '/api/driver/manual-move/' + encodeURIComponent(driverId)
+          : '/api/driver/manual-move';
 
-        const res = await fetch('/api/driver/manual-move', {
+        const res = await fetch(moveUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: 'Bearer ' + token,
           },
-          body: JSON.stringify({ direction, ambulanceId: ambulanceId || undefined, stepMeters }),
+          body: JSON.stringify({ direction, ambulanceId: ambulanceId || undefined, stepMeters, speedKmph }),
         });
 
         const data = await res.json();
@@ -728,6 +835,7 @@ module.exports = {
   updateDriverStatus,
   simulateMove,
   manualMove,
+  manualMoveByDriverId,
   getDriverHistory,
   serveSimulator,
   toggleAmbulanceStatus,
