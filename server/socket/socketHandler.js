@@ -2,6 +2,21 @@ const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
 const { getRouteWithFallback } = require("../services/routingService");
 
+const mpsToKmph = (mps) => Number(mps) * 3.6;
+
+const deriveRealtimeEta = (distanceKm, speedMps, fallbackMinutes) => {
+  if (!Number.isFinite(distanceKm) || distanceKm < 0) {
+    return Number.isFinite(fallbackMinutes) ? fallbackMinutes : null;
+  }
+
+  const speedKmph = mpsToKmph(speedMps);
+  if (Number.isFinite(speedKmph) && speedKmph >= 3) {
+    return Math.max(1, Math.round((distanceKm / speedKmph) * 60));
+  }
+
+  return Number.isFinite(fallbackMinutes) ? fallbackMinutes : null;
+};
+
 const hasPoint = (entity) =>
   Array.isArray(entity?.location?.coordinates) &&
   entity.location.coordinates.length === 2;
@@ -263,11 +278,14 @@ const setupSocket = (io) => {
               toLng,
             );
 
+            const routeDistance = routeResult.route?.distance ?? null;
+            const routeDuration = routeResult.route?.duration ?? null;
+
             routeMeta = {
               phase: isPhase2 ? "to_hospital" : "to_patient",
               routePath: routeResult.path,
-              routeDistanceKm: routeResult.route?.distance ?? null,
-              routeEtaMinutes: routeResult.route?.duration ?? null,
+              routeDistanceKm: routeDistance,
+              routeEtaMinutes: deriveRealtimeEta(routeDistance, data?.speed, routeDuration),
             };
           }
         }
