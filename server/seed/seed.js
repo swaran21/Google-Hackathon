@@ -311,13 +311,16 @@ const AMBULANCE_STATUSES = [
 const buildAmbulances = (count, usedEmails) => {
   const ambulances = [];
   const driverUsers = [];
+  const localitySerialByCode = {};
 
   for (let i = 0; i < count; i += 1) {
     const driverCode = getUniqueCode("D", i);
     const driverName = `${driverCode} ${faker.person.firstName()}`;
-    const vehicleSeries = String(i + 1).padStart(4, "0");
-    const vehicleSuffix = String.fromCharCode(65 + (i % 26));
-    const vehicleNumber = `TS09${vehicleSuffix}${vehicleSeries}`;
+    const localityIndex = i % HYD_LOCALITIES.length;
+    const localityCode = `HYD${String(localityIndex + 1).padStart(2, "0")}`;
+    const nextLocalitySerial = (localitySerialByCode[localityCode] || 0) + 1;
+    localitySerialByCode[localityCode] = nextLocalitySerial;
+    const vehicleNumber = `${localityCode}-${String(nextLocalitySerial).padStart(3, "0")}`;
 
     const status = AMBULANCE_STATUSES[i % AMBULANCE_STATUSES.length];
     const isActive = status !== "offline";
