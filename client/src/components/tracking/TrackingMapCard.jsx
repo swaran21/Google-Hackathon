@@ -622,13 +622,15 @@ export default function TrackingMapCard({
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              padding: "12px 16px",
+              padding: "10px 14px",
               borderRadius: "14px",
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              fontSize: "12px",
-              fontWeight: 700,
+              fontSize: "10px",
+              fontWeight: 900,
+              fontFamily: "monospace",
+              letterSpacing: "0.05em",
               color: "var(--text-secondary)" }}
           >
             <div
@@ -640,8 +642,8 @@ export default function TrackingMapCard({
                 boxShadow: "0 0 8px var(--color-danger)",
                 animation: "pulse-glow 2s ease-in-out infinite" }}
             />
-            <span style={{ color: "var(--text-primary)" }}>
-              Emergency Active
+            <span style={{ color: "var(--color-danger)" }}>
+              EMERGENCY ACTIVE
             </span>
           </div>
           <div
@@ -676,17 +678,19 @@ export default function TrackingMapCard({
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              padding: "12px 16px",
+              padding: "10px 14px",
               borderRadius: "14px",
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              fontSize: "12px",
-              fontWeight: 700,
+              fontSize: "10px",
+              fontWeight: 900,
+              fontFamily: "monospace",
+              letterSpacing: "0.05em",
               color: "var(--text-secondary)" }}
           >
-            <Activity size={14} style={{ color: "var(--color-danger)" }} /> Fleet Health:{" "}
-            <span style={{ color: "var(--text-primary)" }}>Optimal</span>
+            <Activity size={14} style={{ color: "#22c55e" }} /> 
+            FLEET HEALTH: <span style={{ color: "#22c55e" }}>OPTIMAL</span>
           </div>
           <div
             className="neu-card"

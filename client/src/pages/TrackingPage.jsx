@@ -196,8 +196,9 @@ export default function TrackingPage() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "6px",
-                borderRadius: "14px",
+                padding: "4px",
+                borderRadius: "16px",
+                gap: "4px"
               }}
             >
               {["all", "available", "dispatched"].map((value) => (
@@ -206,16 +207,32 @@ export default function TrackingPage() {
                   onClick={() => setFilter(value)}
                   className={filter === value ? "neu-button neu-pressed" : "neu-button"}
                   style={{
-                    padding: "10px 24px",
+                    padding: "8px 24px",
                     borderRadius: "12px",
-                    fontSize: "11px",
-                    fontWeight: 800,
+                    fontSize: "10px",
+                    fontWeight: 900,
                     textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                    color: filter === value ? "var(--color-danger)" : "var(--text-muted)",
-                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                    letterSpacing: "0.15em",
+                    fontFamily: "monospace",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: filter === value 
+                      ? (value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)')
+                      : "var(--text-muted)",
+                    boxShadow: filter === value ? "none" : undefined,
+                    background: filter === value ? "rgba(0,0,0,0.02)" : "transparent"
                   }}
                 >
+                  {filter === value && (
+                    <div style={{ 
+                      width: "6px", 
+                      height: "6px", 
+                      borderRadius: "50%", 
+                      background: value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)',
+                      boxShadow: `0 0 8px ${value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)'}`
+                    }} />
+                  )}
                   {value}
                 </button>
               ))}
