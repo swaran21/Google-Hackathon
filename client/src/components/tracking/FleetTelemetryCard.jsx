@@ -15,13 +15,13 @@ const getStatusTheme = (status) => {
     case "dispatched":
       return { color: "var(--color-info)", label: "DISP", icon: "→" };
     case "en_route":
-      return { color: "var(--color-warning)", label: "ROUTE", icon: "🚑" };
+      return { color: "#f59e0b", label: "ROUTE", icon: "🚑" };
     case "at_scene":
-      return { color: "#c2410c", label: "SCENE", icon: "⚠" }; // Orange 700
+      return { color: "#fb923c", label: "SCENE", icon: "⚠" };
     case "returning":
-      return { color: "#7e22ce", label: "RET", icon: "↩" }; // Purple 700
+      return { color: "#a855f7", label: "RET", icon: "↩" };
     case "offline":
-      return { color: "var(--text-muted)", label: "OFF", icon: "✕" };
+      return { color: "#6b7280", label: "OFF", icon: "✕" };
     default:
       return { color: "var(--text-secondary)", label: status.toUpperCase().slice(0, 5), icon: "•" };
   }

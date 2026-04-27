@@ -4,11 +4,11 @@
 :root {
   /* ── Brand Colors ─────────────────── */
   --color-primary: #FFFFFF;
-  --color-secondary: #991b1b; /* Darker Crimson */
-  --color-danger: #991b1b; 
-  --color-success: #065f46; /* Forest Green 800 */
-  --color-info: #1e3a8a;    /* Navy Blue 800 */
-  --color-warning: #92400e; /* Amber 800 */
+  --color-secondary: #dc2626; 
+  --color-danger: #dc2626;  /* Red 600 */
+  --color-success: #064e3b; /* Emerald 900 for Light Mode readability */
+  --color-info: #1e3a8a;    /* Blue 900 for Light Mode readability */
+  --color-warning: #92400e; /* Amber 800 for Light Mode readability */
   
   /* ── Light Mode (Neumorphic default) ──── */
   --bg-primary: #E7E5E4;
@@ -17,9 +17,9 @@
   --bg-glass: #E7E5E4; /* Fallback for legacy pages */
   --border-glass: transparent;
   
-  --text-primary: #020617; /* Near Black */
-  --text-secondary: #1e293b; /* Deep Slate */
-  --text-muted: #475569; /* Slate 600 */
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #475569;
   
   --shadow-light: #ffffff;
   --shadow-dark: #c8c6c5;
@@ -35,6 +35,9 @@
 }
 
 [data-theme="dark"] {
+  --color-success: #10b981; /* Vibrant Emerald for Dark Mode */
+  --color-info: #3b82f6;    /* Vibrant Blue for Dark Mode */
+  --color-warning: #f59e0b; /* Vibrant Amber for Dark Mode */
   --bg-primary: #050505;
   --bg-secondary: #0A0A0A;
   --bg-card: #0A0A0A;

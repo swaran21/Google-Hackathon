@@ -93,11 +93,11 @@ export default function BookingsPage() {
       case "dispatched":
       case "en_route":
       case "at_scene":
-        return "#60a5fa";
+        return "var(--color-info)";
       case "resolved":
-        return "#4ade80";
+        return "var(--color-success)";
       case "cancelled":
-        return "#f87171";
+        return "var(--color-danger)";
       default:
         return "var(--text-primary)";
     }
@@ -140,12 +140,12 @@ export default function BookingsPage() {
         <div style={{ marginBottom: "32px" }}>
           <h1
             style={{
-              fontSize: "2.5rem",
+              fontSize: "3rem",
               fontWeight: 900,
-              letterSpacing: "-0.04em",
+              letterSpacing: "-0.05em",
               marginBottom: "8px" }}
           >
-            My <span style={{ color: "#ef4444" }}>Bookings</span>
+            Mission <span style={{ color: "var(--color-danger)" }}>History</span>
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "1.1rem" }}>
             Track and manage your SOS emergency requests and ambulance bookings.
@@ -441,78 +441,55 @@ export default function BookingsPage() {
                     em.assignedAmbulance &&
                     em.assignedHospital && (
                       <div
+                        className="neu-inner"
                         style={{
-                          padding: "14px 16px",
-                          borderRadius: "12px",
-                          background: "var(--bg-card)",
-                          border: "1px solid var(--bg-card)" }}
+                          padding: "20px",
+                          borderRadius: "16px",
+                          background: "rgba(0,0,0,0.02)" }}
                       >
                         {em.feedback?.isSubmitted ? (
                           <>
-                            <p
-                              style={{
-                                margin: 0,
-                                fontWeight: 800,
-                                color: "#22c55e",
-                                fontSize: "0.9rem" }}
-                            >
-                              Thank you for rating this completed service.
-                            </p>
-                            <p
-                              style={{
-                                margin: "6px 0 0",
-                                color: "var(--text-secondary)",
-                                fontSize: "0.85rem" }}
-                            >
-                              Driver: {renderStars(em.feedback?.driverRating)} •
-                              Hospital:{" "}
-                              {renderStars(em.feedback?.hospitalRating)} •
-                              Overall:{" "}
-                              {renderStars(em.feedback?.experienceRating)}
-                            </p>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                              <CheckCircle size={18} color="var(--color-success)" />
+                              <p style={{ margin: 0, fontWeight: 900, color: "var(--color-success)", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                                Mission Debriefing Complete
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "12px" }}>
+                              <div className="neu-card" style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "12px", fontWeight: 700 }}>
+                                Driver: <span style={{ color: "#f59e0b" }}>{renderStars(em.feedback?.driverRating)}</span>
+                              </div>
+                              <div className="neu-card" style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "12px", fontWeight: 700 }}>
+                                Hospital: <span style={{ color: "#f59e0b" }}>{renderStars(em.feedback?.hospitalRating)}</span>
+                              </div>
+                            </div>
                           </>
                         ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "12px",
-                              flexWrap: "wrap" }}
-                          >
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" }}>
                             <div>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontWeight: 800,
-                                  color: "#22c55e",
-                                  fontSize: "0.9rem" }}
-                              >
-                                Service completed. Please rate your ambulance
-                                driver and hospital.
+                              <p style={{ margin: 0, fontWeight: 900, color: "var(--text-primary)", fontSize: "14px" }}>
+                                Service Cycle Complete
                               </p>
-                              <p
-                                style={{
-                                  margin: "4px 0 0",
-                                  color: "var(--text-muted)",
-                                  fontSize: "0.82rem" }}
-                              >
-                                Your rating helps improve future dispatch
-                                quality.
+                              <p style={{ margin: "4px 0 0", color: "var(--text-muted)", fontSize: "12px", fontWeight: 600 }}>
+                                Please finalize the mission debriefing by rating the service providers.
                               </p>
                             </div>
                             <button
                               onClick={() => setRatingEmergency(em)}
+                              className="neu-button"
                               style={{
-                                padding: "10px 16px",
-                                borderRadius: "10px",
-                                border: "1px solid var(--bg-card)",
-                                background: "var(--bg-card)",
-                                color: "#166534",
-                                fontWeight: 800,
-                                cursor: "pointer" }}
+                                padding: "12px 24px",
+                                borderRadius: "12px",
+                                background: "var(--color-success)",
+                                color: "#fff",
+                                fontWeight: 900,
+                                fontSize: "12px",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.1em",
+                                border: "none",
+                                boxShadow: "0 6px 16px rgba(16, 185, 129, 0.3)" }}
                             >
-                              Rate Service
+                              Finalize Report
                             </button>
                           </div>
                         )}

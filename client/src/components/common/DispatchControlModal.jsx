@@ -1,4 +1,4 @@
-import { PhoneCall, Send, X, XCircle } from "lucide-react";
+import { PhoneCall, Send, X, ShieldCheck, Activity, XCircle } from "lucide-react";
 import useEmergencyChat from "../../hooks/useEmergencyChat";
 import { useAuth } from "../../context/AuthContext";
 
@@ -11,9 +11,9 @@ export default function DispatchControlModal({
   patientPhone,
   onClose,
   onCancel,
-  title = "Dispatch Interface",
+  title = "Dispatch Console",
   cancelDisabled = false,
-  cancelLabel = "Cancel Ambulance + Hospital Request",
+  cancelLabel = "Cancel Emergency Request",
 }) {
   const { user } = useAuth();
 
@@ -32,244 +32,198 @@ export default function DispatchControlModal({
   const subtitle = ambulance
     ? `Unit ${ambulance.vehicleNumber} • ${ambulance.driverName}`
     : emergencyId
-      ? `Emergency ${emergencyId.slice(-8).toUpperCase()}`
-      : "Emergency context unavailable";
+      ? `Case ID: ${emergencyId.slice(-8).toUpperCase()}`
+      : "Initializing Secure Connection...";
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: "var(--bg-card)",
-        backdropFilter: "blur(4px)",
+        background: "rgba(10, 10, 10, 0.4)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "16px",
-        zIndex: 70 }}
+        zIndex: 9999 }}
     >
+      {/* Floating Close Button */}
+      <button
+        onClick={onClose}
+        className="neu-button"
+        style={{
+          position: "fixed",
+          top: "40px",
+          right: "40px",
+          width: "56px",
+          height: "56px",
+          borderRadius: "18px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--color-danger)",
+          color: "#fff",
+          border: "4px solid var(--bg-card)",
+          zIndex: 10000,
+          boxShadow: "0 10px 40px rgba(220, 38, 38, 0.5)"
+        }}
+      >
+        <X size={28} strokeWidth={4} />
+      </button>
+
       <div
         className="neu-card"
         style={{
           width: "100%",
-          maxWidth: "560px",
-          borderRadius: "24px",
-          padding: "24px",
+          maxWidth: "580px",
+          borderRadius: "32px",
+          padding: "32px",
           display: "flex",
           flexDirection: "column",
-          gap: "16px",
-          maxHeight: "82vh" }}
+          gap: "24px",
+          maxHeight: "88vh",
+          background: "var(--bg-card)",
+          position: "relative" }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            position: "relative"
-          }}
-        >
+        {/* Header Console */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>{title}</h3>
-            <p
-              style={{
-                fontSize: "12px",
-                color: "var(--text-muted)",
-                marginTop: "4px" }}
-            >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+              <div className="pulse-dot" style={{ width: "10px", height: "10px", borderRadius: "50%", background: "var(--color-success)", boxShadow: "0 0 12px var(--color-success)" }} />
+              <span style={{ fontSize: "11px", fontWeight: 900, color: "var(--color-success)", letterSpacing: "0.2em", textTransform: "uppercase" }}>
+                Active Secure Link
+              </span>
+            </div>
+            <h3 style={{ fontSize: "1.75rem", fontWeight: 900, letterSpacing: "-0.03em", color: "var(--text-primary)" }}>{title}</h3>
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", fontWeight: 700, marginTop: "2px" }}>
               {subtitle}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="neu-button"
-            style={{
-              position: "absolute",
-              top: "-12px",
-              right: "-12px",
-              width: "42px",
-              height: "42px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              background: "var(--color-danger)", // High intensity crimson
-              border: "3px solid var(--bg-card)",
-              zIndex: 100, // Ensure it's above everything
-              boxShadow: "0 6px 20px rgba(0,0,0,0.3)"
-            }}
-          >
-            <XCircle size={24} strokeWidth={3} />
-          </button>
+          <div className="neu-card" style={{ padding: "12px", borderRadius: "16px", color: "var(--color-info)" }}>
+            <ShieldCheck size={24} />
+          </div>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-          {ambulance?.driverPhone && (
-            <a
-              href={`tel:${ambulance.driverPhone}`}
-              style={{ textDecoration: "none" }}
-            >
+        {/* Action Tray */}
+        <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px", scrollbarWidth: "none" }}>
+          {[
+            { label: "Call Driver", phone: ambulance?.driverPhone, color: "var(--color-success)", icon: <PhoneCall size={16} /> },
+            { label: "Hospital", phone: hospitalPhone, color: "var(--color-info)", icon: <PhoneCall size={16} /> },
+            { label: "Patient", phone: patientPhone, color: "var(--color-warning)", icon: <PhoneCall size={16} /> }
+          ].map((btn) => btn.phone && (
+            <a key={btn.label} href={`tel:${btn.phone}`} style={{ textDecoration: "none" }}>
               <button
                 className="neu-button"
                 style={{
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--bg-card)",
+                  padding: "12px 18px",
+                  borderRadius: "14px",
                   background: "var(--bg-card)",
-                  color: "var(--color-success)",
-                  fontWeight: 700,
+                  color: btn.color,
+                  fontWeight: 800,
+                  fontSize: "12px",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  fontFamily: "var(--font-family)" }}
+                  gap: "10px",
+                  whiteSpace: "nowrap"
+                }}
               >
-                <PhoneCall size={14} /> Call Ambulance
+                {btn.icon} {btn.label}
               </button>
             </a>
-          )}
-          {hospitalPhone && (
-            <a href={`tel:${hospitalPhone}`} style={{ textDecoration: "none" }}>
-              <button
-                className="neu-button"
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--bg-card)",
-                  background: "var(--bg-card)",
-                  color: "var(--color-info)",
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontFamily: "var(--font-family)" }}
-              >
-                <PhoneCall size={14} /> Call Hospital
-              </button>
-            </a>
-          )}
-          {patientPhone && (
-            <a href={`tel:${patientPhone}`} style={{ textDecoration: "none" }}>
-              <button
-                className="neu-button"
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: "10px",
-                  border: "1px solid var(--bg-card)",
-                  background: "var(--bg-card)",
-                  color: "var(--color-warning)",
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontFamily: "var(--font-family)" }}
-              >
-                <PhoneCall size={14} /> Call Patient
-              </button>
-            </a>
-          )}
+          ))}
         </div>
 
+        {/* Chat Interface */}
         <div
-          className="neu-inner" style={{  borderRadius: "12px", padding: "12px",
+          className="neu-inner"
+          style={{
+            flex: 1,
+            borderRadius: "24px",
+            padding: "24px",
             display: "flex",
             flexDirection: "column",
-            gap: "10px",
-            minHeight: "200px" }}
+            gap: "16px",
+            minHeight: "300px",
+            overflow: "hidden",
+            background: "rgba(0,0,0,0.01)" }}
         >
-          <div
-            style={{
-              fontSize: "10px",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-              letterSpacing: "0.12em" }}
-          >
-            Dispatch Chat
-          </div>
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px" }}
-          >
+          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "8px" }}>
             {chatLog.map((item) => (
               <div
                 key={item.id}
                 style={{
                   alignSelf: item.from === "user" ? "flex-end" : "flex-start",
-                  maxWidth: "85%",
-                  padding: "8px 10px",
-                  borderRadius: "10px",
-                  background:
-                    item.from === "user"
-                      ? "var(--bg-card)"
-                      : "var(--bg-card)",
-                  color:
-                    item.from === "user" ? "#bfdbfe" : "var(--text-secondary)",
-                  fontSize: "12px",
-                  fontWeight: 600 }}
+                  maxWidth: "80%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: item.from === "user" ? "flex-end" : "flex-start" }}
               >
+                <span style={{ fontSize: "10px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "4px", padding: "0 4px" }}>
+                  {item.senderName || "Unknown"} • {item.senderRole || "System"}
+                </span>
                 <div
                   style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    marginBottom: "4px",
-                    color:
-                      item.from === "user" ? "var(--color-info)" : "var(--text-muted)" }}
+                    padding: "12px 16px",
+                    borderRadius: item.from === "user" ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+                    background: item.from === "user" ? "var(--color-info)" : "var(--bg-card)",
+                    color: item.from === "user" ? "#fff" : "var(--text-primary)",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    boxShadow: item.from === "user" ? "0 4px 12px rgba(37, 99, 235, 0.2)" : "4px 4px 12px var(--shadow-dark)" }}
                 >
-                  {item.senderName || "Unknown"} • {item.senderRole || "system"}
+                  {item.text}
                 </div>
-                {item.text}
               </div>
             ))}
+            {chatLog.length === 0 && (
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: 0.4 }}>
+                <Activity size={48} style={{ marginBottom: "16px" }} />
+                <p style={{ fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", fontSize: "12px" }}>Establishing Encrypted Channel</p>
+              </div>
+            )}
           </div>
-          {!chatEnabled && (
-            <p
-              style={{
-                margin: 0,
-                fontSize: "12px",
-                color: "#fca5a5",
-                fontWeight: 600 }}
-            >
-              Chat becomes available once this case has a valid emergency ID.
-            </p>
-          )}
 
-          <div style={{ display: "flex", gap: "8px" }}>
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Type a real-time message"
-              disabled={!chatEnabled}
-              style={{
-                flex: 1,
-                borderRadius: "10px",
-                border: "1px solid transparent",
-                background: "var(--bg-input)",
-                color: "var(--text-primary)",
-                padding: "10px 12px",
-                fontFamily: "var(--font-family)" }}
-            />
+          {/* Message Input */}
+          <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+            <div className="neu-inner" style={{ flex: 1, borderRadius: "16px", padding: "4px" }}>
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendChat()}
+                placeholder="Type your message..."
+                disabled={!chatEnabled}
+                style={{
+                  width: "100%",
+                  padding: "14px 18px",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "var(--text-primary)",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  fontFamily: "var(--font-family)" }}
+              />
+            </div>
             <button
               onClick={sendChat}
-              disabled={!chatEnabled}
+              disabled={!chatEnabled || !chatInput.trim()}
               className="neu-button"
               style={{
-                borderRadius: "10px",
-                border: "none",
-                background: "#2563eb",
+                width: "54px",
+                height: "54px",
+                borderRadius: "16px",
+                background: "var(--color-info)",
                 color: "#fff",
-                padding: "10px 12px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: chatEnabled ? 1 : 0.55 }}
+                opacity: chatEnabled ? 1 : 0.5,
+                boxShadow: "0 6px 20px rgba(37, 99, 235, 0.4)"
+              }}
             >
-              <Send size={14} />
+              <Send size={20} />
             </button>
           </div>
         </div>
@@ -280,23 +234,34 @@ export default function DispatchControlModal({
             disabled={cancelDisabled}
             className="neu-button"
             style={{
-              borderRadius: "12px",
-              border: "1px solid var(--bg-card)",
+              borderRadius: "18px",
+              padding: "16px",
               background: "var(--bg-card)",
-              color: "#fca5a5",
-              padding: "12px 14px",
-              fontWeight: 800,
+              color: "var(--color-danger)",
+              fontWeight: 900,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "8px",
-              fontFamily: "var(--font-family)",
-              opacity: cancelDisabled ? 0.65 : 1 }}
+              gap: "10px",
+              fontSize: "13px",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              opacity: cancelDisabled ? 0.6 : 1 }}
           >
-            <XCircle size={14} /> {cancelLabel}
+            <XCircle size={20} /> {cancelLabel}
           </button>
         )}
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.9); }
+        }
+        .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+      `}} />
     </div>
   );
 }
+
+
