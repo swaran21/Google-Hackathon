@@ -4,6 +4,7 @@ import {
   bookAmbulanceForEmergency,
   getEmergency,
   createEmergency,
+  searchAmbulanceByVehicleNumber,
   selectHospitalForEmergency,
   cancelEmergencyRequest,
   getMyActiveEmergency,
@@ -76,8 +77,14 @@ const EMERGENCY_TYPES = [
 export default function SOSPage() {
   const geo = useGeolocation();
   const [step, setStep] = useState("idle");
+  const [flowMode, setFlowMode] = useState("hospital_first");
   const [selectedType, setSelectedType] = useState(null);
   const [result, setResult] = useState(null);
+  const [ambulanceSearchInput, setAmbulanceSearchInput] = useState("");
+  const [searchingAmbulance, setSearchingAmbulance] = useState(false);
+  const [ambulanceSearchError, setAmbulanceSearchError] = useState("");
+  const [selectedAmbulance, setSelectedAmbulance] = useState(null);
+  const [selectedAmbulanceRoute, setSelectedAmbulanceRoute] = useState(null);
   const [locationError, setLocationError] = useState("");
   const [error, setError] = useState("");
   const [resultError, setResultError] = useState("");
@@ -183,6 +190,40 @@ export default function SOSPage() {
     }
   });
 
+  useSocket(socket, "ambulance:location-update", (payload) => {
+    if (!payload?.ambulanceId) return;
+
+    setSelectedAmbulance((prev) => {
+      if (!prev?._id) return prev;
+      if (prev._id?.toString() !== payload.ambulanceId?.toString()) return prev;
+      return {
+        ...prev,
+        location: payload.location || prev.location,
+        status: payload.status || prev.status,
+      };
+    });
+
+    setSelectedAmbulanceRoute((prev) => {
+      if (!selectedAmbulance?._id) return prev;
+      if (
+        selectedAmbulance._id?.toString() !== payload.ambulanceId?.toString()
+      ) {
+        return prev;
+      }
+
+      return {
+        ...(prev || {}),
+        distanceKm: Number.isFinite(payload.routeDistanceKm)
+          ? payload.routeDistanceKm
+          : (prev?.distanceKm ?? null),
+        etaMinutes: Number.isFinite(payload.routeEtaMinutes)
+          ? payload.routeEtaMinutes
+          : (prev?.etaMinutes ?? null),
+        path: Array.isArray(payload.routePath) ? payload.routePath : prev?.path,
+      };
+    });
+  });
+
   useEffect(() => {
     if (!activeEmergencyId) return;
     if (step !== "result") return;
@@ -224,7 +265,9 @@ export default function SOSPage() {
 
   useEffect(() => {
     const status = result?.emergency?.status;
-    const isFeedbackSubmitted = Boolean(result?.emergency?.feedback?.isSubmitted);
+    const isFeedbackSubmitted = Boolean(
+      result?.emergency?.feedback?.isSubmitted,
+    );
 
     if (
       step === "result" &&
@@ -251,10 +294,61 @@ export default function SOSPage() {
     }
   };
 
+  const handleSearchAmbulance = async () => {
+    const vehicleNumber = ambulanceSearchInput.trim().toUpperCase();
+
+    if (!vehicleNumber) {
+      setAmbulanceSearchError(
+        "Enter the ambulance number shared by the 108 driver.",
+      );
+      return;
+    }
+
+    setSearchingAmbulance(true);
+    setAmbulanceSearchError("");
+
+    try {
+      const response = await searchAmbulanceByVehicleNumber(
+        vehicleNumber,
+        geo.hasCoordinates ? geo.latitude : undefined,
+        geo.hasCoordinates ? geo.longitude : undefined,
+      );
+
+      const ambulance = response.data.data?.ambulance || null;
+      const route = response.data.data?.route || null;
+
+      if (!ambulance) {
+        setAmbulanceSearchError("No active ambulance found for this number.");
+        setSelectedAmbulance(null);
+        setSelectedAmbulanceRoute(null);
+        return;
+      }
+
+      setSelectedAmbulance(ambulance);
+      setSelectedAmbulanceRoute(route);
+    } catch (err) {
+      setAmbulanceSearchError(
+        err.response?.data?.message ||
+          "Unable to locate that ambulance now. Please verify the number.",
+      );
+      setSelectedAmbulance(null);
+      setSelectedAmbulanceRoute(null);
+    } finally {
+      setSearchingAmbulance(false);
+    }
+  };
+
   const handleSOS = () => {
     if (!geo.hasCoordinates) {
       setLocationError(
         'Tap "Use Current Location" and allow browser access before starting SOS.',
+      );
+      return;
+    }
+
+    if (flowMode === "ambulance_first" && !selectedAmbulance?._id) {
+      setAmbulanceSearchError(
+        "Search and select your ambulance number first before proceeding.",
       );
       return;
     }
@@ -277,7 +371,11 @@ export default function SOSPage() {
     setStep("submitting");
     setError("");
     setResultError("");
-    setLoadingText("Analyzing emergency and scanning nearby hospitals...");
+    setLoadingText(
+      flowMode === "ambulance_first"
+        ? "Linking selected ambulance, analyzing emergency, and scanning hospitals..."
+        : "Analyzing emergency and scanning nearby hospitals...",
+    );
 
     try {
       const payload = {
@@ -285,6 +383,9 @@ export default function SOSPage() {
         type: selectedType,
         latitude: geo.latitude,
         longitude: geo.longitude,
+        flowType: flowMode,
+        selectedAmbulanceId:
+          flowMode === "ambulance_first" ? selectedAmbulance?._id : undefined,
       };
       const res = await createEmergency(payload);
       setResult(res.data.data);
@@ -386,6 +487,12 @@ export default function SOSPage() {
     setResultError("");
     setSelectingHospitalId(null);
     setLoadingText("Querying nearest fleets...");
+    setFlowMode("hospital_first");
+    setAmbulanceSearchInput("");
+    setSearchingAmbulance(false);
+    setAmbulanceSearchError("");
+    setSelectedAmbulance(null);
+    setSelectedAmbulanceRoute(null);
     setCancellingEmergency(false);
     setBookingAmbulance(false);
     setShowFeedbackForm(false);
@@ -403,7 +510,8 @@ export default function SOSPage() {
         justifyContent: "center",
         padding: "24px",
         position: "relative",
-        overflow: "hidden" }}
+        overflow: "hidden",
+      }}
     >
       <div
         style={{
@@ -411,7 +519,8 @@ export default function SOSPage() {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)" }}
+            "radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)",
+        }}
       />
 
       {/* IDLE */}
@@ -424,7 +533,8 @@ export default function SOSPage() {
             maxWidth: "420px",
             width: "100%",
             position: "relative",
-            zIndex: 10 }}
+            zIndex: 10,
+          }}
         >
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
             <div
@@ -441,7 +551,8 @@ export default function SOSPage() {
                 fontSize: "10px",
                 fontWeight: 800,
                 textTransform: "uppercase",
-                letterSpacing: "0.2em" }}
+                letterSpacing: "0.2em",
+              }}
             >
               <span
                 style={{
@@ -450,7 +561,8 @@ export default function SOSPage() {
                   borderRadius: "50%",
                   background: "#ef4444",
                   boxShadow: "0 0 8px var(--bg-card)",
-                  animation: "pulse-glow 2s ease-in-out infinite" }}
+                  animation: "pulse-glow 2s ease-in-out infinite",
+                }}
               />
               Emergency Channel Active
             </div>
@@ -459,7 +571,8 @@ export default function SOSPage() {
                 fontSize: "2.8rem",
                 fontWeight: 900,
                 letterSpacing: "-0.04em",
-                marginBottom: "12px" }}
+                marginBottom: "12px",
+              }}
             >
               Direct <span style={{ color: "#dc2626" }}>SOS</span>
             </h1>
@@ -468,10 +581,205 @@ export default function SOSPage() {
                 color: "var(--text-muted)",
                 fontWeight: 500,
                 fontSize: "0.95rem",
-                transition: "color 0.3s" }}
+                transition: "color 0.3s",
+              }}
             >
               Initiate immediate medical dispatch and hospital triage.
             </p>
+
+            <div
+              style={{
+                marginTop: "18px",
+                display: "inline-flex",
+                padding: "4px",
+                borderRadius: "14px",
+                border: "1px solid var(--bg-card)",
+                background: "var(--bg-card)",
+                gap: "4px",
+              }}
+            >
+              <button
+                onClick={() => {
+                  setFlowMode("hospital_first");
+                  setAmbulanceSearchError("");
+                }}
+                className="neu-button"
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background:
+                    flowMode === "hospital_first"
+                      ? "rgba(239,68,68,0.18)"
+                      : "transparent",
+                  color:
+                    flowMode === "hospital_first"
+                      ? "#fecaca"
+                      : "var(--text-muted)",
+                  fontWeight: 800,
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontFamily: "var(--font-family)",
+                }}
+              >
+                Hospital First
+              </button>
+              <button
+                onClick={() => setFlowMode("ambulance_first")}
+                className="neu-button"
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background:
+                    flowMode === "ambulance_first"
+                      ? "rgba(34,197,94,0.18)"
+                      : "transparent",
+                  color:
+                    flowMode === "ambulance_first"
+                      ? "#bbf7d0"
+                      : "var(--text-muted)",
+                  fontWeight: 800,
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontFamily: "var(--font-family)",
+                }}
+              >
+                Ambulance First
+              </button>
+            </div>
+
+            {flowMode === "ambulance_first" && (
+              <div
+                className="neu-card"
+                style={{
+                  marginTop: "18px",
+                  padding: "14px",
+                  borderRadius: "16px",
+                  textAlign: "left",
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
+                  minWidth: "360px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.12em",
+                    color: "#bbf7d0",
+                    marginBottom: "8px",
+                  }}
+                >
+                  108 Driver Number Lookup
+                </p>
+                <div
+                  style={{ display: "flex", gap: "8px", marginBottom: "8px" }}
+                >
+                  <input
+                    value={ambulanceSearchInput}
+                    onChange={(event) =>
+                      setAmbulanceSearchInput(event.target.value.toUpperCase())
+                    }
+                    placeholder="Enter ambulance number (e.g. HYD01-001)"
+                    style={{
+                      flex: 1,
+                      borderRadius: "12px",
+                      border: "1px solid var(--bg-card)",
+                      background: "var(--bg-card)",
+                      color: "var(--text-primary)",
+                      padding: "10px 12px",
+                      outline: "none",
+                      fontFamily: "var(--font-family)",
+                    }}
+                  />
+                  <button
+                    onClick={handleSearchAmbulance}
+                    className="neu-button"
+                    disabled={searchingAmbulance}
+                    style={{
+                      borderRadius: "12px",
+                      border: "none",
+                      background: "#16a34a",
+                      color: "#dcfce7",
+                      padding: "10px 12px",
+                      fontWeight: 800,
+                      fontFamily: "var(--font-family)",
+                      opacity: searchingAmbulance ? 0.7 : 1,
+                    }}
+                  >
+                    {searchingAmbulance ? "Searching..." : "Find"}
+                  </button>
+                </div>
+
+                {selectedAmbulance && (
+                  <div
+                    style={{
+                      borderRadius: "12px",
+                      border: "1px solid rgba(34,197,94,0.3)",
+                      background: "rgba(34,197,94,0.12)",
+                      padding: "10px 12px",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: 800,
+                        fontSize: "13px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {selectedAmbulance.vehicleNumber} •{" "}
+                      {selectedAmbulance.status}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      Driver: {selectedAmbulance.driverName} (
+                      {selectedAmbulance.driverPhone})
+                    </p>
+                    {selectedAmbulanceRoute?.etaMinutes ? (
+                      <p
+                        style={{
+                          fontSize: "11px",
+                          color: "#86efac",
+                          marginTop: "4px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        ETA to your location:{" "}
+                        {Math.max(
+                          1,
+                          Math.round(selectedAmbulanceRoute.etaMinutes),
+                        )}{" "}
+                        min
+                        {Number.isFinite(selectedAmbulanceRoute?.distanceKm)
+                          ? ` • ${Number(selectedAmbulanceRoute.distanceKm).toFixed(1)} km`
+                          : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
+                {ambulanceSearchError && (
+                  <p
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#fecaca",
+                    }}
+                  >
+                    {ambulanceSearchError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div style={{ position: "relative", marginBottom: "64px" }}>
             {/* Machined Outer Ring */}
@@ -482,9 +790,10 @@ export default function SOSPage() {
                 inset: "-20px",
                 borderRadius: "50%",
                 background: "var(--bg-primary)",
-                border: "2px solid var(--shadow-dark)" }}
+                border: "2px solid var(--shadow-dark)",
+              }}
             />
-            
+
             <button
               onClick={handleSOS}
               className="sos-button cursor-pointer"
@@ -494,32 +803,41 @@ export default function SOSPage() {
                 width: "200px",
                 height: "200px",
                 borderRadius: "50%",
-                background: "linear-gradient(145deg, var(--color-danger), #dc2626)",
+                background:
+                  "linear-gradient(145deg, var(--color-danger), #dc2626)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#fff",
                 border: "none",
-                boxShadow: "0 0 40px var(--color-danger)" }}
+                boxShadow: "0 0 40px var(--color-danger)",
+              }}
             >
               <div
                 style={{
                   position: "absolute",
                   inset: "0",
                   borderRadius: "50%",
-                  background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 70%)" }}
+                  background:
+                    "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 70%)",
+                }}
               />
               <AlertCircle
                 size={56}
-                style={{ color: "#fff", marginBottom: "8px", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" }}
+                style={{
+                  color: "#fff",
+                  marginBottom: "8px",
+                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+                }}
               />
               <span
                 style={{
                   fontSize: "2.2rem",
                   fontWeight: 900,
                   letterSpacing: "-0.04em",
-                  textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}
+                  textShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                }}
               >
                 SOS
               </span>
@@ -530,7 +848,8 @@ export default function SOSPage() {
                   color: "rgba(255,255,255,0.9)",
                   textTransform: "uppercase",
                   letterSpacing: "0.2em",
-                  marginTop: "6px" }}
+                  marginTop: "6px",
+                }}
               >
                 PRESS TO HELP
               </span>
@@ -543,19 +862,23 @@ export default function SOSPage() {
               borderRadius: "20px",
               display: "flex",
               alignItems: "center",
-              gap: "14px" }}
+              gap: "14px",
+            }}
           >
             <div
               style={{
                 padding: "8px",
                 borderRadius: "10px",
-                background: geo.loading
-                  ? "var(--bg-card)"
-                  : "var(--bg-card)" }}
+                background: geo.loading ? "var(--bg-card)" : "var(--bg-card)",
+              }}
             >
               <MapPin
                 size={18}
-                style={{ color: geo.loading ? "var(--color-warning)" : "var(--color-success)" }}
+                style={{
+                  color: geo.loading
+                    ? "var(--color-warning)"
+                    : "var(--color-success)",
+                }}
               />
             </div>
             <div>
@@ -566,7 +889,8 @@ export default function SOSPage() {
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
                   color: "var(--text-muted)",
-                  transition: "color 0.3s" }}
+                  transition: "color 0.3s",
+                }}
               >
                 Satellite Lock
               </p>
@@ -576,7 +900,8 @@ export default function SOSPage() {
                   fontFamily: "monospace",
                   fontWeight: 700,
                   lineHeight: 1,
-                  marginTop: "4px" }}
+                  marginTop: "4px",
+                }}
               >
                 {geo.loading
                   ? "Fetching current location..."
@@ -599,7 +924,8 @@ export default function SOSPage() {
               fontWeight: 800,
               fontFamily: "var(--font-family)",
               letterSpacing: "0.02em",
-              opacity: geo.loading ? 0.7 : 1 }}
+              opacity: geo.loading ? 0.7 : 1,
+            }}
             disabled={geo.loading}
           >
             {geo.loading
@@ -621,7 +947,8 @@ export default function SOSPage() {
                 fontSize: "12px",
                 fontWeight: 700,
                 maxWidth: "360px",
-                textAlign: "center" }}
+                textAlign: "center",
+              }}
             >
               {locationError || geo.error}
             </div>
@@ -636,7 +963,8 @@ export default function SOSPage() {
             width: "100%",
             maxWidth: "700px",
             position: "relative",
-            zIndex: 10 }}
+            zIndex: 10,
+          }}
           className="page-enter"
         >
           <div
@@ -644,7 +972,8 @@ export default function SOSPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: "32px" }}
+              marginBottom: "32px",
+            }}
           >
             <div>
               <h2
@@ -652,7 +981,8 @@ export default function SOSPage() {
                   fontSize: "1.75rem",
                   fontWeight: 900,
                   letterSpacing: "-0.02em",
-                  marginBottom: "6px" }}
+                  marginBottom: "6px",
+                }}
               >
                 Triage <span style={{ color: "#dc2626" }}>Class</span>
               </h2>
@@ -660,7 +990,8 @@ export default function SOSPage() {
                 style={{
                   color: "var(--text-muted)",
                   fontSize: "0.875rem",
-                  transition: "color 0.3s" }}
+                  transition: "color 0.3s",
+                }}
               >
                 Select the nature of emergency for optimized resource
                 allocation.
@@ -677,7 +1008,8 @@ export default function SOSPage() {
                 color: "var(--text-secondary)",
                 display: "flex",
                 alignItems: "center",
-                transition: "all 0.2s" }}
+                transition: "all 0.2s",
+              }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = "var(--text-primary)";
                 e.currentTarget.style.background = "var(--bg-secondary)";
@@ -694,7 +1026,8 @@ export default function SOSPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "16px" }}
+              gap: "16px",
+            }}
           >
             {EMERGENCY_TYPES.map((type) => {
               const c = COLORS[type.color] || "#ef4444";
@@ -710,7 +1043,8 @@ export default function SOSPage() {
                     background: "var(--bg-card)",
                     transition: "all 0.3s",
                     position: "relative",
-                    overflow: "hidden" }}
+                    overflow: "hidden",
+                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = `${c}40`;
                     e.currentTarget.style.background = "var(--bg-secondary)";
@@ -732,7 +1066,8 @@ export default function SOSPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: "20px" }}
+                      marginBottom: "20px",
+                    }}
                   >
                     {type.icon}
                   </div>
@@ -740,7 +1075,8 @@ export default function SOSPage() {
                     style={{
                       fontWeight: 700,
                       fontSize: "1.05rem",
-                      marginBottom: "4px" }}
+                      marginBottom: "4px",
+                    }}
                   >
                     {type.label}
                   </h3>
@@ -751,7 +1087,8 @@ export default function SOSPage() {
                       textTransform: "uppercase",
                       letterSpacing: "0.15em",
                       color: "var(--text-muted)",
-                      transition: "color 0.3s" }}
+                      transition: "color 0.3s",
+                    }}
                   >
                     Select Unit →
                   </span>
@@ -767,6 +1104,46 @@ export default function SOSPage() {
           style={{ width: "100%", maxWidth: "520px" }}
           className="page-enter"
         >
+          {flowMode === "ambulance_first" && selectedAmbulance && (
+            <div
+              className="neu-card"
+              style={{
+                marginBottom: "14px",
+                padding: "12px 14px",
+                borderRadius: "14px",
+                border: "1px solid rgba(34,197,94,0.35)",
+                background: "rgba(34,197,94,0.12)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                  color: "#bbf7d0",
+                  marginBottom: "4px",
+                }}
+              >
+                Ambulance-First Mode
+              </p>
+              <p style={{ fontWeight: 800, fontSize: "0.92rem" }}>
+                {selectedAmbulance.vehicleNumber} •{" "}
+                {selectedAmbulance.driverName}
+              </p>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "var(--text-secondary)",
+                  marginTop: "4px",
+                }}
+              >
+                Submit patient details next. AI will suggest hospitals after
+                this step.
+              </p>
+            </div>
+          )}
+
           <EmergencyForm
             type={selectedType}
             typeInfo={EMERGENCY_TYPES.find((t) => t.value === selectedType)}
@@ -786,7 +1163,8 @@ export default function SOSPage() {
             alignItems: "center",
             gap: "32px",
             position: "relative",
-            zIndex: 10 }}
+            zIndex: 10,
+          }}
         >
           <div style={{ position: "relative" }}>
             <div
@@ -796,9 +1174,13 @@ export default function SOSPage() {
                 background: "var(--bg-card)",
                 filter: "blur(40px)",
                 borderRadius: "50%",
-                animation: "pulse-glow 2s ease-in-out infinite" }}
+                animation: "pulse-glow 2s ease-in-out infinite",
+              }}
             />
-            <div className="spinner" style={{ width: '80px', height: '80px' }}></div>
+            <div
+              className="spinner"
+              style={{ width: "80px", height: "80px" }}
+            ></div>
           </div>
           <div style={{ textAlign: "center" }}>
             <h2
@@ -806,7 +1188,8 @@ export default function SOSPage() {
                 fontSize: "1.5rem",
                 fontWeight: 900,
                 letterSpacing: "-0.02em",
-                marginBottom: "12px" }}
+                marginBottom: "12px",
+              }}
             >
               Calculating Optimal Response
             </h2>
@@ -820,7 +1203,8 @@ export default function SOSPage() {
                 color: "var(--text-muted)",
                 fontWeight: 700,
                 textTransform: "uppercase",
-                letterSpacing: "0.15em" }}
+                letterSpacing: "0.15em",
+              }}
             >
               <Loader2
                 size={12}

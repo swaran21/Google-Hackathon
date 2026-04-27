@@ -42,6 +42,12 @@ export const getEmergencyFeedback = (id) =>
 export const getNearestAmbulance = (lat, lng) =>
   api.get(`/ambulance/nearest?lat=${lat}&lng=${lng}`);
 export const getAllAmbulances = () => api.get("/ambulance");
+export const searchAmbulanceByVehicleNumber = (vehicleNumber, lat, lng) => {
+  const query = new URLSearchParams({ vehicleNumber });
+  if (Number.isFinite(lat)) query.append("lat", String(lat));
+  if (Number.isFinite(lng)) query.append("lng", String(lng));
+  return api.get(`/ambulance/search?${query.toString()}`);
+};
 export const getUserVisibleAmbulances = () => api.get("/ambulance/visible");
 export const updateAmbulanceLocation = (id, latitude, longitude) =>
   api.patch(`/ambulance/${id}/location`, { latitude, longitude });
