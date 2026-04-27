@@ -40,17 +40,16 @@ export default function DispatchControlModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(2,6,23,0.6)",
+        background: "var(--bg-card)",
         backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "16px",
-        zIndex: 70,
-      }}
+        zIndex: 70 }}
     >
       <div
-        className="glass-card"
+        className="neu-card"
         style={{
           width: "100%",
           maxWidth: "560px",
@@ -59,15 +58,13 @@ export default function DispatchControlModal({
           display: "flex",
           flexDirection: "column",
           gap: "16px",
-          maxHeight: "82vh",
-        }}
+          maxHeight: "82vh" }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-          }}
+            justifyContent: "space-between" }}
         >
           <div>
             <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>{title}</h3>
@@ -75,26 +72,24 @@ export default function DispatchControlModal({
               style={{
                 fontSize: "12px",
                 color: "var(--text-muted)",
-                marginTop: "4px",
-              }}
+                marginTop: "4px" }}
             >
               {subtitle}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               width: "34px",
               height: "34px",
               borderRadius: "9999px",
-              border: "1px solid var(--border-glass)",
-              background: "var(--bg-glass)",
+              border: "1px solid transparent",
+              background: "var(--bg-card)",
               color: "var(--text-secondary)",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-            }}
+              justifyContent: "center" }}
           >
             <X size={16} />
           </button>
@@ -107,19 +102,18 @@ export default function DispatchControlModal({
               style={{ textDecoration: "none" }}
             >
               <button
-                className="cursor-pointer"
+                className="neu-button"
                 style={{
                   padding: "10px 12px",
                   borderRadius: "10px",
-                  border: "1px solid rgba(34,197,94,0.4)",
-                  background: "rgba(34,197,94,0.12)",
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
                   color: "#86efac",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  fontFamily: "var(--font-family)",
-                }}
+                  fontFamily: "var(--font-family)" }}
               >
                 <PhoneCall size={14} /> Call Ambulance
               </button>
@@ -128,19 +122,18 @@ export default function DispatchControlModal({
           {hospitalPhone && (
             <a href={`tel:${hospitalPhone}`} style={{ textDecoration: "none" }}>
               <button
-                className="cursor-pointer"
+                className="neu-button"
                 style={{
                   padding: "10px 12px",
                   borderRadius: "10px",
-                  border: "1px solid rgba(59,130,246,0.4)",
-                  background: "rgba(59,130,246,0.12)",
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
                   color: "#93c5fd",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  fontFamily: "var(--font-family)",
-                }}
+                  fontFamily: "var(--font-family)" }}
               >
                 <PhoneCall size={14} /> Call Hospital
               </button>
@@ -149,19 +142,18 @@ export default function DispatchControlModal({
           {patientPhone && (
             <a href={`tel:${patientPhone}`} style={{ textDecoration: "none" }}>
               <button
-                className="cursor-pointer"
+                className="neu-button"
                 style={{
                   padding: "10px 12px",
                   borderRadius: "10px",
-                  border: "1px solid rgba(234,179,8,0.4)",
-                  background: "rgba(234,179,8,0.12)",
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
                   color: "#fde68a",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  fontFamily: "var(--font-family)",
-                }}
+                  fontFamily: "var(--font-family)" }}
               >
                 <PhoneCall size={14} /> Call Patient
               </button>
@@ -170,16 +162,11 @@ export default function DispatchControlModal({
         </div>
 
         <div
-          style={{
-            border: "1px solid var(--border-glass)",
-            borderRadius: "14px",
-            padding: "12px",
-            background: "var(--bg-glass)",
+          className="neu-inner" style={{  borderRadius: "12px", padding: "12px",
             display: "flex",
             flexDirection: "column",
             gap: "10px",
-            minHeight: "200px",
-          }}
+            minHeight: "200px" }}
         >
           <div
             style={{
@@ -187,8 +174,7 @@ export default function DispatchControlModal({
               fontWeight: 800,
               textTransform: "uppercase",
               color: "var(--text-muted)",
-              letterSpacing: "0.12em",
-            }}
+              letterSpacing: "0.12em" }}
           >
             Dispatch Chat
           </div>
@@ -198,8 +184,7 @@ export default function DispatchControlModal({
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
-            }}
+              gap: "8px" }}
           >
             {chatLog.map((item) => (
               <div
@@ -211,13 +196,12 @@ export default function DispatchControlModal({
                   borderRadius: "10px",
                   background:
                     item.from === "user"
-                      ? "rgba(37,99,235,0.18)"
-                      : "rgba(148,163,184,0.12)",
+                      ? "var(--bg-card)"
+                      : "var(--bg-card)",
                   color:
                     item.from === "user" ? "#bfdbfe" : "var(--text-secondary)",
                   fontSize: "12px",
-                  fontWeight: 600,
-                }}
+                  fontWeight: 600 }}
               >
                 <div
                   style={{
@@ -227,8 +211,7 @@ export default function DispatchControlModal({
                     letterSpacing: "0.06em",
                     marginBottom: "4px",
                     color:
-                      item.from === "user" ? "#93c5fd" : "var(--text-muted)",
-                  }}
+                      item.from === "user" ? "#93c5fd" : "var(--text-muted)" }}
                 >
                   {item.senderName || "Unknown"} • {item.senderRole || "system"}
                 </div>
@@ -242,8 +225,7 @@ export default function DispatchControlModal({
                 margin: 0,
                 fontSize: "12px",
                 color: "#fca5a5",
-                fontWeight: 600,
-              }}
+                fontWeight: 600 }}
             >
               Chat becomes available once this case has a valid emergency ID.
             </p>
@@ -258,17 +240,16 @@ export default function DispatchControlModal({
               style={{
                 flex: 1,
                 borderRadius: "10px",
-                border: "1px solid var(--border-glass)",
+                border: "1px solid transparent",
                 background: "var(--bg-input)",
                 color: "var(--text-primary)",
                 padding: "10px 12px",
-                fontFamily: "var(--font-family)",
-              }}
+                fontFamily: "var(--font-family)" }}
             />
             <button
               onClick={sendChat}
               disabled={!chatEnabled}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 borderRadius: "10px",
                 border: "none",
@@ -278,8 +259,7 @@ export default function DispatchControlModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: chatEnabled ? 1 : 0.55,
-              }}
+                opacity: chatEnabled ? 1 : 0.55 }}
             >
               <Send size={14} />
             </button>
@@ -290,11 +270,11 @@ export default function DispatchControlModal({
           <button
             onClick={onCancel}
             disabled={cancelDisabled}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               borderRadius: "12px",
-              border: "1px solid rgba(239,68,68,0.4)",
-              background: "rgba(239,68,68,0.12)",
+              border: "1px solid var(--bg-card)",
+              background: "var(--bg-card)",
               color: "#fca5a5",
               padding: "12px 14px",
               fontWeight: 800,
@@ -303,8 +283,7 @@ export default function DispatchControlModal({
               justifyContent: "center",
               gap: "8px",
               fontFamily: "var(--font-family)",
-              opacity: cancelDisabled ? 0.65 : 1,
-            }}
+              opacity: cancelDisabled ? 0.65 : 1 }}
           >
             <XCircle size={14} /> {cancelLabel}
           </button>

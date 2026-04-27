@@ -15,32 +15,32 @@ import HospitalSuggestionsPanel from "./sos/HospitalSuggestionsPanel";
 const SEV = {
   1: {
     color: "#4ade80",
-    bg: "rgba(34,197,94,0.1)",
-    border: "rgba(34,197,94,0.2)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
     label: "LOW",
   },
   2: {
     color: "#60a5fa",
-    bg: "rgba(59,130,246,0.1)",
-    border: "rgba(59,130,246,0.2)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
     label: "MODERATE",
   },
   3: {
     color: "#facc15",
-    bg: "rgba(234,179,8,0.1)",
-    border: "rgba(234,179,8,0.2)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
     label: "HIGH",
   },
   4: {
     color: "#fb923c",
-    bg: "rgba(249,115,22,0.1)",
-    border: "rgba(249,115,22,0.2)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
     label: "CRITICAL",
   },
   5: {
     color: "#fca5a5",
-    bg: "rgba(239,68,68,0.1)",
-    border: "rgba(239,68,68,0.2)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
     label: "EXTREME",
   },
 };
@@ -121,15 +121,13 @@ export default function SOSResult({
         maxWidth: "900px",
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
-      }}
+        gap: "24px" }}
     >
       <div
         style={{
           textAlign: "center",
           paddingBottom: "28px",
-          borderBottom: "1px solid var(--border-glass)",
-        }}
+          borderBottom: "1px solid transparent" }}
       >
         <div
           style={{
@@ -137,13 +135,12 @@ export default function SOSResult({
             height: "72px",
             borderRadius: "50%",
             margin: "0 auto 20px",
-            background: "rgba(34,197,94,0.1)",
-            border: "1px solid rgba(34,197,94,0.2)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--bg-card)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 0 40px rgba(16,185,129,0.12)",
-          }}
+            boxShadow: "0 0 40px var(--bg-card)" }}
         >
           <CheckCircle2 size={36} style={{ color: "#22c55e" }} />
         </div>
@@ -152,8 +149,7 @@ export default function SOSResult({
             fontSize: "2rem",
             fontWeight: 900,
             letterSpacing: "-0.03em",
-            marginBottom: "8px",
-          }}
+            marginBottom: "8px" }}
         >
           {requiresHospitalSelection
             ? "Select Receiving Hospital"
@@ -168,8 +164,7 @@ export default function SOSResult({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: "10px",
-          }}
+            gap: "10px" }}
         >
           <span
             style={{
@@ -179,23 +174,21 @@ export default function SOSResult({
               color: "var(--text-muted)",
               letterSpacing: "0.2em",
               textTransform: "uppercase",
-              transition: "color 0.3s",
-            }}
+              transition: "color 0.3s" }}
           >
             Emergency ID
           </span>
           <span
             style={{
               padding: "4px 12px",
-              background: "var(--bg-glass)",
-              border: "1px solid var(--border-glass)",
+              background: "var(--bg-card)",
+              border: "1px solid transparent",
               borderRadius: "8px",
               color: "#ef4444",
               fontFamily: "monospace",
               fontSize: "0.875rem",
               fontWeight: 900,
-              textTransform: "uppercase",
-            }}
+              textTransform: "uppercase" }}
           >
             {emergency._id.slice(-8)}
           </span>
@@ -204,15 +197,14 @@ export default function SOSResult({
 
       {actionError && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "16px 20px",
             borderRadius: "18px",
-            border: "1px solid rgba(239,68,68,0.35)",
-            background: "rgba(239,68,68,0.08)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             color: "#fecaca",
-            fontWeight: 700,
-          }}
+            fontWeight: 700 }}
         >
           {actionError}
         </div>
@@ -220,15 +212,14 @@ export default function SOSResult({
 
       {cancellationMessage && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "16px 20px",
             borderRadius: "18px",
-            border: "1px solid rgba(34,197,94,0.3)",
-            background: "rgba(34,197,94,0.08)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             color: "#bbf7d0",
-            fontWeight: 700,
-          }}
+            fontWeight: 700 }}
         >
           {cancellationMessage}
         </div>
@@ -236,15 +227,14 @@ export default function SOSResult({
 
       {waitingHospitalApproval && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "16px 20px",
             borderRadius: "18px",
-            border: "1px solid rgba(250,204,21,0.3)",
-            background: "rgba(250,204,21,0.08)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             color: "#fde68a",
-            fontWeight: 700,
-          }}
+            fontWeight: 700 }}
         >
           Bed request sent to hospital. Waiting for hospital admin approval.
         </div>
@@ -252,15 +242,14 @@ export default function SOSResult({
 
       {hospitalRequestStatus === "rejected" && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "16px 20px",
             borderRadius: "18px",
-            border: "1px solid rgba(239,68,68,0.3)",
-            background: "rgba(239,68,68,0.08)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             color: "#fecaca",
-            fontWeight: 700,
-          }}
+            fontWeight: 700 }}
         >
           Hospital declined this request. Select another hospital below.
         </div>
@@ -268,18 +257,17 @@ export default function SOSResult({
 
       {canBookAmbulance && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "14px 16px",
             borderRadius: "18px",
-            border: "1px solid rgba(34,197,94,0.35)",
-            background: "rgba(34,197,94,0.1)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "12px",
-            flexWrap: "wrap",
-          }}
+            flexWrap: "wrap" }}
         >
           <span style={{ color: "#bbf7d0", fontWeight: 800 }}>
             Hospital accepted your bed request. Book ambulance now.
@@ -287,7 +275,7 @@ export default function SOSResult({
           <button
             onClick={handleBookAmbulance}
             disabled={bookingAmbulance}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               padding: "10px 14px",
               borderRadius: "10px",
@@ -296,8 +284,7 @@ export default function SOSResult({
               color: "#052e16",
               fontWeight: 900,
               fontFamily: "var(--font-family)",
-              opacity: bookingAmbulance ? 0.7 : 1,
-            }}
+              opacity: bookingAmbulance ? 0.7 : 1 }}
           >
             {bookingAmbulance ? "Booking..." : "Book Ambulance"}
           </button>
@@ -307,28 +294,26 @@ export default function SOSResult({
       {emergency?._id && (ambulance || topHospital) && (
         <button
           onClick={openDispatchControls}
-          className="glass-card cursor-pointer"
+          className="neu-card cursor-pointer"
           style={{
             width: "100%",
             padding: "14px 16px",
             borderRadius: "18px",
-            border: "1px solid rgba(37,99,235,0.35)",
-            background: "rgba(37,99,235,0.08)",
+            border: "1px solid var(--bg-card)",
+            background: "var(--bg-card)",
             color: "#bfdbfe",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "12px",
-            fontFamily: "var(--font-family)",
-          }}
+            fontFamily: "var(--font-family)" }}
         >
           <span
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              gap: "4px",
-            }}
+              gap: "4px" }}
           >
             <span
               style={{
@@ -336,8 +321,7 @@ export default function SOSResult({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
-                color: "#93c5fd",
-              }}
+                color: "#93c5fd" }}
             >
               {ambulance ? "Booked Ambulance" : "Hospital Coordination"}
             </span>
@@ -345,8 +329,7 @@ export default function SOSResult({
               style={{
                 fontSize: "0.95rem",
                 fontWeight: 800,
-                fontFamily: "monospace",
-              }}
+                fontFamily: "monospace" }}
             >
               {ambulance?.vehicleNumber || topHospital?.name}
             </span>
@@ -356,8 +339,7 @@ export default function SOSResult({
               fontSize: "12px",
               fontWeight: 800,
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
-            }}
+              letterSpacing: "0.1em" }}
           >
             Tap to Chat / Call {ambulance ? "/ Cancel" : ""}
           </span>
@@ -377,10 +359,9 @@ export default function SOSResult({
           position: "relative",
           overflow: "hidden",
           padding: "32px",
-          background: "var(--bg-glass)",
+          background: "var(--bg-card)",
           border: `1px solid ${sev.border}`,
-          borderRadius: "28px",
-        }}
+          borderRadius: "28px" }}
       >
         <div
           style={{
@@ -388,8 +369,7 @@ export default function SOSResult({
             top: "24px",
             right: "24px",
             opacity: 0.04,
-            pointerEvents: "none",
-          }}
+            pointerEvents: "none" }}
         >
           <Cpu size={120} />
         </div>
@@ -401,8 +381,7 @@ export default function SOSResult({
               alignItems: "center",
               justifyContent: "space-between",
               gap: "12px",
-              marginBottom: "20px",
-            }}
+              marginBottom: "20px" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div
@@ -413,8 +392,7 @@ export default function SOSResult({
                   color: sev.color,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                }}
+                  justifyContent: "center" }}
               >
                 <Cpu size={22} />
               </div>
@@ -424,8 +402,7 @@ export default function SOSResult({
                   fontWeight: 900,
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
-                  color: sev.color,
-                }}
+                  color: sev.color }}
               >
                 AI Triage Analysis
               </h3>
@@ -438,8 +415,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 background: sev.bg,
                 border: `1px solid ${sev.border}`,
-                color: sev.color,
-              }}
+                color: sev.color }}
             >
               SEVERITY LEVEL {triage?.severity} • {sev.label}
             </span>
@@ -452,8 +428,7 @@ export default function SOSResult({
               marginBottom: "24px",
               fontWeight: 500,
               fontStyle: "italic",
-              transition: "color 0.3s",
-            }}
+              transition: "color 0.3s" }}
           >
             "{triage?.reasoning}"
           </p>
@@ -463,8 +438,7 @@ export default function SOSResult({
               gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
               gap: "20px",
               paddingTop: "20px",
-              borderTop: "1px solid var(--border-glass)",
-            }}
+              borderTop: "1px solid transparent" }}
           >
             {[
               {
@@ -485,8 +459,7 @@ export default function SOSResult({
                     fontWeight: 800,
                     textTransform: "uppercase",
                     color: "var(--text-muted)",
-                    marginBottom: "4px",
-                  }}
+                    marginBottom: "4px" }}
                 >
                   {item.label}
                 </p>
@@ -496,8 +469,7 @@ export default function SOSResult({
                     fontWeight: 800,
                     textTransform: "capitalize",
                     fontFamily: item.small ? "monospace" : "inherit",
-                    opacity: item.small ? 0.5 : 1,
-                  }}
+                    opacity: item.small ? 0.5 : 1 }}
                 >
                   {item.value}
                 </p>
@@ -511,16 +483,14 @@ export default function SOSResult({
                 marginTop: "18px",
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "10px",
-              }}
+                gap: "10px" }}
             >
               <div
                 style={{
                   borderRadius: "12px",
-                  border: "1px solid rgba(34,197,94,0.25)",
-                  background: "rgba(34,197,94,0.08)",
-                  padding: "10px",
-                }}
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
+                  padding: "10px" }}
               >
                 <p
                   style={{
@@ -529,8 +499,7 @@ export default function SOSResult({
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 900,
-                    color: "#22c55e",
-                  }}
+                    color: "#22c55e" }}
                 >
                   For You Now
                 </p>
@@ -543,10 +512,9 @@ export default function SOSResult({
               <div
                 style={{
                   borderRadius: "12px",
-                  border: "1px solid rgba(59,130,246,0.25)",
-                  background: "rgba(59,130,246,0.08)",
-                  padding: "10px",
-                }}
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
+                  padding: "10px" }}
               >
                 <p
                   style={{
@@ -555,8 +523,7 @@ export default function SOSResult({
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 900,
-                    color: "#3b82f6",
-                  }}
+                    color: "#3b82f6" }}
                 >
                   Ambulance Checklist
                 </p>
@@ -569,10 +536,9 @@ export default function SOSResult({
               <div
                 style={{
                   borderRadius: "12px",
-                  border: "1px solid rgba(249,115,22,0.25)",
-                  background: "rgba(249,115,22,0.08)",
-                  padding: "10px",
-                }}
+                  border: "1px solid var(--bg-card)",
+                  background: "var(--bg-card)",
+                  padding: "10px" }}
               >
                 <p
                   style={{
@@ -581,8 +547,7 @@ export default function SOSResult({
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 900,
-                    color: "#f97316",
-                  }}
+                    color: "#f97316" }}
                 >
                   Hospital Preparation
                 </p>
@@ -605,11 +570,10 @@ export default function SOSResult({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px",
-        }}
+          gap: "20px" }}
       >
         <div
-          className="glass-card"
+          className="neu-card"
           style={{ padding: "28px", borderRadius: "28px" }}
         >
           <div
@@ -617,17 +581,15 @@ export default function SOSResult({
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              marginBottom: "24px",
-            }}
+              marginBottom: "24px" }}
           >
             <div
               style={{
                 padding: "12px",
                 borderRadius: "14px",
-                background: "rgba(37,99,235,0.1)",
+                background: "var(--bg-card)",
                 color: "#3b82f6",
-                display: "flex",
-              }}
+                display: "flex" }}
             >
               <Navigation size={22} />
             </div>
@@ -637,8 +599,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
-                color: "#3b82f6",
-              }}
+                color: "#3b82f6" }}
             >
               Unit Deployment
             </h3>
@@ -652,7 +613,7 @@ export default function SOSResult({
         </div>
 
         <div
-          className="glass-card"
+          className="neu-card"
           style={{ padding: "28px", borderRadius: "28px" }}
         >
           <div
@@ -660,17 +621,15 @@ export default function SOSResult({
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              marginBottom: "24px",
-            }}
+              marginBottom: "24px" }}
           >
             <div
               style={{
                 padding: "12px",
                 borderRadius: "14px",
-                background: "rgba(34,197,94,0.1)",
+                background: "var(--bg-card)",
                 color: "#22c55e",
-                display: "flex",
-              }}
+                display: "flex" }}
             >
               <Building2 size={22} />
             </div>
@@ -680,8 +639,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
-                color: "#22c55e",
-              }}
+                color: "#22c55e" }}
             >
               Facility Triage
             </h3>
@@ -694,8 +652,7 @@ export default function SOSResult({
                 style={{
                   fontSize: "1.05rem",
                   fontWeight: 700,
-                  lineHeight: 1.3,
-                }}
+                  lineHeight: 1.3 }}
               >
                 {topHospital.name}
               </p>
@@ -703,23 +660,20 @@ export default function SOSResult({
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
+                  gap: "12px" }}
               >
                 <div
                   style={{
                     padding: "14px",
-                    background: "var(--bg-glass)",
-                    borderRadius: "14px",
-                  }}
+                    background: "var(--bg-card)",
+                    borderRadius: "14px" }}
                 >
                   <p
                     style={{
                       fontSize: "10px",
                       fontWeight: 800,
                       color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}
+                      textTransform: "uppercase" }}
                   >
                     Emergency Beds
                   </p>
@@ -727,8 +681,7 @@ export default function SOSResult({
                     style={{
                       fontSize: "1.25rem",
                       fontWeight: 900,
-                      color: "#22c55e",
-                    }}
+                      color: "#22c55e" }}
                   >
                     {topHospital.availableBeds}
                   </p>
@@ -736,17 +689,15 @@ export default function SOSResult({
                 <div
                   style={{
                     padding: "14px",
-                    background: "var(--bg-glass)",
-                    borderRadius: "14px",
-                  }}
+                    background: "var(--bg-card)",
+                    borderRadius: "14px" }}
                 >
                   <p
                     style={{
                       fontSize: "10px",
                       fontWeight: 800,
                       color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                    }}
+                      textTransform: "uppercase" }}
                   >
                     ICU Capacity
                   </p>
@@ -755,8 +706,7 @@ export default function SOSResult({
                       fontSize: "1.25rem",
                       fontWeight: 900,
                       color:
-                        topHospital.icuAvailable > 0 ? "#22c55e" : "#ef4444",
-                    }}
+                        topHospital.icuAvailable > 0 ? "#22c55e" : "#ef4444" }}
                   >
                     {topHospital.icuAvailable}
                   </p>
@@ -771,7 +721,7 @@ export default function SOSResult({
 
       {notifications?.length > 0 && (
         <div
-          className="glass-card"
+          className="neu-card"
           style={{ padding: "28px", borderRadius: "28px" }}
         >
           <div
@@ -779,8 +729,7 @@ export default function SOSResult({
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              marginBottom: "20px",
-            }}
+              marginBottom: "20px" }}
           >
             <MessageSquare size={18} style={{ color: "var(--text-muted)" }} />
             <h4
@@ -789,8 +738,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.2em",
-                color: "var(--text-muted)",
-              }}
+                color: "var(--text-muted)" }}
             >
               Alert Propagation Log
             </h4>
@@ -807,9 +755,8 @@ export default function SOSResult({
                   justifyContent: "space-between",
                   padding: "12px 16px",
                   borderRadius: "14px",
-                  background: "var(--bg-glass)",
-                  border: "1px solid var(--border-glass)",
-                }}
+                  background: "var(--bg-card)",
+                  border: "1px solid transparent" }}
               >
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "10px" }}
@@ -819,15 +766,13 @@ export default function SOSResult({
                       width: "6px",
                       height: "6px",
                       borderRadius: "50%",
-                      background: "#22c55e",
-                    }}
+                      background: "#22c55e" }}
                   />
                   <span
                     style={{
                       fontSize: "12px",
                       fontWeight: 700,
-                      color: "var(--text-secondary)",
-                    }}
+                      color: "var(--text-secondary)" }}
                   >
                     {notification.to}
                   </span>
@@ -837,8 +782,7 @@ export default function SOSResult({
                     fontSize: "10px",
                     fontFamily: "monospace",
                     color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                  }}
+                    textTransform: "uppercase" }}
                 >
                   {notification.provider} SYNC SUCCESS
                 </span>
@@ -871,13 +815,12 @@ export default function SOSResult({
           flexWrap: "wrap",
           justifyContent: "center",
           gap: "12px",
-          paddingTop: "16px",
-        }}
+          paddingTop: "16px" }}
       >
         {ambulance && (
           <button
             onClick={() => navigate("/tracking")}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               padding: "14px 28px",
               background: "#2563eb",
@@ -888,10 +831,9 @@ export default function SOSResult({
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              boxShadow: "0 8px 24px rgba(37,99,235,0.25)",
+              boxShadow: "0 8px 24px var(--bg-card)",
               transition: "all 0.3s",
-              fontFamily: "var(--font-family)",
-            }}
+              fontFamily: "var(--font-family)" }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
             }}
@@ -904,7 +846,7 @@ export default function SOSResult({
         )}
         <button
           onClick={onReset}
-          className="cursor-pointer"
+          className="neu-button"
           style={{
             padding: "14px 28px",
             background: "transparent",
@@ -913,8 +855,7 @@ export default function SOSResult({
             fontWeight: 700,
             border: "none",
             transition: "color 0.2s",
-            fontFamily: "var(--font-family)",
-          }}
+            fontFamily: "var(--font-family)" }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = "var(--text-primary)";
           }}

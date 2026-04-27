@@ -18,7 +18,7 @@ const inputStyle = {
   fontFamily: 'var(--font-family)', transition: 'all 0.2s', boxSizing: 'border-box',
 };
 
-const focus = (e) => { e.target.style.borderColor = 'rgba(249,115,22,0.55)'; e.target.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.1)'; };
+const focus = (e) => { e.target.style.borderColor = 'var(--bg-card)'; e.target.style.boxShadow = '0 0 0 3px var(--bg-card)'; };
 const blur  = (e) => { e.target.style.borderColor = 'var(--border-input)'; e.target.style.boxShadow = 'none'; };
 
 function Field({ icon: Icon, label, ...props }) {
@@ -116,7 +116,7 @@ export default function DriverLoginPage() {
 
   return (
     <div className="page-enter" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative' }}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 0%, rgba(249,115,22,0.07) 0%, transparent 50%)' }} />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)' }} />
 
       <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 10 }}>
         
@@ -130,9 +130,8 @@ export default function DriverLoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div style={{
             width: '56px', height: '56px', borderRadius: '18px', margin: '0 auto 14px',
-            background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+            background: 'var(--bg-card)', border: '1px solid var(--bg-card)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Ambulance size={28} style={{ color: '#f97316' }} />
           </div>
           <h1 style={{ fontSize: '1.65rem', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '4px' }}>
@@ -143,28 +142,27 @@ export default function DriverLoginPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', background: 'var(--bg-glass)', borderRadius: '14px', padding: '4px', marginBottom: '20px', border: '1px solid var(--border-glass)' }}>
+        <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '14px', padding: '4px', marginBottom: '20px', border: '1px solid transparent' }}>
           {['login', 'signup'].map((t) => (
-            <button key={t} type="button" onClick={() => { setTab(t); setError(''); }} className="cursor-pointer" style={{
+            <button key={t} type="button" onClick={() => { setTab(t); setError(''); }} className="neu-button" style={{
               flex: 1, padding: '10px', borderRadius: '10px', border: 'none',
-              background: tab === t ? 'rgba(249,115,22,0.15)' : 'transparent',
+              background: tab === t ? 'var(--bg-card)' : 'transparent',
               color: tab === t ? '#f97316' : 'var(--text-muted)',
               fontWeight: 700, fontSize: '0.88rem', fontFamily: 'var(--font-family)',
-              transition: 'all 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            }}>
+              transition: 'all 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
               {t === 'login' ? <><LogIn size={14} /> Log In</> : <><UserPlus size={14} /> Sign Up</>}
             </button>
           ))}
         </div>
 
         {error && (
-          <div style={{ padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#fca5a5', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', background: 'var(--bg-card)', border: '1px solid var(--bg-card)', color: '#fca5a5', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={16} style={{ flexShrink: 0 }} /> {error}
           </div>
         )}
 
         {tab === 'login' && (
-          <form onSubmit={handleLogin} className="glass-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleLogin} className="neu-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field label="Driver Email" icon={Mail} type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="Email" required />
             <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Password</label>
@@ -173,12 +171,12 @@ export default function DriverLoginPage() {
               {eyeBtn(showLoginPass, () => setShowLoginPass((p) => !p))}
             </div>
 
-            <button type="submit" disabled={loading} className="cursor-pointer" style={{
+            <button type="submit" disabled={loading} className="neu-button" style={{
               width: '100%', padding: '14px', borderRadius: '14px', border: 'none',
               background: 'linear-gradient(135deg,#f97316,#ea580c)', color: '#fff',
               fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center',
               justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
-              boxShadow: '0 6px 24px rgba(249,115,22,0.3)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
+              boxShadow: '0 6px 24px var(--bg-card)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
             }}
               onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -193,7 +191,7 @@ export default function DriverLoginPage() {
         )}
 
         {tab === 'signup' && (
-          <form onSubmit={handleSignup} className="glass-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSignup} className="neu-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field label="Vehicle Registration Number" icon={Hash} type="text" value={vehicleNumber} onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())} placeholder="e.g. MH12 AB 1234" required />
             <Field label="Driver Full Name" icon={User} type="text" value={driverName} onChange={(e) => setDriverName(e.target.value)} placeholder="Name" required />
             
@@ -233,12 +231,12 @@ export default function DriverLoginPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="cursor-pointer" style={{
+            <button type="submit" disabled={loading} className="neu-button" style={{
               width: '100%', padding: '14px', borderRadius: '14px', border: 'none',
               background: 'linear-gradient(135deg,#f97316,#ea580c)', color: '#fff',
               fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center',
               justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)',
-              boxShadow: '0 6px 24px rgba(249,115,22,0.3)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
+              boxShadow: '0 6px 24px var(--bg-card)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s', marginTop: '8px'
             }}
               onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}

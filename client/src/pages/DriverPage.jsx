@@ -343,7 +343,7 @@ export default function DriverPage() {
   const actionBtn = (onClick, bg, color, icon, label, extra = {}) => (
     <button
       onClick={onClick}
-      className="cursor-pointer"
+      className="neu-button"
       style={{
         padding: "12px 28px",
         borderRadius: "14px",
@@ -357,8 +357,7 @@ export default function DriverPage() {
         gap: "8px",
         transition: "all 0.2s",
         fontFamily: "var(--font-family)",
-        ...extra,
-      }}
+        ...extra }}
     >
       {icon} {label}
     </button>
@@ -370,25 +369,25 @@ export default function DriverPage() {
       return {
         label: "AWAITING ACCEPT",
         color: "#facc15",
-        bg: "rgba(250,204,21,0.1)",
+        bg: "var(--bg-card)",
       };
     if (amb.status === "en_route")
       return {
         label: "PHASE 1: EN ROUTE TO PATIENT",
         color: "#ef4444",
-        bg: "rgba(239,68,68,0.1)",
+        bg: "var(--bg-card)",
       };
     if (amb.status === "at_scene" && em.assignedHospital)
       return {
         label: "PHASE 2: TRANSPORTING TO HOSPITAL",
         color: "#3b82f6",
-        bg: "rgba(59,130,246,0.1)",
+        bg: "var(--bg-card)",
       };
     if (amb.status === "at_scene")
       return {
         label: "AT SCENE",
         color: "#a855f7",
-        bg: "rgba(168,85,247,0.1)",
+        bg: "var(--bg-card)",
       };
     return null;
   }, [amb, em]);
@@ -403,17 +402,15 @@ export default function DriverPage() {
           padding: "80px 24px 24px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-        }}
+          justifyContent: "center" }}
       >
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "40px",
             borderRadius: "24px",
             textAlign: "center",
-            maxWidth: "420px",
-          }}
+            maxWidth: "420px" }}
         >
           <Navigation
             size={40}
@@ -423,8 +420,7 @@ export default function DriverPage() {
             style={{
               fontWeight: 900,
               fontSize: "1.25rem",
-              marginBottom: "8px",
-            }}
+              marginBottom: "8px" }}
           >
             No Ambulance Assigned
           </h2>
@@ -446,8 +442,7 @@ export default function DriverPage() {
           padding: "80px 24px 24px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-        }}
+          justifyContent: "center" }}
       >
         <Loader2
           size={32}
@@ -467,8 +462,7 @@ export default function DriverPage() {
           maxWidth: "1600px",
           margin: "0 auto",
           display: "flex",
-          flexDirection: "column",
-        }}
+          flexDirection: "column" }}
       >
         {/* Header */}
         <div
@@ -478,8 +472,7 @@ export default function DriverPage() {
             justifyContent: "space-between",
             alignItems: "flex-end",
             marginBottom: "20px",
-            gap: "16px",
-          }}
+            gap: "16px" }}
         >
           <div>
             <div
@@ -487,15 +480,13 @@ export default function DriverPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                marginBottom: "4px",
-              }}
+                marginBottom: "4px" }}
             >
               <Radio
                 size={14}
                 style={{
                   color: "#ef4444",
-                  animation: "pulse-glow 2s ease-in-out infinite",
-                }}
+                  animation: "pulse-glow 2s ease-in-out infinite" }}
               />
               <span
                 style={{
@@ -503,8 +494,7 @@ export default function DriverPage() {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.2em",
-                  color: "var(--text-muted)",
-                }}
+                  color: "var(--text-muted)" }}
               >
                 Field Simulation Protocol
               </span>
@@ -513,8 +503,7 @@ export default function DriverPage() {
               style={{
                 fontSize: "1.75rem",
                 fontWeight: 900,
-                letterSpacing: "-0.03em",
-              }}
+                letterSpacing: "-0.03em" }}
             >
               Driver <span style={{ color: "#dc2626" }}>Terminal</span>
             </h1>
@@ -522,14 +511,13 @@ export default function DriverPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {/* Unit identifier badge */}
             <div
-              className="glass-card"
+              className="neu-card"
               style={{
                 padding: "8px 16px",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                borderRadius: "14px",
-              }}
+                borderRadius: "14px" }}
             >
               <Navigation size={14} style={{ color: "#ef4444" }} />
               <span
@@ -539,8 +527,7 @@ export default function DriverPage() {
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
                   color: "var(--text-primary)",
-                  fontFamily: "monospace",
-                }}
+                  fontFamily: "monospace" }}
               >
                 {amb?.vehicleNumber || "..."}
               </span>
@@ -554,8 +541,7 @@ export default function DriverPage() {
                   border: `1px solid ${phaseInfo.color}30`,
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                }}
+                  gap: "8px" }}
               >
                 <div
                   style={{
@@ -564,8 +550,7 @@ export default function DriverPage() {
                     borderRadius: "50%",
                     background: phaseInfo.color,
                     boxShadow: `0 0 8px ${phaseInfo.color}`,
-                    animation: "pulse-glow 2s ease-in-out infinite",
-                  }}
+                    animation: "pulse-glow 2s ease-in-out infinite" }}
                 />
                 <span
                   style={{
@@ -573,22 +558,20 @@ export default function DriverPage() {
                     fontWeight: 800,
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
-                    color: phaseInfo.color,
-                  }}
+                    color: phaseInfo.color }}
                 >
                   {phaseInfo.label}
                 </span>
               </div>
             )}
             <div
-              className="glass-card"
+              className="neu-card"
               style={{
                 padding: "8px 16px",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                borderRadius: "14px",
-              }}
+                borderRadius: "14px" }}
             >
               <Activity size={16} style={{ color: "#22c55e" }} />
               <span
@@ -597,8 +580,7 @@ export default function DriverPage() {
                   fontWeight: 700,
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
-                  color: "var(--text-secondary)",
-                }}
+                  color: "var(--text-secondary)" }}
               >
                 {gpsStreaming ? "GPS LIVE" : "Online"}
               </span>
@@ -606,14 +588,14 @@ export default function DriverPage() {
             <button
               onClick={toggleAmbulanceStatus}
               disabled={togglingStatus || !amb}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 padding: "8px 16px",
                 borderRadius: "14px",
-                border: "1px solid var(--border-glass)",
+                border: "1px solid transparent",
                 background: amb?.isActive
-                  ? "rgba(34,197,94,0.12)"
-                  : "rgba(239,68,68,0.12)",
+                  ? "var(--bg-card)"
+                  : "var(--bg-card)",
                 color: amb?.isActive ? "#22c55e" : "#ef4444",
                 fontSize: "11px",
                 fontWeight: 800,
@@ -621,8 +603,7 @@ export default function DriverPage() {
                 letterSpacing: "0.1em",
                 fontFamily: "var(--font-family)",
                 opacity: togglingStatus ? 0.6 : 1,
-                transition: "all 0.2s ease",
-              }}
+                transition: "all 0.2s ease" }}
             >
               {togglingStatus ? (
                 <>
@@ -631,8 +612,7 @@ export default function DriverPage() {
                     style={{
                       display: "inline",
                       marginRight: "6px",
-                      animation: "spin 1s linear infinite",
-                    }}
+                      animation: "spin 1s linear infinite" }}
                   />
                   SWITCHING...
                 </>
@@ -647,8 +627,7 @@ export default function DriverPage() {
           style={{
             display: "flex",
             gap: "10px",
-            marginBottom: "14px",
-          }}
+            marginBottom: "14px" }}
         >
           {[
             { key: "live", label: "Live Navigation" },
@@ -657,14 +636,14 @@ export default function DriverPage() {
             <button
               key={tab.key}
               onClick={() => setActiveView(tab.key)}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 borderRadius: "10px",
-                border: "1px solid var(--border-glass)",
+                border: "1px solid transparent",
                 background:
                   activeView === tab.key
-                    ? "rgba(220,38,38,0.18)"
-                    : "var(--bg-glass)",
+                    ? "var(--bg-card)"
+                    : "var(--bg-card)",
                 color:
                   activeView === tab.key ? "#fecaca" : "var(--text-secondary)",
                 padding: "9px 14px",
@@ -672,8 +651,7 @@ export default function DriverPage() {
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                fontFamily: "var(--font-family)",
-              }}
+                fontFamily: "var(--font-family)" }}
             >
               {tab.label}
             </button>
@@ -687,8 +665,7 @@ export default function DriverPage() {
               flexDirection: "column",
               gap: "16px",
               flex: 1,
-              minHeight: "500px",
-            }}
+              minHeight: "500px" }}
           >
             <div
               style={{
@@ -696,10 +673,9 @@ export default function DriverPage() {
                 flex: 1,
                 borderRadius: "28px",
                 overflow: "hidden",
-                border: "1px solid var(--border-glass)",
+                border: "1px solid transparent",
                 minHeight: "400px",
-                background: isDark ? "#0f172a" : "#f8fafc",
-              }}
+                background: isDark ? "#0f172a" : "#f8fafc" }}
             >
               <MapContainer
                 center={coords.amb || [17.385, 78.4867]}
@@ -710,8 +686,7 @@ export default function DriverPage() {
                   width: "100%",
                   position: "absolute",
                   top: 0,
-                  left: 0,
-                }}
+                  left: 0 }}
               >
                 <TileLayer url={tileUrl} attribution="&copy; ResQNet AI" />
                 {coords.amb && <RecenterMap center={coords.amb} />}
@@ -733,8 +708,7 @@ export default function DriverPage() {
                       color: routeLine.color,
                       weight: 3,
                       dashArray: "10, 10",
-                      opacity: 0.6,
-                    }}
+                      opacity: 0.6 }}
                   />
                 )}
               </MapContainer>
@@ -742,19 +716,17 @@ export default function DriverPage() {
               {/* GPS coordinates overlay */}
               {coords.amb && (
                 <div
+                  className="neu-card"
                   style={{
                     position: "absolute",
                     top: "20px",
                     left: "20px",
                     zIndex: 1000,
-                    background: isDark
-                      ? "rgba(10,10,15,0.85)"
-                      : "rgba(255,255,255,0.9)",
+                    background: "var(--bg-card)",
                     backdropFilter: "blur(20px)",
-                    border: "1px solid var(--border-glass)",
+                    border: "1px solid transparent",
                     padding: "12px 16px",
-                    borderRadius: "14px",
-                  }}
+                    borderRadius: "14px" }}
                 >
                   <p
                     style={{
@@ -763,8 +735,7 @@ export default function DriverPage() {
                       color: "var(--text-muted)",
                       textTransform: "uppercase",
                       letterSpacing: "0.15em",
-                      marginBottom: "4px",
-                    }}
+                      marginBottom: "4px" }}
                   >
                     Satellite Lock
                   </p>
@@ -772,8 +743,7 @@ export default function DriverPage() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
-                    }}
+                      gap: "8px" }}
                   >
                     <div
                       style={{
@@ -782,15 +752,13 @@ export default function DriverPage() {
                         borderRadius: "50%",
                         background: "#ef4444",
                         boxShadow: "0 0 8px #ef4444",
-                        animation: "pulse-glow 2s ease-in-out infinite",
-                      }}
+                        animation: "pulse-glow 2s ease-in-out infinite" }}
                     />
                     <span
                       style={{
                         fontSize: "12px",
                         fontFamily: "monospace",
-                        fontWeight: 700,
-                      }}
+                        fontWeight: 700 }}
                     >
                       {coords.amb[0].toFixed(5)}, {coords.amb[1].toFixed(5)}
                     </span>
@@ -807,16 +775,15 @@ export default function DriverPage() {
                     right: "20px",
                     zIndex: 1000,
                     background: isDark
-                      ? "rgba(10,10,15,0.85)"
-                      : "rgba(255,255,255,0.9)",
+                      ? "var(--bg-card)"
+                      : "var(--bg-card)",
                     backdropFilter: "blur(20px)",
                     border: `1px solid ${phaseInfo.color}30`,
                     padding: "10px 14px",
                     borderRadius: "14px",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px",
-                  }}
+                    gap: "8px" }}
                 >
                   <Truck size={14} style={{ color: phaseInfo.color }} />
                   <span
@@ -825,8 +792,7 @@ export default function DriverPage() {
                       fontWeight: 800,
                       color: phaseInfo.color,
                       textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                    }}
+                      letterSpacing: "0.08em" }}
                   >
                     {isPhase2 ? "→ Hospital" : "→ Patient"}
                   </span>
@@ -842,16 +808,15 @@ export default function DriverPage() {
                     right: "20px",
                     zIndex: 1000,
                     background: isDark
-                      ? "rgba(10,10,15,0.85)"
-                      : "rgba(255,255,255,0.9)",
+                      ? "var(--bg-card)"
+                      : "var(--bg-card)",
                     backdropFilter: "blur(20px)",
-                    border: "1px solid var(--border-glass)",
+                    border: "1px solid transparent",
                     padding: "8px 12px",
                     borderRadius: "12px",
                     display: "flex",
                     gap: "12px",
-                    alignItems: "center",
-                  }}
+                    alignItems: "center" }}
                 >
                   {Number.isFinite(activeRoute?.distanceKm) && (
                     <span
@@ -860,8 +825,7 @@ export default function DriverPage() {
                         fontWeight: 800,
                         color: "var(--text-secondary)",
                         textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                      }}
+                        letterSpacing: "0.08em" }}
                     >
                       Distance {activeRoute.distanceKm.toFixed(2)} km
                     </span>
@@ -873,8 +837,7 @@ export default function DriverPage() {
                         fontWeight: 800,
                         color: "#f59e0b",
                         textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                      }}
+                        letterSpacing: "0.08em" }}
                     >
                       ETA {Math.max(1, Math.round(activeRoute.etaMinutes))} min
                     </span>
@@ -890,10 +853,10 @@ export default function DriverPage() {
                   left: "16px",
                   zIndex: 1000,
                   background: isDark
-                    ? "rgba(10,10,15,0.88)"
-                    : "rgba(255,255,255,0.9)",
+                    ? "var(--bg-card)"
+                    : "var(--bg-card)",
                   backdropFilter: "blur(16px)",
-                  border: "1px solid var(--border-glass)",
+                  border: "1px solid transparent",
                   padding: "10px 14px",
                   borderRadius: "12px",
                   fontSize: "11px",
@@ -901,8 +864,7 @@ export default function DriverPage() {
                   color: "var(--text-secondary)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "10px",
-                }}
+                  gap: "10px" }}
               >
                 {coords.amb ? (
                   <>
@@ -930,7 +892,7 @@ export default function DriverPage() {
 
             {/* Action control panel */}
             <div
-              className="glass-card"
+              className="neu-card"
               style={{ padding: "28px", borderRadius: "24px" }}
             >
               {amb ? (
@@ -940,28 +902,25 @@ export default function DriverPage() {
                     flexWrap: "wrap",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    gap: "24px",
-                  }}
+                    gap: "24px" }}
                 >
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "20px",
-                    }}
+                      gap: "20px" }}
                   >
                     <div
                       style={{
                         width: "56px",
                         height: "56px",
                         borderRadius: "18px",
-                        background: "var(--bg-glass)",
-                        border: "1px solid var(--border-glass)",
+                        background: "var(--bg-card)",
+                        border: "1px solid transparent",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#ef4444",
-                      }}
+                        color: "#ef4444" }}
                     >
                       <Navigation size={28} />
                     </div>
@@ -975,8 +934,7 @@ export default function DriverPage() {
                           color: "var(--text-muted)",
                           fontWeight: 700,
                           textTransform: "uppercase",
-                          letterSpacing: "0.15em",
-                        }}
+                          letterSpacing: "0.15em" }}
                       >
                         {amb.driverName} •{" "}
                         {amb.equipmentLevel?.replace("_", " ")}
@@ -988,30 +946,29 @@ export default function DriverPage() {
                       display: "flex",
                       flexWrap: "wrap",
                       alignItems: "center",
-                      gap: "12px",
-                    }}
+                      gap: "12px" }}
                   >
                     {em &&
                       actionBtn(
                         () => setShowDispatchPanel(true),
-                        "rgba(37,99,235,0.12)",
+                        "var(--bg-card)",
                         "#93c5fd",
                         <Truck size={16} />,
                         "OPEN CHAT & CALL",
-                        { border: "1px solid rgba(37,99,235,0.35)" },
+                        { border: "1px solid var(--bg-card)" },
                       )}
                     {actionBtn(
                       gpsStreaming ? stopLiveGps : startLiveGps,
                       gpsStreaming
-                        ? "rgba(34,197,94,0.15)"
-                        : "rgba(245,158,11,0.14)",
+                        ? "var(--bg-card)"
+                        : "var(--bg-card)",
                       gpsStreaming ? "#86efac" : "#fcd34d",
                       gpsStreaming ? <Pause size={16} /> : <Play size={16} />,
                       gpsStreaming ? "STOP LIVE GPS" : "START LIVE GPS",
                       {
                         border: gpsStreaming
-                          ? "1px solid rgba(34,197,94,0.35)"
-                          : "1px solid rgba(245,158,11,0.35)",
+                          ? "1px solid var(--bg-card)"
+                          : "1px solid var(--bg-card)",
                       },
                     )}
                     {amb.status === "dispatched" && (
@@ -1036,11 +993,11 @@ export default function DriverPage() {
                               "Mission Rejected",
                               "warning",
                             ),
-                          "var(--bg-glass)",
+                          "var(--bg-card)",
                           "var(--text-secondary)",
                           <XCircle size={16} />,
                           "REJECT",
-                          { border: "1px solid var(--border-glass)" },
+                          { border: "1px solid transparent" },
                         )}
                       </>
                     )}
@@ -1048,12 +1005,12 @@ export default function DriverPage() {
                       <>
                         {actionBtn(
                           simulating ? stopSimulation : startSimulation,
-                          simulating ? "rgba(234,179,8,0.12)" : "#2563eb",
+                          simulating ? "var(--bg-card)" : "#2563eb",
                           simulating ? "#eab308" : "#fff",
                           simulating ? <Pause size={16} /> : <Play size={16} />,
                           simulating ? "PAUSE GPS" : "NAVIGATE TO PATIENT",
                           simulating
-                            ? { border: "1px solid rgba(234,179,8,0.3)" }
+                            ? { border: "1px solid var(--bg-card)" }
                             : {},
                         )}
                         {actionBtn(
@@ -1063,11 +1020,11 @@ export default function DriverPage() {
                               { ambulanceId: amb._id, status: "at_scene" },
                               "Unit At Scene — Patient Picked Up",
                             ),
-                          "var(--bg-glass)",
+                          "var(--bg-card)",
                           "var(--text-primary)",
                           <MapPin size={16} />,
                           "MARK PATIENT PICKED UP",
-                          { border: "1px solid var(--border-glass)" },
+                          { border: "1px solid transparent" },
                         )}
                       </>
                     )}
@@ -1075,12 +1032,12 @@ export default function DriverPage() {
                       <>
                         {actionBtn(
                           simulating ? stopSimulation : startSimulation,
-                          simulating ? "rgba(234,179,8,0.12)" : "#3b82f6",
+                          simulating ? "var(--bg-card)" : "#3b82f6",
                           simulating ? "#eab308" : "#fff",
                           simulating ? <Pause size={16} /> : <Play size={16} />,
                           simulating ? "PAUSE GPS" : "NAVIGATE TO HOSPITAL",
                           simulating
-                            ? { border: "1px solid rgba(234,179,8,0.3)" }
+                            ? { border: "1px solid var(--bg-card)" }
                             : {},
                         )}
                         {actionBtn(
@@ -1119,20 +1076,18 @@ export default function DriverPage() {
                           gap: "10px",
                           padding: "12px 24px",
                           borderRadius: "9999px",
-                          background: "var(--bg-glass)",
+                          background: "var(--bg-card)",
                           fontSize: "10px",
                           fontWeight: 800,
                           textTransform: "uppercase",
                           letterSpacing: "0.15em",
-                          color: "var(--text-muted)",
-                        }}
+                          color: "var(--text-muted)" }}
                       >
                         <Loader2
                           size={14}
                           style={{
                             color: "#ef4444",
-                            animation: "spin 1s linear infinite",
-                          }}
+                            animation: "spin 1s linear infinite" }}
                         />{" "}
                         Monitoring Emergency Frequencies...
                       </div>
@@ -1144,8 +1099,7 @@ export default function DriverPage() {
                           fontWeight: 800,
                           color: "#fca5a5",
                           textTransform: "uppercase",
-                          letterSpacing: "0.08em",
-                        }}
+                          letterSpacing: "0.08em" }}
                       >
                         GPS permission denied on this browser
                       </div>
@@ -1163,8 +1117,7 @@ export default function DriverPage() {
                     fontWeight: 700,
                     textTransform: "uppercase",
                     fontSize: "12px",
-                    letterSpacing: "0.15em",
-                  }}
+                    letterSpacing: "0.15em" }}
                 >
                   Loading unit telemetry...
                 </div>
@@ -1173,7 +1126,7 @@ export default function DriverPage() {
 
             {em && (
               <div
-                className="glass-card"
+                className="neu-card"
                 style={{ padding: "18px", borderRadius: "18px" }}
               >
                 <p
@@ -1183,8 +1136,7 @@ export default function DriverPage() {
                     fontWeight: 800,
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                  }}
+                    color: "var(--text-muted)" }}
                 >
                   Patient Details
                 </p>
@@ -1192,16 +1144,14 @@ export default function DriverPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: "10px",
-                  }}
+                    gap: "10px" }}
                 >
                   <div>
                     <p
                       style={{
                         margin: 0,
                         fontSize: "11px",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Name
                     </p>
@@ -1214,8 +1164,7 @@ export default function DriverPage() {
                       style={{
                         margin: 0,
                         fontSize: "11px",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Phone
                     </p>
@@ -1228,8 +1177,7 @@ export default function DriverPage() {
                       style={{
                         margin: 0,
                         fontSize: "11px",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Type
                     </p>
@@ -1237,8 +1185,7 @@ export default function DriverPage() {
                       style={{
                         margin: "4px 0 0",
                         fontWeight: 800,
-                        textTransform: "capitalize",
-                      }}
+                        textTransform: "capitalize" }}
                     >
                       {em.type || "-"}
                     </p>
@@ -1248,8 +1195,7 @@ export default function DriverPage() {
                       style={{
                         margin: 0,
                         fontSize: "11px",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Severity
                     </p>
@@ -1262,8 +1208,7 @@ export default function DriverPage() {
                   style={{
                     margin: "12px 0 0",
                     color: "var(--text-secondary)",
-                    fontSize: "13px",
-                  }}
+                    fontSize: "13px" }}
                 >
                   {em.description ||
                     "No additional description provided by user."}
@@ -1275,10 +1220,9 @@ export default function DriverPage() {
                     style={{
                       marginTop: "12px",
                       borderRadius: "12px",
-                      border: "1px solid rgba(59,130,246,0.25)",
-                      background: "rgba(59,130,246,0.08)",
-                      padding: "10px",
-                    }}
+                      border: "1px solid var(--bg-card)",
+                      background: "var(--bg-card)",
+                      padding: "10px" }}
                   >
                     <p
                       style={{
@@ -1287,8 +1231,7 @@ export default function DriverPage() {
                         fontWeight: 900,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        color: "#60a5fa",
-                      }}
+                        color: "#60a5fa" }}
                     >
                       AI Equipment + Protocol Suggestions
                     </p>
@@ -1309,7 +1252,7 @@ export default function DriverPage() {
           </div>
         ) : (
           <div
-            className="glass-card"
+            className="neu-card"
             style={{ padding: "18px", borderRadius: "18px" }}
           >
             <div
@@ -1317,23 +1260,21 @@ export default function DriverPage() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: "12px",
-              }}
+                marginBottom: "12px" }}
             >
               <p style={{ margin: 0, fontWeight: 900, fontSize: "1rem" }}>
                 Completed Cases
               </p>
               <button
                 onClick={fetchDriverHistory}
-                className="cursor-pointer"
+                className="neu-button"
                 style={{
                   borderRadius: "10px",
-                  border: "1px solid var(--border-glass)",
-                  background: "var(--bg-glass)",
+                  border: "1px solid transparent",
+                  background: "var(--bg-card)",
                   color: "var(--text-secondary)",
                   padding: "8px 12px",
-                  fontWeight: 700,
-                }}
+                  fontWeight: 700 }}
               >
                 Refresh
               </button>
@@ -1352,26 +1293,19 @@ export default function DriverPage() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "10px",
-                }}
+                  gap: "10px" }}
               >
                 {history.map((entry) => (
                   <div
                     key={entry._id}
-                    style={{
-                      border: "1px solid var(--border-glass)",
-                      borderRadius: "12px",
-                      padding: "12px",
-                      background: "var(--bg-glass)",
-                    }}
+                    className="neu-inner" style={{  borderRadius: "12px", padding: "12px" }}
                   >
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         gap: "10px",
-                        flexWrap: "wrap",
-                      }}
+                        flexWrap: "wrap" }}
                     >
                       <p style={{ margin: 0, fontWeight: 800 }}>
                         {entry.patientName || "Unknown"}
@@ -1381,8 +1315,7 @@ export default function DriverPage() {
                           margin: 0,
                           fontSize: "12px",
                           color: "var(--text-muted)",
-                          textTransform: "uppercase",
-                        }}
+                          textTransform: "uppercase" }}
                       >
                         {entry.status} • Severity {entry.severity || "-"}/5
                       </p>
@@ -1391,8 +1324,7 @@ export default function DriverPage() {
                       style={{
                         margin: "6px 0 0",
                         fontSize: "13px",
-                        color: "var(--text-secondary)",
-                      }}
+                        color: "var(--text-secondary)" }}
                     >
                       {entry.description || "No description"}
                     </p>
@@ -1400,8 +1332,7 @@ export default function DriverPage() {
                       style={{
                         margin: "6px 0 0",
                         fontSize: "12px",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Hospital: {entry.assignedHospital?.name || "N/A"}
                     </p>

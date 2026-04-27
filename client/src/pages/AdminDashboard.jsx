@@ -145,26 +145,24 @@ function StatCard({
   value,
   sub,
   color,
-  accent = "rgba(255,255,255,0.06)",
+  accent = "var(--bg-card)",
 }) {
   return (
     <div
-      className="glass-card"
+      className="neu-card"
       style={{
         padding: "22px",
         borderRadius: "20px",
         borderLeft: `3px solid ${color}`,
         boxShadow: `inset 0 1px 0 ${color}30, 0 0 30px ${color}08`,
-        background: accent,
-      }}
+        background: accent }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: "10px",
-          marginBottom: "14px",
-        }}
+          marginBottom: "14px" }}
       >
         <Icon size={18} style={{ color }} />
         <span
@@ -173,8 +171,7 @@ function StatCard({
             fontWeight: 700,
             textTransform: "uppercase",
             letterSpacing: "0.12em",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           {label}
         </span>
@@ -184,8 +181,7 @@ function StatCard({
           fontSize: "2rem",
           fontWeight: 900,
           marginBottom: "4px",
-          letterSpacing: "-0.04em",
-        }}
+          letterSpacing: "-0.04em" }}
       >
         {value}
       </div>
@@ -201,7 +197,7 @@ function StatCard({
 function SectionCard({ title, subtitle, icon: Icon, children, right }) {
   return (
     <div
-      className="glass-card"
+      className="neu-card"
       style={{ padding: "22px", borderRadius: "22px" }}
     >
       <div
@@ -210,8 +206,7 @@ function SectionCard({ title, subtitle, icon: Icon, children, right }) {
           alignItems: "flex-start",
           justifyContent: "space-between",
           gap: "16px",
-          marginBottom: "16px",
-        }}
+          marginBottom: "16px" }}
       >
         <div>
           <div
@@ -219,8 +214,7 @@ function SectionCard({ title, subtitle, icon: Icon, children, right }) {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              marginBottom: "6px",
-            }}
+              marginBottom: "6px" }}
           >
             {Icon && <Icon size={15} style={{ color: "#f97316" }} />}
             <h3
@@ -229,8 +223,7 @@ function SectionCard({ title, subtitle, icon: Icon, children, right }) {
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
-                color: "var(--text-muted)",
-              }}
+                color: "var(--text-muted)" }}
             >
               {title}
             </h3>
@@ -240,8 +233,7 @@ function SectionCard({ title, subtitle, icon: Icon, children, right }) {
               style={{
                 fontSize: "13px",
                 color: "var(--text-secondary)",
-                maxWidth: "58ch",
-              }}
+                maxWidth: "58ch" }}
             >
               {subtitle}
             </p>
@@ -261,16 +253,14 @@ function ProgressBar({ value, color }) {
         height: "7px",
         borderRadius: "999px",
         overflow: "hidden",
-        background: "rgba(255,255,255,0.04)",
-      }}
+        background: "var(--bg-card)" }}
     >
       <div
         style={{
           width: formatPercent(value),
           height: "100%",
           background: color,
-          borderRadius: "999px",
-        }}
+          borderRadius: "999px" }}
       />
     </div>
   );
@@ -290,8 +280,7 @@ function StatusPill({ children, color, background }) {
         letterSpacing: "0.05em",
         textTransform: "uppercase",
         color,
-        background,
-      }}
+        background }}
     >
       {children}
     </span>
@@ -320,17 +309,12 @@ function EmergencyRow({ emergency }) {
     : "Unknown";
   return (
     <div
-      className="glass-card"
-      style={{
-        padding: "16px 18px",
-        borderRadius: "16px",
-        background: "rgba(255,255,255,0.03)",
+      className="neu-card" style={{ padding: "16px 18px", borderRadius: "16px",
         display: "flex",
         flexWrap: "wrap",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: "12px",
-      }}
+        gap: "12px" }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <span style={{ fontSize: "1.35rem" }}>
@@ -351,16 +335,15 @@ function EmergencyRow({ emergency }) {
           alignItems: "center",
           gap: "10px",
           flexWrap: "wrap",
-          justifyContent: "flex-end",
-        }}
+          justifyContent: "flex-end" }}
       >
         {emergency.eta != null && (
-          <StatusPill color="#60a5fa" background="rgba(59,130,246,0.12)">
+          <StatusPill color="#60a5fa" background="var(--bg-card)">
             ETA {formatETA(emergency.eta)}
           </StatusPill>
         )}
         {emergency.assignedAmbulance && (
-          <StatusPill color="#93c5fd" background="rgba(59,130,246,0.12)">
+          <StatusPill color="#93c5fd" background="var(--bg-card)">
             🚑 {emergency.assignedAmbulance.vehicleNumber}
           </StatusPill>
         )}
@@ -384,12 +367,7 @@ function HospitalRow({ hospital }) {
   const readiness = Math.round((bedPct + icuPct) / 2);
   return (
     <div
-      className="glass-card"
-      style={{
-        padding: "16px 18px",
-        borderRadius: "16px",
-        background: "rgba(255,255,255,0.03)",
-      }}
+      className="neu-card" style={{ padding: "16px 18px", borderRadius: "16px" }}
     >
       <div
         style={{
@@ -397,8 +375,7 @@ function HospitalRow({ hospital }) {
           justifyContent: "space-between",
           alignItems: "flex-start",
           gap: "12px",
-          marginBottom: "12px",
-        }}
+          marginBottom: "12px" }}
       >
         <div>
           <div style={{ fontWeight: 800, fontSize: "0.92rem" }}>
@@ -408,7 +385,7 @@ function HospitalRow({ hospital }) {
             {hospital.address}
           </div>
         </div>
-        <StatusPill color="#4ade80" background="rgba(34,197,94,0.12)">
+        <StatusPill color="#4ade80" background="var(--bg-card)">
           {formatPercent(readiness)} ready
         </StatusPill>
       </div>
@@ -419,8 +396,7 @@ function HospitalRow({ hospital }) {
               display: "flex",
               justifyContent: "space-between",
               fontSize: "12px",
-              marginBottom: "5px",
-            }}
+              marginBottom: "5px" }}
           >
             <span style={{ color: "var(--text-muted)" }}>Beds</span>
             <span style={{ color: "var(--text-secondary)" }}>
@@ -438,8 +414,7 @@ function HospitalRow({ hospital }) {
               display: "flex",
               justifyContent: "space-between",
               fontSize: "12px",
-              marginBottom: "5px",
-            }}
+              marginBottom: "5px" }}
           >
             <span style={{ color: "var(--text-muted)" }}>ICU</span>
             <span style={{ color: "var(--text-secondary)" }}>
@@ -465,8 +440,7 @@ function HealthRow({ label, value, tone }) {
         justifyContent: "space-between",
         gap: "14px",
         padding: "12px 0",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}
+        borderBottom: "1px solid var(--bg-card)" }}
     >
       <div>
         <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{label}</div>
@@ -485,12 +459,11 @@ function SystemHealthCard({ health }) {
   if (!health) {
     return (
       <div
-        className="glass-card"
+        className="neu-card"
         style={{
           padding: "20px",
           borderRadius: "18px",
-          color: "var(--text-muted)",
-        }}
+          color: "var(--text-muted)" }}
       >
         Loading system health...
       </div>
@@ -499,20 +472,14 @@ function SystemHealthCard({ health }) {
 
   return (
     <div
-      className="glass-card"
-      style={{
-        padding: "20px",
-        borderRadius: "18px",
-        background: "rgba(255,255,255,0.03)",
-      }}
+      className="neu-card" style={{ padding: "20px", borderRadius: "18px" }}
     >
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "12px",
-        }}
+          marginBottom: "12px" }}
       >
         <div>
           <div
@@ -521,8 +488,7 @@ function SystemHealthCard({ health }) {
               fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: "0.12em",
-              color: "var(--text-muted)",
-            }}
+              color: "var(--text-muted)" }}
           >
             System Health
           </div>
@@ -530,8 +496,7 @@ function SystemHealthCard({ health }) {
             style={{
               fontSize: "13px",
               color: "var(--text-secondary)",
-              marginTop: "4px",
-            }}
+              marginTop: "4px" }}
           >
             Core services and runtime status
           </div>
@@ -570,16 +535,10 @@ function SystemHealthCard({ health }) {
           marginTop: "14px",
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: "10px",
-        }}
+          gap: "10px" }}
       >
         <div
-          className="glass-card"
-          style={{
-            padding: "14px",
-            borderRadius: "14px",
-            background: "rgba(255,255,255,0.03)",
-          }}
+          className="neu-card" style={{ padding: "14px", borderRadius: "14px" }}
         >
           <div
             style={{
@@ -587,8 +546,7 @@ function SystemHealthCard({ health }) {
               textTransform: "uppercase",
               letterSpacing: "0.1em",
               color: "var(--text-muted)",
-              marginBottom: "5px",
-            }}
+              marginBottom: "5px" }}
           >
             Uptime
           </div>
@@ -597,12 +555,7 @@ function SystemHealthCard({ health }) {
           </div>
         </div>
         <div
-          className="glass-card"
-          style={{
-            padding: "14px",
-            borderRadius: "14px",
-            background: "rgba(255,255,255,0.03)",
-          }}
+          className="neu-card" style={{ padding: "14px", borderRadius: "14px" }}
         >
           <div
             style={{
@@ -610,8 +563,7 @@ function SystemHealthCard({ health }) {
               textTransform: "uppercase",
               letterSpacing: "0.1em",
               color: "var(--text-muted)",
-              marginBottom: "5px",
-            }}
+              marginBottom: "5px" }}
           >
             Notifications
           </div>
@@ -684,16 +636,15 @@ function EmergencyMapCard({ emergencies, ambulances, hospitals }) {
             alignItems: "center",
             gap: "8px",
             flexWrap: "wrap",
-            justifyContent: "flex-end",
-          }}
+            justifyContent: "flex-end" }}
         >
-          <StatusPill color="#60a5fa" background="rgba(59,130,246,0.12)">
+          <StatusPill color="#60a5fa" background="var(--bg-card)">
             {emergencies.length} incidents
           </StatusPill>
-          <StatusPill color="#22c55e" background="rgba(34,197,94,0.12)">
+          <StatusPill color="#22c55e" background="var(--bg-card)">
             {ambulances.length} ambulances
           </StatusPill>
-          <StatusPill color="#f97316" background="rgba(249,115,22,0.12)">
+          <StatusPill color="#f97316" background="var(--bg-card)">
             {hospitals.length} hospitals
           </StatusPill>
         </div>
@@ -704,8 +655,7 @@ function EmergencyMapCard({ emergencies, ambulances, hospitals }) {
           height: "420px",
           position: "relative",
           overflow: "hidden",
-          borderRadius: "18px",
-        }}
+          borderRadius: "18px" }}
       >
         <MapContainer
           center={center}
@@ -750,10 +700,9 @@ function EmergencyMapCard({ emergencies, ambulances, hospitals }) {
             gap: "6px",
             padding: "12px",
             borderRadius: "14px",
-            background: "rgba(3,7,18,0.72)",
+            background: "var(--bg-card)",
             backdropFilter: "blur(18px)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
+            border: "1px solid var(--bg-card)" }}
         >
           <div
             style={{
@@ -762,12 +711,11 @@ function EmergencyMapCard({ emergencies, ambulances, hospitals }) {
               gap: "8px",
               color: "#fff",
               fontSize: "12px",
-              fontWeight: 700,
-            }}
+              fontWeight: 700 }}
           >
             <AlertCircle size={14} /> Live incident layer
           </div>
-          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.72)" }}>
+          <div style={{ fontSize: "11px", color: "var(--bg-card)" }}>
             Markers update as ambulance and status events stream in.
           </div>
         </div>
@@ -909,8 +857,7 @@ export default function AdminDashboard() {
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          gap: "16px",
-        }}
+          gap: "16px" }}
       >
         <div className="spinner" />
         <span
@@ -919,8 +866,7 @@ export default function AdminDashboard() {
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.3em",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           Loading Command Center
         </span>
@@ -955,11 +901,10 @@ export default function AdminDashboard() {
             inset: "-40px -20px auto",
             height: "240px",
             background:
-              "radial-gradient(circle at 20% 20%, rgba(249,115,22,0.18), transparent 35%), radial-gradient(circle at 80% 10%, rgba(59,130,246,0.18), transparent 30%), radial-gradient(circle at 50% 100%, rgba(34,197,94,0.1), transparent 30%)",
+              "radial-gradient(circle at 20% 20%, var(--bg-card), transparent 35%), radial-gradient(circle at 80% 10%, var(--bg-card), transparent 30%), radial-gradient(circle at 50% 100%, var(--bg-card), transparent 30%)",
             pointerEvents: "none",
             filter: "blur(10px)",
-            zIndex: -1,
-          }}
+            zIndex: -1 }}
         />
 
         <div
@@ -969,8 +914,7 @@ export default function AdminDashboard() {
             justifyContent: "space-between",
             alignItems: "flex-end",
             gap: "16px",
-            marginBottom: "22px",
-          }}
+            marginBottom: "22px" }}
         >
           <div>
             <div
@@ -978,8 +922,7 @@ export default function AdminDashboard() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                marginBottom: "8px",
-              }}
+                marginBottom: "8px" }}
             >
               <LayoutDashboard size={14} style={{ color: "#f97316" }} />
               <span
@@ -988,8 +931,7 @@ export default function AdminDashboard() {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.16em",
-                  color: "var(--text-muted)",
-                }}
+                  color: "var(--text-muted)" }}
               >
                 Admin Command Center
               </span>
@@ -999,8 +941,7 @@ export default function AdminDashboard() {
                 fontSize: "clamp(2rem, 3vw, 3rem)",
                 fontWeight: 900,
                 letterSpacing: "-0.04em",
-                lineHeight: 1.02,
-              }}
+                lineHeight: 1.02 }}
             >
               Superior <span className="gradient-text">Control</span> for
               ResQNet
@@ -1010,8 +951,7 @@ export default function AdminDashboard() {
                 fontSize: "0.94rem",
                 color: "var(--text-secondary)",
                 marginTop: "8px",
-                maxWidth: "70ch",
-              }}
+                maxWidth: "70ch" }}
             >
               Live command view for incidents, fleet posture, hospital capacity,
               user directory, and platform health.
@@ -1019,12 +959,12 @@ export default function AdminDashboard() {
           </div>
           <button
             onClick={handleRefresh}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               padding: "11px 18px",
               borderRadius: "14px",
-              border: "1px solid var(--border-glass)",
-              background: "var(--bg-glass)",
+              border: "1px solid transparent",
+              background: "var(--bg-card)",
               color: "var(--text-secondary)",
               fontSize: "13px",
               fontWeight: 700,
@@ -1032,20 +972,18 @@ export default function AdminDashboard() {
               alignItems: "center",
               gap: "8px",
               transition: "all 0.2s",
-              fontFamily: "var(--font-family)",
-            }}
+              fontFamily: "var(--font-family)" }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--bg-glass-hover)";
+              e.currentTarget.style.background = "var(--bg-secondary)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "var(--bg-glass)";
+              e.currentTarget.style.background = "var(--bg-card)";
             }}
           >
             <RefreshCw
               size={14}
               style={{
-                animation: refreshing ? "spin 0.8s linear infinite" : "none",
-              }}
+                animation: refreshing ? "spin 0.8s linear infinite" : "none" }}
             />
             {refreshing ? "Refreshing" : "Refresh"}
           </button>
@@ -1056,8 +994,7 @@ export default function AdminDashboard() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
             gap: "16px",
-            marginBottom: "22px",
-          }}
+            marginBottom: "22px" }}
         >
           <StatCard
             icon={AlertCircle}
@@ -1065,7 +1002,7 @@ export default function AdminDashboard() {
             value={formatNumber(emergencyTotals.active)}
             sub={`${formatNumber(emergencyTotals.total)} total cases`}
             color="#ef4444"
-            accent="rgba(239,68,68,0.05)"
+            accent="var(--bg-card)"
           />
           <StatCard
             icon={Activity}
@@ -1073,7 +1010,7 @@ export default function AdminDashboard() {
             value={formatNumber(ambulanceTotals.available)}
             sub={`${formatNumber(ambulanceTotals.total)} fleet size`}
             color="#3b82f6"
-            accent="rgba(59,130,246,0.05)"
+            accent="var(--bg-card)"
           />
           <StatCard
             icon={Bed}
@@ -1081,7 +1018,7 @@ export default function AdminDashboard() {
             value={formatNumber(hospitalTotals.availableBeds)}
             sub={`${formatNumber(hospitalTotals.totalBeds)} total capacity`}
             color="#22c55e"
-            accent="rgba(34,197,94,0.05)"
+            accent="var(--bg-card)"
           />
           <StatCard
             icon={Building2}
@@ -1089,7 +1026,7 @@ export default function AdminDashboard() {
             value={formatNumber(hospitalTotals.availableICU)}
             sub={`${formatNumber(hospitalTotals.totalICU)} total ICU`}
             color="#f97316"
-            accent="rgba(249,115,22,0.05)"
+            accent="var(--bg-card)"
           />
           <StatCard
             icon={Users}
@@ -1097,7 +1034,7 @@ export default function AdminDashboard() {
             value={formatNumber(userTotals.total)}
             sub={`${formatNumber(filteredUsers.length)} visible in directory`}
             color="#a78bfa"
-            accent="rgba(167,139,250,0.05)"
+            accent="var(--bg-card)"
           />
           <StatCard
             icon={Clock3}
@@ -1105,7 +1042,7 @@ export default function AdminDashboard() {
             value={formatETA(averageEta)}
             sub={averageEta ? "From active incidents" : "No ETA data yet"}
             color="#eab308"
-            accent="rgba(234,179,8,0.05)"
+            accent="var(--bg-card)"
           />
         </div>
 
@@ -1114,8 +1051,7 @@ export default function AdminDashboard() {
             display: "grid",
             gridTemplateColumns: "minmax(0, 1.55fr) minmax(340px, 0.95fr)",
             gap: "22px",
-            alignItems: "start",
-          }}
+            alignItems: "start" }}
         >
           <div style={{ display: "grid", gap: "22px" }}>
             <EmergencyMapCard
@@ -1134,16 +1070,10 @@ export default function AdminDashboard() {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
                   gap: "12px",
-                  marginBottom: "14px",
-                }}
+                  marginBottom: "14px" }}
               >
                 <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px",
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
+                  className="neu-card" style={{ padding: "16px", borderRadius: "16px" }}
                 >
                   <div
                     style={{
@@ -1151,8 +1081,7 @@ export default function AdminDashboard() {
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
                       color: "var(--text-muted)",
-                      marginBottom: "6px",
-                    }}
+                      marginBottom: "6px" }}
                   >
                     Pressure index
                   </div>
@@ -1165,12 +1094,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px",
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
+                  className="neu-card" style={{ padding: "16px", borderRadius: "16px" }}
                 >
                   <div
                     style={{
@@ -1178,8 +1102,7 @@ export default function AdminDashboard() {
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
                       color: "var(--text-muted)",
-                      marginBottom: "6px",
-                    }}
+                      marginBottom: "6px" }}
                   >
                     Outstanding emergencies
                   </div>
@@ -1193,12 +1116,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px",
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
+                  className="neu-card" style={{ padding: "16px", borderRadius: "16px" }}
                 >
                   <div
                     style={{
@@ -1206,8 +1124,7 @@ export default function AdminDashboard() {
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
                       color: "var(--text-muted)",
-                      marginBottom: "6px",
-                    }}
+                      marginBottom: "6px" }}
                   >
                     Resolved today
                   </div>
@@ -1226,33 +1143,25 @@ export default function AdminDashboard() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: "12px",
-                }}
+                  gap: "12px" }}
               >
                 {emergencySeverityMix.length > 0 ? (
                   emergencySeverityMix.map((item) => (
                     <div
                       key={item.label}
-                      className="glass-card"
-                      style={{
-                        padding: "14px",
-                        borderRadius: "14px",
-                        background: "rgba(255,255,255,0.03)",
-                      }}
+                      className="neu-card" style={{ padding: "14px", borderRadius: "14px" }}
                     >
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
-                          marginBottom: "8px",
-                        }}
+                          marginBottom: "8px" }}
                       >
                         <span
                           style={{
                             fontSize: "12px",
-                            color: "var(--text-secondary)",
-                          }}
+                            color: "var(--text-secondary)" }}
                         >
                           {item.label}
                         </span>
@@ -1270,12 +1179,11 @@ export default function AdminDashboard() {
                   ))
                 ) : (
                   <div
-                    className="glass-card"
+                    className="neu-card"
                     style={{
                       padding: "14px",
                       borderRadius: "14px",
-                      color: "var(--text-muted)",
-                    }}
+                      color: "var(--text-muted)" }}
                   >
                     No severity data yet.
                   </div>
@@ -1288,7 +1196,7 @@ export default function AdminDashboard() {
               subtitle="Status, equipment level, and rating-aware fleet signal for the whole response layer."
               icon={Activity}
               right={
-                <StatusPill color="#60a5fa" background="rgba(59,130,246,0.12)">
+                <StatusPill color="#60a5fa" background="var(--bg-card)">
                   {ambulances.length} units
                 </StatusPill>
               }
@@ -1298,18 +1206,12 @@ export default function AdminDashboard() {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                   gap: "10px",
-                  marginBottom: "14px",
-                }}
+                  marginBottom: "14px" }}
               >
                 {fleetByStatus.map((item) => (
                   <div
                     key={item.status}
-                    className="glass-card"
-                    style={{
-                      padding: "14px",
-                      borderRadius: "14px",
-                      background: "rgba(255,255,255,0.03)",
-                    }}
+                    className="neu-card" style={{ padding: "14px", borderRadius: "14px" }}
                   >
                     <div
                       style={{
@@ -1317,8 +1219,7 @@ export default function AdminDashboard() {
                         color: "var(--text-muted)",
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        marginBottom: "6px",
-                      }}
+                        marginBottom: "6px" }}
                     >
                       {item.status.replace("_", " ")}
                     </div>
@@ -1333,8 +1234,7 @@ export default function AdminDashboard() {
                   style={{
                     width: "100%",
                     borderCollapse: "collapse",
-                    minWidth: "640px",
-                  }}
+                    minWidth: "640px" }}
                 >
                   <thead>
                     <tr
@@ -1343,8 +1243,7 @@ export default function AdminDashboard() {
                         color: "var(--text-muted)",
                         fontSize: "11px",
                         textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                      }}
+                        letterSpacing: "0.1em" }}
                     >
                       <th style={{ padding: "10px 12px" }}>Vehicle</th>
                       <th style={{ padding: "10px 12px" }}>Status</th>
@@ -1358,8 +1257,7 @@ export default function AdminDashboard() {
                       <tr
                         key={ambulance._id}
                         style={{
-                          borderTop: "1px solid rgba(255,255,255,0.06)",
-                        }}
+                          borderTop: "1px solid var(--bg-card)" }}
                       >
                         <td style={{ padding: "12px" }}>
                           <div style={{ fontWeight: 800 }}>
@@ -1368,8 +1266,7 @@ export default function AdminDashboard() {
                           <div
                             style={{
                               fontSize: "12px",
-                              color: "var(--text-muted)",
-                            }}
+                              color: "var(--text-muted)" }}
                           >
                             {ambulance.driverName}
                           </div>
@@ -1385,16 +1282,14 @@ export default function AdminDashboard() {
                         <td
                           style={{
                             padding: "12px",
-                            color: "var(--text-secondary)",
-                          }}
+                            color: "var(--text-secondary)" }}
                         >
                           {ambulance.equipmentLevel.replace("_", " ")}
                         </td>
                         <td
                           style={{
                             padding: "12px",
-                            color: "var(--text-secondary)",
-                          }}
+                            color: "var(--text-secondary)" }}
                         >
                           {ambulance.ratingSummary?.average
                             ? `${ambulance.ratingSummary.average.toFixed(1)} / 5`
@@ -1403,8 +1298,7 @@ export default function AdminDashboard() {
                         <td
                           style={{
                             padding: "12px",
-                            color: "var(--text-secondary)",
-                          }}
+                            color: "var(--text-secondary)" }}
                         >
                           {ambulance.isActive ? "Active" : "Inactive"}
                         </td>
@@ -1420,7 +1314,7 @@ export default function AdminDashboard() {
               subtitle="Bed and ICU balance across the network, weighted for fast triage decisions."
               icon={Building2}
               right={
-                <StatusPill color="#4ade80" background="rgba(34,197,94,0.12)">
+                <StatusPill color="#4ade80" background="var(--bg-card)">
                   {hospitals.length} hospitals
                 </StatusPill>
               }
@@ -1439,8 +1333,7 @@ export default function AdminDashboard() {
               gap: "22px",
               position: "sticky",
               top: "92px",
-              alignSelf: "start",
-            }}
+              alignSelf: "start" }}
           >
             <SystemHealthCard health={health || dashboard.systemHealth} />
 
@@ -1449,7 +1342,7 @@ export default function AdminDashboard() {
               subtitle="Search the active user directory and see role distribution at a glance."
               icon={Users}
               right={
-                <StatusPill color="#c084fc" background="rgba(168,139,250,0.12)">
+                <StatusPill color="#c084fc" background="var(--bg-card)">
                   {filteredUsers.length} visible
                 </StatusPill>
               }
@@ -1459,18 +1352,12 @@ export default function AdminDashboard() {
                   display: "grid",
                   gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
                   gap: "8px",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 {(dashboard.users?.byRole || []).map((item) => (
                   <div
                     key={item._id}
-                    className="glass-card"
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: "12px",
-                      background: "rgba(255,255,255,0.03)",
-                    }}
+                    className="neu-card" style={{ padding: "10px 12px", borderRadius: "12px" }}
                   >
                     <div
                       style={{
@@ -1478,8 +1365,7 @@ export default function AdminDashboard() {
                         color: "var(--text-muted)",
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",
-                        marginBottom: "4px",
-                      }}
+                        marginBottom: "4px" }}
                     >
                       {ROLE_LABELS[item._id] || item._id}
                     </div>
@@ -1500,16 +1386,15 @@ export default function AdminDashboard() {
                       borderRadius: "12px",
                       border:
                         roleFilter === role
-                          ? "1px solid rgba(96,165,250,0.55)"
-                          : "1px solid var(--border-glass)",
+                          ? "1px solid var(--bg-card)"
+                          : "1px solid transparent",
                       background:
                         roleFilter === role
-                          ? "rgba(59,130,246,0.12)"
-                          : "rgba(255,255,255,0.03)",
+                          ? "var(--bg-card)"
+                          : "var(--bg-card)",
                       color: "var(--text-secondary)",
                       fontSize: "12px",
-                      fontWeight: 700,
-                    }}
+                      fontWeight: 700 }}
                   >
                     {label}
                   </button>
@@ -1526,8 +1411,7 @@ export default function AdminDashboard() {
                       left: "12px",
                       top: "50%",
                       transform: "translateY(-50%)",
-                      color: "var(--text-muted)",
-                    }}
+                      color: "var(--text-muted)" }}
                   />
                   <input
                     value={userSearch}
@@ -1537,12 +1421,11 @@ export default function AdminDashboard() {
                       width: "100%",
                       padding: "11px 12px 11px 36px",
                       borderRadius: "12px",
-                      border: "1px solid var(--border-glass)",
-                      background: "var(--bg-glass)",
+                      border: "1px solid transparent",
+                      background: "var(--bg-card)",
                       color: "var(--text-primary)",
                       outline: "none",
-                      fontFamily: "var(--font-family)",
-                    }}
+                      fontFamily: "var(--font-family)" }}
                   />
                 </div>
                 <div
@@ -1552,10 +1435,9 @@ export default function AdminDashboard() {
                     gap: "8px",
                     padding: "0 12px",
                     borderRadius: "12px",
-                    border: "1px solid var(--border-glass)",
-                    background: "var(--bg-glass)",
-                    color: "var(--text-muted)",
-                  }}
+                    border: "1px solid transparent",
+                    background: "var(--bg-card)",
+                    color: "var(--text-muted)" }}
                 >
                   <Filter size={14} />
                 </div>
@@ -1564,8 +1446,7 @@ export default function AdminDashboard() {
                 style={{
                   maxHeight: "340px",
                   overflowY: "auto",
-                  borderRadius: "14px",
-                }}
+                  borderRadius: "14px" }}
               >
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
@@ -1575,8 +1456,7 @@ export default function AdminDashboard() {
                         color: "var(--text-muted)",
                         fontSize: "11px",
                         textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                      }}
+                        letterSpacing: "0.1em" }}
                     >
                       <th style={{ padding: "10px 0" }}>Name</th>
                       <th style={{ padding: "10px 0" }}>Role</th>
@@ -1588,16 +1468,14 @@ export default function AdminDashboard() {
                       <tr
                         key={user._id}
                         style={{
-                          borderTop: "1px solid rgba(255,255,255,0.06)",
-                        }}
+                          borderTop: "1px solid var(--bg-card)" }}
                       >
                         <td style={{ padding: "12px 0" }}>
                           <div style={{ fontWeight: 800 }}>{user.name}</div>
                           <div
                             style={{
                               fontSize: "12px",
-                              color: "var(--text-muted)",
-                            }}
+                              color: "var(--text-muted)" }}
                           >
                             {user.email}
                           </div>
@@ -1605,7 +1483,7 @@ export default function AdminDashboard() {
                         <td style={{ padding: "12px 0" }}>
                           <StatusPill
                             color="#c084fc"
-                            background="rgba(168,139,250,0.12)"
+                            background="var(--bg-card)"
                           >
                             {ROLE_LABELS[user.role] || user.role}
                           </StatusPill>
@@ -1614,8 +1492,7 @@ export default function AdminDashboard() {
                           style={{
                             padding: "12px 0",
                             color: "var(--text-secondary)",
-                            fontSize: "12px",
-                          }}
+                            fontSize: "12px" }}
                         >
                           {user.role === "driver" && user.assignedAmbulance
                             ? user.assignedAmbulance.vehicleNumber
@@ -1638,7 +1515,7 @@ export default function AdminDashboard() {
               subtitle="Recent dispatch messages and simulated notification events."
               icon={BellRing}
               right={
-                <StatusPill color="#60a5fa" background="rgba(59,130,246,0.12)">
+                <StatusPill color="#60a5fa" background="var(--bg-card)">
                   {notificationFeed.length} recent
                 </StatusPill>
               }
@@ -1648,27 +1525,20 @@ export default function AdminDashboard() {
                   display: "grid",
                   gap: "10px",
                   maxHeight: "320px",
-                  overflowY: "auto",
-                }}
+                  overflowY: "auto" }}
               >
                 {notificationFeed.length > 0 ? (
                   notificationFeed.slice(0, 8).map((notification) => (
                     <div
                       key={notification.id}
-                      className="glass-card"
-                      style={{
-                        padding: "14px",
-                        borderRadius: "14px",
-                        background: "rgba(255,255,255,0.03)",
-                      }}
+                      className="neu-card" style={{ padding: "14px", borderRadius: "14px" }}
                     >
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
                           gap: "10px",
-                          marginBottom: "8px",
-                        }}
+                          marginBottom: "8px" }}
                       >
                         <div style={{ fontWeight: 800, fontSize: "0.9rem" }}>
                           {notification.type.toUpperCase()}
@@ -1676,8 +1546,7 @@ export default function AdminDashboard() {
                         <span
                           style={{
                             fontSize: "11px",
-                            color: "var(--text-muted)",
-                          }}
+                            color: "var(--text-muted)" }}
                         >
                           {formatTimeAgo(notification.timestamp)}
                         </span>
@@ -1686,8 +1555,7 @@ export default function AdminDashboard() {
                         style={{
                           fontSize: "12px",
                           color: "var(--text-secondary)",
-                          lineHeight: 1.5,
-                        }}
+                          lineHeight: 1.5 }}
                       >
                         {notification.message}
                       </div>
@@ -1698,8 +1566,7 @@ export default function AdminDashboard() {
                           justifyContent: "space-between",
                           gap: "10px",
                           fontSize: "11px",
-                          color: "var(--text-muted)",
-                        }}
+                          color: "var(--text-muted)" }}
                       >
                         <span>{notification.provider}</span>
                         <span>{notification.status}</span>
@@ -1708,12 +1575,11 @@ export default function AdminDashboard() {
                   ))
                 ) : (
                   <div
-                    className="glass-card"
+                    className="neu-card"
                     style={{
                       padding: "16px",
                       borderRadius: "14px",
-                      color: "var(--text-muted)",
-                    }}
+                      color: "var(--text-muted)" }}
                   >
                     Notification log will appear here once dispatch activity
                     begins.
@@ -1729,12 +1595,7 @@ export default function AdminDashboard() {
             >
               <div style={{ display: "grid", gap: "10px" }}>
                 <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px",
-                    borderRadius: "14px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
+                  className="neu-card" style={{ padding: "16px", borderRadius: "14px" }}
                 >
                   <div
                     style={{
@@ -1742,8 +1603,7 @@ export default function AdminDashboard() {
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
                       color: "var(--text-muted)",
-                      marginBottom: "6px",
-                    }}
+                      marginBottom: "6px" }}
                   >
                     Backlog
                   </div>
@@ -1757,12 +1617,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div
-                  className="glass-card"
-                  style={{
-                    padding: "16px",
-                    borderRadius: "14px",
-                    background: "rgba(255,255,255,0.03)",
-                  }}
+                  className="neu-card" style={{ padding: "16px", borderRadius: "14px" }}
                 >
                   <div
                     style={{
@@ -1770,8 +1625,7 @@ export default function AdminDashboard() {
                       textTransform: "uppercase",
                       letterSpacing: "0.1em",
                       color: "var(--text-muted)",
-                      marginBottom: "10px",
-                    }}
+                      marginBottom: "10px" }}
                   >
                     Emergency statuses
                   </div>
@@ -1785,8 +1639,7 @@ export default function AdminDashboard() {
                             display: "flex",
                             justifyContent: "space-between",
                             gap: "10px",
-                            fontSize: "12px",
-                          }}
+                            fontSize: "12px" }}
                         >
                           <span style={{ color: "var(--text-secondary)" }}>
                             {item._id}
@@ -1806,15 +1659,14 @@ export default function AdminDashboard() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
             gap: "22px",
-            marginTop: "22px",
-          }}
+            marginTop: "22px" }}
         >
           <SectionCard
             title="Recent Emergencies"
             subtitle="The latest patient-facing incidents and their current dispatch posture."
             icon={HeartPulse}
             right={
-              <StatusPill color="#ef4444" background="rgba(239,68,68,0.12)">
+              <StatusPill color="#ef4444" background="var(--bg-card)">
                 {emergencies.length} active
               </StatusPill>
             }
@@ -1826,12 +1678,11 @@ export default function AdminDashboard() {
                 ))
               ) : (
                 <div
-                  className="glass-card"
+                  className="neu-card"
                   style={{
                     padding: "32px",
                     textAlign: "center",
-                    borderRadius: "16px",
-                  }}
+                    borderRadius: "16px" }}
                 >
                   <div style={{ fontSize: "2rem", marginBottom: "8px" }}>
                     ✅
@@ -1851,7 +1702,7 @@ export default function AdminDashboard() {
             subtitle="Capacity-aware routing view for the entire care network."
             icon={Building2}
             right={
-              <StatusPill color="#22c55e" background="rgba(34,197,94,0.12)">
+              <StatusPill color="#22c55e" background="var(--bg-card)">
                 {hospitalTotals.availableBeds} beds open
               </StatusPill>
             }
@@ -1865,13 +1716,12 @@ export default function AdminDashboard() {
                   ))
               ) : (
                 <div
-                  className="glass-card"
+                  className="neu-card"
                   style={{
                     padding: "24px",
                     textAlign: "center",
                     borderRadius: "16px",
-                    color: "var(--text-muted)",
-                  }}
+                    color: "var(--text-muted)" }}
                 >
                   No hospital data available.
                 </div>

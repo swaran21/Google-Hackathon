@@ -17,7 +17,7 @@ const inputStyle = {
   fontFamily: 'var(--font-family)', transition: 'all 0.2s',
 };
 
-const focus = (e) => { e.target.style.borderColor = 'rgba(239,68,68,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.08)'; };
+const focus = (e) => { e.target.style.borderColor = 'var(--bg-card)'; e.target.style.boxShadow = '0 0 0 3px var(--bg-card)'; };
 const blur  = (e) => { e.target.style.borderColor = 'var(--border-input)'; e.target.style.boxShadow = 'none'; };
 
 function Field({ icon: Icon, ...props }) {
@@ -97,7 +97,7 @@ export default function UserLoginPage() {
 
   return (
     <div className="page-enter" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative' }}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 0%, rgba(239,68,68,0.06) 0%, transparent 50%)' }} />
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)' }} />
 
       <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 10 }}>
 
@@ -111,7 +111,7 @@ export default function UserLoginPage() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '52px', height: '52px', borderRadius: '16px', margin: '0 auto 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '16px', margin: '0 auto 12px', background: 'var(--bg-card)', border: '1px solid var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <User size={26} style={{ color: '#ef4444' }} />
           </div>
           <h1 style={{ fontSize: '1.65rem', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '4px' }}>
@@ -123,36 +123,35 @@ export default function UserLoginPage() {
         </div>
 
         {/* Tab */}
-        <div style={{ display: 'flex', background: 'var(--bg-glass)', borderRadius: '14px', padding: '4px', marginBottom: '20px', border: '1px solid var(--border-glass)' }}>
+        <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '14px', padding: '4px', marginBottom: '20px', border: '1px solid transparent' }}>
           {['login', 'signup'].map((t) => (
-            <button key={t} type="button" onClick={() => { setTab(t); setError(''); }} className="cursor-pointer" style={{
+            <button key={t} type="button" onClick={() => { setTab(t); setError(''); }} className="neu-button" style={{
               flex: 1, padding: '10px', borderRadius: '10px', border: 'none',
-              background: tab === t ? 'rgba(239,68,68,0.15)' : 'transparent',
+              background: tab === t ? 'var(--bg-card)' : 'transparent',
               color: tab === t ? '#ef4444' : 'var(--text-muted)',
               fontWeight: 700, fontSize: '0.88rem', fontFamily: 'var(--font-family)',
-              transition: 'all 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            }}>
+              transition: 'all 0.25s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
               {t === 'login' ? <><LogIn size={14} /> Log In</> : <><UserPlus size={14} /> Sign Up</>}
             </button>
           ))}
         </div>
 
         {error && (
-          <div style={{ padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', background: 'var(--bg-card)', border: '1px solid var(--bg-card)', color: '#fca5a5', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             ⚠️ {error}
           </div>
         )}
 
         {/* Login form */}
         {tab === 'login' && (
-          <form onSubmit={handleLogin} className="glass-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleLogin} className="neu-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field icon={Mail} type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="Email address" required />
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input type={showLoginPass ? 'text' : 'password'} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="Password" required style={{ ...inputStyle, paddingRight: '48px' }} onFocus={focus} onBlur={blur} />
               {eyeBtn(showLoginPass, () => setShowLoginPass((p) => !p))}
             </div>
-            <button type="submit" disabled={loading} className="cursor-pointer" style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)', boxShadow: '0 6px 24px rgba(239,68,68,0.3)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s' }}
+            <button type="submit" disabled={loading} className="neu-button" style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)', boxShadow: '0 6px 24px var(--bg-card)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s' }}
               onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >
@@ -167,7 +166,7 @@ export default function UserLoginPage() {
 
         {/* Signup form */}
         {tab === 'signup' && (
-          <form onSubmit={handleSignup} className="glass-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSignup} className="neu-card" style={{ padding: '28px', borderRadius: '22px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Field icon={User} type="text" value={signupName} onChange={(e) => setSignupName(e.target.value)} placeholder="Full Name *" required />
             <Field icon={Mail} type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} placeholder="Email Address *" required />
 
@@ -194,15 +193,15 @@ export default function UserLoginPage() {
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input type={showConfirmPass ? 'text' : 'password'} value={signupConfirm} onChange={(e) => setSignupConfirm(e.target.value)} placeholder="Confirm Password *" required
-                style={{ ...inputStyle, paddingRight: '48px', borderColor: signupConfirm && signupPassword !== signupConfirm ? 'rgba(239,68,68,0.5)' : undefined }}
+                style={{ ...inputStyle, paddingRight: '48px', borderColor: signupConfirm && signupPassword !== signupConfirm ? 'var(--bg-card)' : undefined }}
                 onFocus={focus}
-                onBlur={(e) => { e.target.style.borderColor = signupPassword !== e.target.value ? 'rgba(239,68,68,0.5)' : 'var(--border-input)'; e.target.style.boxShadow = 'none'; }}
+                onBlur={(e) => { e.target.style.borderColor = signupPassword !== e.target.value ? 'var(--bg-card)' : 'var(--border-input)'; e.target.style.boxShadow = 'none'; }}
               />
               {eyeBtn(showConfirmPass, () => setShowConfirmPass((p) => !p))}
               {signupConfirm && signupPassword !== signupConfirm && <p style={{ color: '#fca5a5', fontSize: '11px', marginTop: '4px' }}>Passwords do not match</p>}
             </div>
 
-            <button type="submit" disabled={loading} className="cursor-pointer" style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)', boxShadow: '0 6px 24px rgba(239,68,68,0.3)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s' }}
+            <button type="submit" disabled={loading} className="neu-button" style={{ width: '100%', padding: '14px', borderRadius: '14px', border: 'none', background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff', fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-family)', boxShadow: '0 6px 24px var(--bg-card)', opacity: loading ? 0.7 : 1, transition: 'all 0.2s' }}
               onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
             >

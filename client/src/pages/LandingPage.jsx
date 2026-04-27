@@ -33,8 +33,7 @@ export default function LandingPage() {
     <div className="page-enter" style={{
       minHeight: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', padding: '32px 24px',
-      position: 'relative', overflow: 'hidden',
-    }}>
+      position: 'relative', overflow: 'hidden' }}>
 
       {/* Content */}
       <div style={{ maxWidth: '700px', textAlign: 'center', position: 'relative', zIndex: 10 }}>
@@ -42,12 +41,10 @@ export default function LandingPage() {
         <div className="neu-card" style={{
           display: 'inline-flex', alignItems: 'center', gap: '10px',
           padding: '8px 20px', borderRadius: '9999px', marginBottom: '28px',
-          fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)',
-        }}>
+          fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
           <div style={{
             width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-secondary)',
-            boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 2px rgba(0,0,0,0.2)',
-          }} />
+            boxShadow: 'inset 1px 1px 2px var(--bg-card), inset -1px -1px 2px var(--bg-card)' }} />
           AI + OSRM Powered Emergency Response
         </div>
 
@@ -73,8 +70,7 @@ export default function LandingPage() {
           <Link to="/tracking" className="neu-button" style={{
             display: 'inline-flex', alignItems: 'center', gap: '10px',
             padding: '16px 36px', borderRadius: '16px', textDecoration: 'none',
-            fontWeight: 700, fontSize: '1rem',
-          }}>
+            fontWeight: 700, fontSize: '1rem' }}>
             <MapPin size={20} /> Live Tracking
           </Link>
         </div>
@@ -82,8 +78,7 @@ export default function LandingPage() {
         {/* Stats Grid */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: '24px', marginBottom: '40px',
-        }}>
+          gap: '24px', marginBottom: '40px' }}>
           {stats.map((s) => (
             <StatBlock key={s.label} {...s} />
           ))}
@@ -97,8 +92,7 @@ export default function LandingPage() {
             { icon: <Shield size={24} />, title: 'Smart Allocation', desc: 'Hospital bed matching and priority queuing', color: 'var(--text-primary)' },
           ].map((f) => (
             <div key={f.title} className="neu-card neu-card-hover" style={{
-              padding: '24px', borderRadius: '20px', textAlign: 'left',
-            }}>
+              padding: '24px', borderRadius: '20px', textAlign: 'left' }}>
               <div className="neu-card" style={{
                 marginBottom: '16px', color: f.color, width: '48px', height: '48px',
                 borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',

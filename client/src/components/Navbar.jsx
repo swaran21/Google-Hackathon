@@ -34,9 +34,8 @@ export default function Navbar() {
     <nav style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
       background: 'var(--bg-primary)',
-      boxShadow: '0 4px 10px rgba(0,0,0,0.05)', // Subtle drop shadow for navbar separation instead of glassmorphism
-      transition: 'background 0.3s',
-    }}>
+      boxShadow: '0 4px 10px var(--bg-card)', // Subtle drop shadow for navbar separation instead of glassmorphism
+      transition: 'background 0.3s' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
 
@@ -54,8 +53,7 @@ export default function Navbar() {
                   display: 'flex', alignItems: 'center', gap: '8px',
                   padding: '8px 16px', borderRadius: '12px', fontSize: '0.875rem',
                   fontWeight: 600, textDecoration: 'none', transition: 'all 0.3s',
-                  color: isActive ? 'var(--color-secondary)' : 'var(--text-secondary)',
-                }}
+                  color: isActive ? 'var(--color-secondary)' : 'var(--text-secondary)' }}
                   onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.color = 'var(--text-primary)'; }}}
                   onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.color = 'var(--text-secondary)'; }}}
                 >
@@ -89,8 +87,7 @@ export default function Navbar() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div className="neu-card" style={{
                     width: '36px', height: '36px', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-secondary)',
-                  }}>
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-secondary)' }}>
                     <UserIcon size={16} />
                   </div>
                   <button onClick={logout} title="Logout" className="neu-button"
@@ -103,8 +100,7 @@ export default function Navbar() {
             ) : (
               <Link to="/login" className="neu-button" style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '8px 24px', textDecoration: 'none',
-              }}>
+                padding: '8px 24px', textDecoration: 'none' }}>
                 Sign In
               </Link>
             )}

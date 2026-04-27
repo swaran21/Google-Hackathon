@@ -44,23 +44,23 @@ const STATUS_LABELS = {
 const STATUS_COLORS = {
   pending: {
     color: "#facc15",
-    bg: "rgba(250,204,21,0.12)",
-    border: "rgba(250,204,21,0.25)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
   },
   accepted: {
     color: "#22c55e",
-    bg: "rgba(34,197,94,0.12)",
-    border: "rgba(34,197,94,0.25)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
   },
   rejected: {
     color: "#ef4444",
-    bg: "rgba(239,68,68,0.12)",
-    border: "rgba(239,68,68,0.25)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
   },
   released: {
     color: "#60a5fa",
-    bg: "rgba(96,165,250,0.12)",
-    border: "rgba(96,165,250,0.25)",
+    bg: "var(--bg-card)",
+    border: "var(--bg-card)",
   },
 };
 
@@ -455,8 +455,7 @@ export default function HospitalPage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: "16px",
-        }}
+          gap: "16px" }}
       >
         <Loader2
           size={34}
@@ -468,8 +467,7 @@ export default function HospitalPage() {
             fontWeight: 800,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           Loading Hospital Command Center
         </span>
@@ -488,11 +486,10 @@ export default function HospitalPage() {
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
-          gap: "16px",
-        }}
+          gap: "16px" }}
       >
         <div
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "18px 20px",
             borderRadius: "18px",
@@ -500,8 +497,7 @@ export default function HospitalPage() {
             justifyContent: "space-between",
             alignItems: "center",
             gap: "12px",
-            flexWrap: "wrap",
-          }}
+            flexWrap: "wrap" }}
         >
           <div>
             <p
@@ -511,8 +507,7 @@ export default function HospitalPage() {
                 letterSpacing: "0.14em",
                 color: "#22c55e",
                 fontWeight: 800,
-                marginBottom: "5px",
-              }}
+                marginBottom: "5px" }}
             >
               Hospital Admin Console
             </p>
@@ -520,8 +515,7 @@ export default function HospitalPage() {
               style={{
                 fontSize: "1.6rem",
                 fontWeight: 900,
-                letterSpacing: "-0.02em",
-              }}
+                letterSpacing: "-0.02em" }}
             >
               {hospital?.name || "My Hospital"}
             </h1>
@@ -559,14 +553,13 @@ export default function HospitalPage() {
             display: "grid",
             gridTemplateColumns: "minmax(460px, 1.4fr) minmax(360px, 1fr)",
             gap: "16px",
-            alignItems: "start",
-          }}
+            alignItems: "start" }}
         >
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
             <div
-              className="glass-card"
+              className="neu-card"
               style={{ padding: "18px", borderRadius: "18px" }}
             >
               <div
@@ -574,8 +567,7 @@ export default function HospitalPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 <h2
                   style={{
@@ -583,24 +575,18 @@ export default function HospitalPage() {
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "1rem",
-                    fontWeight: 800,
-                  }}
+                    fontWeight: 800 }}
                 >
                   <ClipboardList size={16} /> Patient Bed Requests
                 </h2>
                 <button
                   onClick={refreshDashboard}
-                  className="cursor-pointer"
-                  style={{
-                    border: "1px solid var(--border-glass)",
-                    borderRadius: "10px",
-                    padding: "6px 10px",
-                    background: "var(--bg-glass)",
+                  className="neu-button"
+                  className="neu-inner" style={{  borderRadius: "12px", padding: "12px",
                     color: "var(--text-secondary)",
                     fontWeight: 700,
                     fontSize: "12px",
-                    opacity: refreshing ? 0.6 : 1,
-                  }}
+                    opacity: refreshing ? 0.6 : 1 }}
                 >
                   {refreshing ? "Syncing..." : "Refresh"}
                 </button>
@@ -613,13 +599,12 @@ export default function HospitalPage() {
                 style={{
                   width: "100%",
                   borderRadius: "10px",
-                  border: "1px solid var(--border-glass)",
+                  border: "1px solid transparent",
                   background: "var(--bg-input)",
                   color: "var(--text-primary)",
                   padding: "10px 12px",
                   marginBottom: "12px",
-                  fontFamily: "var(--font-family)",
-                }}
+                  fontFamily: "var(--font-family)" }}
               />
 
               <div
@@ -628,16 +613,14 @@ export default function HospitalPage() {
                   flexDirection: "column",
                   gap: "10px",
                   maxHeight: "360px",
-                  overflowY: "auto",
-                }}
+                  overflowY: "auto" }}
               >
                 {requests.length === 0 && (
                   <p
                     style={{
                       color: "var(--text-muted)",
                       fontSize: "0.88rem",
-                      margin: 0,
-                    }}
+                      margin: 0 }}
                   >
                     No patient requests for this hospital right now.
                   </p>
@@ -655,33 +638,30 @@ export default function HospitalPage() {
                       key={request._id}
                       style={{
                         border: active
-                          ? "1px solid rgba(96,165,250,0.45)"
-                          : "1px solid var(--border-glass)",
+                          ? "1px solid var(--bg-card)"
+                          : "1px solid transparent",
                         borderRadius: "12px",
                         padding: "12px",
                         background: active
-                          ? "rgba(96,165,250,0.08)"
-                          : "var(--bg-glass)",
+                          ? "var(--bg-card)"
+                          : "var(--bg-card)",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "8px",
-                      }}
+                        gap: "8px" }}
                     >
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
                           gap: "8px",
-                          alignItems: "center",
-                        }}
+                          alignItems: "center" }}
                       >
                         <div>
                           <p
                             style={{
                               margin: 0,
                               fontWeight: 800,
-                              fontSize: "0.92rem",
-                            }}
+                              fontSize: "0.92rem" }}
                           >
                             {request.patientName}
                           </p>
@@ -689,8 +669,7 @@ export default function HospitalPage() {
                             style={{
                               margin: "4px 0 0",
                               fontSize: "12px",
-                              color: "var(--text-muted)",
-                            }}
+                              color: "var(--text-muted)" }}
                           >
                             {EMERGENCY_LABELS[request.type] || request.type} •
                             Severity {request.severity}
@@ -707,8 +686,7 @@ export default function HospitalPage() {
                             letterSpacing: "0.08em",
                             color: statusStyle.color,
                             background: statusStyle.bg,
-                            border: `1px solid ${statusStyle.border}`,
-                          }}
+                            border: `1px solid ${statusStyle.border}` }}
                         >
                           {STATUS_LABELS[status] || status}
                         </span>
@@ -718,12 +696,11 @@ export default function HospitalPage() {
                         style={{
                           display: "flex",
                           gap: "8px",
-                          flexWrap: "wrap",
-                        }}
+                          flexWrap: "wrap" }}
                       >
                         <button
                           onClick={() => setSelectedRequestId(request._id)}
-                          className="cursor-pointer"
+                          className="neu-button"
                           style={actionButtonStyle("neutral")}
                         >
                           View Case
@@ -736,7 +713,7 @@ export default function HospitalPage() {
                                 handleDecision(request._id, "accepted")
                               }
                               disabled={busy}
-                              className="cursor-pointer"
+                              className="neu-button"
                               style={actionButtonStyle("success", busy)}
                             >
                               Accept
@@ -746,7 +723,7 @@ export default function HospitalPage() {
                                 handleDecision(request._id, "rejected")
                               }
                               disabled={busy}
-                              className="cursor-pointer"
+                              className="neu-button"
                               style={actionButtonStyle("danger", busy)}
                             >
                               Reject
@@ -758,7 +735,7 @@ export default function HospitalPage() {
                           <button
                             onClick={() => handleRelease(request._id)}
                             disabled={busy}
-                            className="cursor-pointer"
+                            className="neu-button"
                             style={actionButtonStyle("warning", busy)}
                           >
                             Release Beds
@@ -772,7 +749,7 @@ export default function HospitalPage() {
             </div>
 
             <div
-              className="glass-card"
+              className="neu-card"
               style={{ padding: "18px", borderRadius: "18px" }}
             >
               <h3
@@ -780,8 +757,7 @@ export default function HospitalPage() {
                   marginTop: 0,
                   fontWeight: 800,
                   fontSize: "1rem",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 Selected Case Details
               </h3>
@@ -797,16 +773,14 @@ export default function HospitalPage() {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "14px",
-                  }}
+                    gap: "14px" }}
                 >
                   <div
                     style={{
                       display: "grid",
                       gridTemplateColumns:
                         "repeat(auto-fit, minmax(180px, 1fr))",
-                      gap: "10px",
-                    }}
+                      gap: "10px" }}
                   >
                     <InfoTile
                       label="Patient"
@@ -849,14 +823,13 @@ export default function HospitalPage() {
                     selectedRoleGuidance?.likelyTreatments?.length > 0) && (
                     <div
                       style={{
-                        border: "1px solid rgba(59,130,246,0.25)",
-                        background: "rgba(59,130,246,0.08)",
+                        border: "1px solid var(--bg-card)",
+                        background: "var(--bg-card)",
                         borderRadius: "14px",
                         padding: "12px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "8px",
-                      }}
+                        gap: "8px" }}
                     >
                       <p
                         style={{
@@ -865,8 +838,7 @@ export default function HospitalPage() {
                           fontWeight: 900,
                           textTransform: "uppercase",
                           letterSpacing: "0.08em",
-                          color: "#60a5fa",
-                        }}
+                          color: "#60a5fa" }}
                       >
                         AI Hospital Prep Suggestions
                       </p>
@@ -890,17 +862,15 @@ export default function HospitalPage() {
 
                   <div
                     style={{
-                      borderTop: "1px solid var(--border-glass)",
-                      paddingTop: "12px",
-                    }}
+                      borderTop: "1px solid transparent",
+                      paddingTop: "12px" }}
                   >
                     <p
                       style={{
                         margin: "0 0 6px",
                         fontSize: "12px",
                         color: "var(--text-muted)",
-                        fontWeight: 700,
-                      }}
+                        fontWeight: 700 }}
                     >
                       Assigned Ambulance
                     </p>
@@ -924,7 +894,7 @@ export default function HospitalPage() {
                       style={{ textDecoration: "none" }}
                     >
                       <button
-                        className="cursor-pointer"
+                        className="neu-button"
                         style={actionButtonStyle("warning")}
                       >
                         Call Patient
@@ -932,7 +902,7 @@ export default function HospitalPage() {
                     </a>
                     <button
                       onClick={() => setShowDispatchPanel(true)}
-                      className="cursor-pointer"
+                      className="neu-button"
                       style={actionButtonStyle("neutral")}
                     >
                       <MessageCircle size={14} /> Chat + Call Panel
@@ -943,9 +913,8 @@ export default function HospitalPage() {
                   {selectedRequest.assignedAmbulance?.location && (
                     <div
                       style={{
-                        borderTop: "1px solid var(--border-glass)",
-                        paddingTop: "14px",
-                      }}
+                        borderTop: "1px solid transparent",
+                        paddingTop: "14px" }}
                     >
                       <p
                         style={{
@@ -957,8 +926,7 @@ export default function HospitalPage() {
                           letterSpacing: "0.1em",
                           display: "flex",
                           alignItems: "center",
-                          gap: "6px",
-                        }}
+                          gap: "6px" }}
                       >
                         <Activity size={12} style={{ color: "#ef4444" }} /> Live
                         Ambulance Tracking
@@ -981,7 +949,7 @@ export default function HospitalPage() {
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
             <div
-              className="glass-card"
+              className="neu-card"
               style={{ padding: "18px", borderRadius: "18px" }}
             >
               <h3
@@ -989,8 +957,7 @@ export default function HospitalPage() {
                   marginTop: 0,
                   fontWeight: 800,
                   fontSize: "1rem",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 Bed Controls
               </h3>
@@ -999,33 +966,32 @@ export default function HospitalPage() {
                   display: "flex",
                   flexWrap: "wrap",
                   gap: "8px",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 <button
                   onClick={() => handleQuickBedAdjust("availableBeds", -1)}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("danger")}
                 >
                   Admit (Bed -1)
                 </button>
                 <button
                   onClick={() => handleQuickBedAdjust("availableBeds", 1)}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("success")}
                 >
                   Release (Bed +1)
                 </button>
                 <button
                   onClick={() => handleQuickBedAdjust("icuAvailable", -1)}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("danger")}
                 >
                   ICU Admit
                 </button>
                 <button
                   onClick={() => handleQuickBedAdjust("icuAvailable", 1)}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("success")}
                 >
                   ICU Release
@@ -1037,8 +1003,7 @@ export default function HospitalPage() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "10px",
-                }}
+                  gap: "10px" }}
               >
                 <FieldRow
                   label="Hospital Name"
@@ -1066,8 +1031,7 @@ export default function HospitalPage() {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
-                  }}
+                    gap: "8px" }}
                 >
                   <FieldRow
                     label="Total Beds"
@@ -1123,7 +1087,7 @@ export default function HospitalPage() {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("neutral", savingProfile)}
                 >
                   {savingProfile ? "Saving..." : "Save Profile"}
@@ -1132,7 +1096,7 @@ export default function HospitalPage() {
             </div>
 
             <div
-              className="glass-card"
+              className="neu-card"
               style={{ padding: "18px", borderRadius: "18px" }}
             >
               <h3
@@ -1140,8 +1104,7 @@ export default function HospitalPage() {
                   marginTop: 0,
                   fontWeight: 800,
                   fontSize: "1rem",
-                  marginBottom: "12px",
-                }}
+                  marginBottom: "12px" }}
               >
                 Treatments and Average Cost
               </h3>
@@ -1153,25 +1116,18 @@ export default function HospitalPage() {
                   gap: "8px",
                   marginBottom: "12px",
                   maxHeight: "220px",
-                  overflowY: "auto",
-                }}
+                  overflowY: "auto" }}
               >
                 {(hospital?.treatments || []).map((treatment) => (
                   <div
                     key={treatment._id}
-                    style={{
-                      border: "1px solid var(--border-glass)",
-                      borderRadius: "10px",
-                      padding: "10px",
-                      background: "var(--bg-glass)",
-                    }}
+                    className="neu-inner" style={{  borderRadius: "12px", padding: "12px" }}
                   >
                     <div
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
-                        gap: "8px",
-                      }}
+                        gap: "8px" }}
                     >
                       <div>
                         <p style={{ margin: 0, fontWeight: 700 }}>
@@ -1181,8 +1137,7 @@ export default function HospitalPage() {
                           style={{
                             margin: "4px 0 0",
                             fontSize: "12px",
-                            color: "var(--text-muted)",
-                          }}
+                            color: "var(--text-muted)" }}
                         >
                           Types:{" "}
                           {(treatment.emergencyTypes || []).join(", ") ||
@@ -1193,8 +1148,7 @@ export default function HospitalPage() {
                             margin: "4px 0 0",
                             fontSize: "12px",
                             color: "#86efac",
-                            fontWeight: 700,
-                          }}
+                            fontWeight: 700 }}
                         >
                           Avg Cost:{" "}
                           {formatCurrency(
@@ -1208,7 +1162,7 @@ export default function HospitalPage() {
                       </div>
                       <button
                         onClick={() => handleRemoveTreatment(treatment._id)}
-                        className="cursor-pointer"
+                        className="neu-button"
                         style={actionButtonStyle("danger")}
                       >
                         <X size={14} />
@@ -1221,8 +1175,7 @@ export default function HospitalPage() {
                     style={{
                       margin: 0,
                       color: "var(--text-muted)",
-                      fontSize: "0.88rem",
-                    }}
+                      fontSize: "0.88rem" }}
                   >
                     No treatments configured yet.
                   </p>
@@ -1268,7 +1221,7 @@ export default function HospitalPage() {
                 <button
                   onClick={handleAddTreatment}
                   disabled={addingTreatment}
-                  className="cursor-pointer"
+                  className="neu-button"
                   style={actionButtonStyle("success", addingTreatment)}
                 >
                   <Plus size={14} />{" "}
@@ -1298,11 +1251,10 @@ function MetricCard({ icon, label, value }) {
     <div
       style={{
         minWidth: "110px",
-        background: "var(--bg-glass)",
-        border: "1px solid var(--border-glass)",
+        background: "var(--bg-card)",
+        border: "1px solid transparent",
         borderRadius: "12px",
-        padding: "10px 12px",
-      }}
+        padding: "10px 12px" }}
     >
       <p
         style={{
@@ -1314,8 +1266,7 @@ function MetricCard({ icon, label, value }) {
           fontWeight: 800,
           display: "flex",
           alignItems: "center",
-          gap: "6px",
-        }}
+          gap: "6px" }}
       >
         {icon} {label}
       </p>
@@ -1335,8 +1286,7 @@ function FieldRow({ label, value, onChange, type = "text" }) {
           textTransform: "uppercase",
           letterSpacing: "0.08em",
           color: "var(--text-muted)",
-          fontWeight: 700,
-        }}
+          fontWeight: 700 }}
       >
         {label}
       </span>
@@ -1346,12 +1296,11 @@ function FieldRow({ label, value, onChange, type = "text" }) {
         onChange={(event) => onChange(event.target.value)}
         style={{
           borderRadius: "10px",
-          border: "1px solid var(--border-glass)",
+          border: "1px solid transparent",
           background: "var(--bg-input)",
           color: "var(--text-primary)",
           padding: "9px 11px",
-          fontFamily: "var(--font-family)",
-        }}
+          fontFamily: "var(--font-family)" }}
       />
     </label>
   );
@@ -1360,12 +1309,8 @@ function FieldRow({ label, value, onChange, type = "text" }) {
 function InfoTile({ label, value, icon }) {
   return (
     <div
-      style={{
-        border: "1px solid var(--border-glass)",
-        borderRadius: "10px",
-        background: "var(--bg-glass)",
-        padding: "10px 12px",
-      }}
+      className="neu-inner" style={{  borderRadius: "14px",
+        padding: "10px 12px" }}
     >
       <p
         style={{
@@ -1377,8 +1322,7 @@ function InfoTile({ label, value, icon }) {
           fontWeight: 800,
           display: "flex",
           alignItems: "center",
-          gap: "6px",
-        }}
+          gap: "6px" }}
       >
         {icon} {label}
       </p>
@@ -1392,8 +1336,8 @@ function InfoTile({ label, value, icon }) {
 function actionButtonStyle(kind, disabled = false) {
   const base = {
     borderRadius: "10px",
-    border: "1px solid var(--border-glass)",
-    background: "var(--bg-glass)",
+    border: "1px solid transparent",
+    background: "var(--bg-card)",
     color: "var(--text-secondary)",
     padding: "7px 10px",
     fontWeight: 700,
@@ -1408,8 +1352,8 @@ function actionButtonStyle(kind, disabled = false) {
   if (kind === "success") {
     return {
       ...base,
-      border: "1px solid rgba(34,197,94,0.35)",
-      background: "rgba(34,197,94,0.15)",
+      border: "1px solid var(--bg-card)",
+      background: "var(--bg-card)",
       color: "#86efac",
     };
   }
@@ -1417,8 +1361,8 @@ function actionButtonStyle(kind, disabled = false) {
   if (kind === "danger") {
     return {
       ...base,
-      border: "1px solid rgba(239,68,68,0.35)",
-      background: "rgba(239,68,68,0.14)",
+      border: "1px solid var(--bg-card)",
+      background: "var(--bg-card)",
       color: "#fca5a5",
     };
   }
@@ -1426,8 +1370,8 @@ function actionButtonStyle(kind, disabled = false) {
   if (kind === "warning") {
     return {
       ...base,
-      border: "1px solid rgba(245,158,11,0.35)",
-      background: "rgba(245,158,11,0.14)",
+      border: "1px solid var(--bg-card)",
+      background: "var(--bg-card)",
       color: "#fcd34d",
     };
   }
@@ -1490,9 +1434,8 @@ function HospitalTrackingMap({
       style={{
         borderRadius: "14px",
         overflow: "hidden",
-        border: "1px solid var(--border-glass)",
-        height: "220px",
-      }}
+        border: "1px solid transparent",
+        height: "220px" }}
     >
       <MapContainer
         center={ambPos}
@@ -1513,8 +1456,7 @@ function HospitalTrackingMap({
               color: routeColor,
               weight: 3,
               dashArray: "8, 6",
-              opacity: 0.7,
-            }}
+              opacity: 0.7 }}
           />
         ) : null}
       </MapContainer>

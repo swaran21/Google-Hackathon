@@ -7,8 +7,7 @@ export default function Logo({ size = 36, showText = true, isAnimating = false }
         width: size, height: size, borderRadius: '12px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', overflow: 'hidden',
-        boxShadow: 'inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)',
-      }}>
+        boxShadow: 'inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)' }}>
         <svg
           width={size * 0.65}
           height={size * 0.65}

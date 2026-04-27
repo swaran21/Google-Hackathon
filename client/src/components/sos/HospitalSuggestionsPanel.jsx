@@ -64,14 +64,13 @@ export default function HospitalSuggestionsPanel({
 
   return (
     <div
-      className="glass-card"
+      className="neu-card"
       style={{
         padding: "24px",
         borderRadius: "24px",
         display: "flex",
         flexDirection: "column",
-        gap: "16px",
-      }}
+        gap: "16px" }}
     >
       <div
         style={{
@@ -79,8 +78,7 @@ export default function HospitalSuggestionsPanel({
           alignItems: "center",
           justifyContent: "space-between",
           gap: "16px",
-          flexWrap: "wrap",
-        }}
+          flexWrap: "wrap" }}
       >
         <h3
           style={{
@@ -88,8 +86,7 @@ export default function HospitalSuggestionsPanel({
             fontWeight: 900,
             textTransform: "uppercase",
             letterSpacing: "0.15em",
-            color: "#22c55e",
-          }}
+            color: "#22c55e" }}
         >
           Hospitals Within 5km Radius
         </h3>
@@ -98,14 +95,13 @@ export default function HospitalSuggestionsPanel({
             style={{
               padding: "6px 12px",
               borderRadius: "9999px",
-              background: "rgba(34,197,94,0.1)",
-              border: "1px solid rgba(34,197,94,0.25)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               color: "#22c55e",
               fontSize: "10px",
               fontWeight: 800,
               textTransform: "uppercase",
-              letterSpacing: "0.12em",
-            }}
+              letterSpacing: "0.12em" }}
           >
             Recommended: {recommendedHospitalEntry.hospital.name}
           </span>
@@ -117,8 +113,7 @@ export default function HospitalSuggestionsPanel({
           display: "flex",
           alignItems: "center",
           gap: "10px",
-          flexWrap: "wrap",
-        }}
+          flexWrap: "wrap" }}
       >
         <span
           style={{
@@ -126,8 +121,7 @@ export default function HospitalSuggestionsPanel({
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.12em",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           Sort Hospitals
         </span>
@@ -136,14 +130,13 @@ export default function HospitalSuggestionsPanel({
           onChange={(e) => setSortField(e.target.value)}
           style={{
             borderRadius: "10px",
-            border: "1px solid var(--border-glass)",
+            border: "1px solid transparent",
             background: "var(--bg-input)",
             color: "var(--text-primary)",
             padding: "8px 10px",
             fontSize: "12px",
             fontWeight: 700,
-            fontFamily: "var(--font-family)",
-          }}
+            fontFamily: "var(--font-family)" }}
         >
           <option value="score">Recommended Score</option>
           <option value="distance">Distance</option>
@@ -153,19 +146,18 @@ export default function HospitalSuggestionsPanel({
           onClick={() =>
             setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
           }
-          className="cursor-pointer"
+          className="neu-button"
           style={{
             borderRadius: "10px",
-            border: "1px solid var(--border-glass)",
-            background: "var(--bg-glass)",
+            border: "1px solid transparent",
+            background: "var(--bg-card)",
             color: "var(--text-secondary)",
             padding: "8px 12px",
             fontSize: "11px",
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
-            fontFamily: "var(--font-family)",
-          }}
+            fontFamily: "var(--font-family)" }}
         >
           {sortDirection === "asc" ? "Asc ↑" : "Desc ↓"}
         </button>
@@ -176,9 +168,8 @@ export default function HospitalSuggestionsPanel({
           style={{
             padding: "16px",
             borderRadius: "14px",
-            background: "rgba(239,68,68,0.06)",
-            color: "var(--text-secondary)",
-          }}
+            background: "var(--bg-card)",
+            color: "var(--text-secondary)" }}
         >
           No hospitals in 5km matched the selected emergency problem category.
           Try another emergency type or update location.
@@ -205,11 +196,10 @@ export default function HospitalSuggestionsPanel({
                 style={{
                   padding: "16px",
                   borderRadius: "16px",
-                  border: `1px solid ${entry.recommended ? "rgba(34,197,94,0.35)" : "var(--border-glass)"}`,
+                  border: `1px solid ${entry.recommended ? "var(--bg-card)" : "transparent"}`,
                   background: entry.recommended
-                    ? "rgba(34,197,94,0.05)"
-                    : "var(--bg-glass)",
-                }}
+                    ? "var(--bg-card)"
+                    : "var(--bg-card)" }}
               >
                 <div
                   style={{
@@ -217,22 +207,19 @@ export default function HospitalSuggestionsPanel({
                     justifyContent: "space-between",
                     alignItems: "flex-start",
                     gap: "16px",
-                    flexWrap: "wrap",
-                  }}
+                    flexWrap: "wrap" }}
                 >
                   <div
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "6px",
-                    }}
+                      gap: "6px" }}
                   >
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px",
-                      }}
+                        gap: "8px" }}
                     >
                       <span style={{ fontSize: "1rem", fontWeight: 800 }}>
                         {hospital.name}
@@ -245,9 +232,8 @@ export default function HospitalSuggestionsPanel({
                             textTransform: "uppercase",
                             padding: "3px 8px",
                             borderRadius: "9999px",
-                            background: "rgba(34,197,94,0.14)",
-                            color: "#22c55e",
-                          }}
+                            background: "var(--bg-card)",
+                            color: "#22c55e" }}
                         >
                           Best Match
                         </span>
@@ -256,8 +242,7 @@ export default function HospitalSuggestionsPanel({
                     <span
                       style={{
                         fontSize: "12px",
-                        color: "var(--text-secondary)",
-                      }}
+                        color: "var(--text-secondary)" }}
                     >
                       {hospital.address}
                     </span>
@@ -265,8 +250,7 @@ export default function HospitalSuggestionsPanel({
                       style={{
                         fontSize: "11px",
                         fontFamily: "monospace",
-                        color: "var(--text-muted)",
-                      }}
+                        color: "var(--text-muted)" }}
                     >
                       Lat/Lng: {renderHospitalCoordinates(entry)}
                     </span>
@@ -276,8 +260,7 @@ export default function HospitalSuggestionsPanel({
                           marginTop: "6px",
                           display: "flex",
                           flexDirection: "column",
-                          gap: "6px",
-                        }}
+                          gap: "6px" }}
                       >
                         <span
                           style={{
@@ -285,8 +268,7 @@ export default function HospitalSuggestionsPanel({
                             color: "var(--text-muted)",
                             fontWeight: 800,
                             textTransform: "uppercase",
-                            letterSpacing: "0.1em",
-                          }}
+                            letterSpacing: "0.1em" }}
                         >
                           Matching Treatments
                         </span>
@@ -298,8 +280,7 @@ export default function HospitalSuggestionsPanel({
                               justifyContent: "space-between",
                               gap: "10px",
                               fontSize: "11px",
-                              color: "var(--text-secondary)",
-                            }}
+                              color: "var(--text-secondary)" }}
                           >
                             <span>{treatment.name}</span>
                             <span style={{ fontWeight: 700 }}>
@@ -329,15 +310,13 @@ export default function HospitalSuggestionsPanel({
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "flex-end",
-                      gap: "8px",
-                    }}
+                      gap: "8px" }}
                   >
                     <span
                       style={{
                         fontSize: "12px",
                         fontWeight: 800,
-                        color: "#3b82f6",
-                      }}
+                        color: "#3b82f6" }}
                     >
                       {entry.distance} km
                     </span>
@@ -345,8 +324,7 @@ export default function HospitalSuggestionsPanel({
                       style={{
                         fontSize: "11px",
                         fontWeight: 700,
-                        color: lowestCost ? "#22c55e" : "var(--text-muted)",
-                      }}
+                        color: lowestCost ? "#22c55e" : "var(--text-muted)" }}
                     >
                       {lowestCost ? `From ${lowestCost}` : "Cost unavailable"}
                     </span>
@@ -355,7 +333,7 @@ export default function HospitalSuggestionsPanel({
                         onSelectHospital && onSelectHospital(hospital._id)
                       }
                       disabled={!!selectingHospitalId}
-                      className="cursor-pointer"
+                      className="neu-button"
                       style={{
                         padding: "10px 14px",
                         borderRadius: "12px",
@@ -365,8 +343,7 @@ export default function HospitalSuggestionsPanel({
                         fontWeight: 700,
                         fontSize: "12px",
                         opacity: selectingHospitalId ? 0.7 : 1,
-                        fontFamily: "var(--font-family)",
-                      }}
+                        fontFamily: "var(--font-family)" }}
                     >
                       {isSelecting ? "Assigning..." : "Select Hospital"}
                     </button>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
 
 export default function PageLoader() {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     setIsLoading(true);
@@ -24,14 +26,15 @@ export default function PageLoader() {
       position: 'fixed',
       inset: 0,
       zIndex: 9999,
-      background: 'var(--bg-primary)',
+      background: isDark ? 'rgba(5, 5, 5, 0.65)' : 'rgba(231, 229, 228, 0.65)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       animation: 'loaderFadeOut 0.3s ease forwards',
-      animationDelay: '0.9s', 
-    }}>
+      animationDelay: '0.9s' }}>
       <Logo size={100} showText={false} isAnimating={true} />
       
       <div className="neu-text" style={{ 

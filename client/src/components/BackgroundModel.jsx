@@ -35,8 +35,11 @@ function EarthModel() {
 
   useFrame((state, delta) => {
     if (modelRef.current) {
+      // Cap delta at 0.1s to prevent huge jumps when switching browser tabs
+      const safeDelta = Math.min(delta, 0.1);
+      
       // 1. Advance the continuous auto-rotation
-      autoRotateY.current += delta * 0.15;
+      autoRotateY.current += safeDelta * 0.15;
 
       // 2. Calculate the desired final rotation (auto + mouse offset)
       const desiredY = autoRotateY.current + targetOffset.current.y;

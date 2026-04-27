@@ -15,9 +15,9 @@ const getStatusConfig = (status) => {
   switch (status) {
     case "available":
       return {
-        bg: "rgba(34,197,94,0.12)",
+        bg: "var(--bg-card)",
         color: "#22c55e",
-        borderColor: "rgba(34,197,94,0.3)",
+        borderColor: "var(--bg-card)",
         label: "AVAILABLE",
         icon: <Activity size={12} />,
         pulse: false,
@@ -25,9 +25,9 @@ const getStatusConfig = (status) => {
       };
     case "dispatched":
       return {
-        bg: "rgba(59,130,246,0.12)",
+        bg: "var(--bg-card)",
         color: "#3b82f6",
-        borderColor: "rgba(59,130,246,0.3)",
+        borderColor: "var(--bg-card)",
         label: "DISPATCHED",
         icon: <Navigation size={12} />,
         pulse: true,
@@ -35,9 +35,9 @@ const getStatusConfig = (status) => {
       };
     case "en_route":
       return {
-        bg: "rgba(245,158,11,0.12)",
+        bg: "var(--bg-card)",
         color: "#f59e0b",
-        borderColor: "rgba(245,158,11,0.3)",
+        borderColor: "var(--bg-card)",
         label: "EN ROUTE",
         icon: <Zap size={12} />,
         pulse: true,
@@ -45,9 +45,9 @@ const getStatusConfig = (status) => {
       };
     case "at_scene":
       return {
-        bg: "rgba(251,146,60,0.12)",
+        bg: "var(--bg-card)",
         color: "#fb923c",
-        borderColor: "rgba(251,146,60,0.3)",
+        borderColor: "var(--bg-card)",
         label: "AT SCENE",
         icon: <Stethoscope size={12} />,
         pulse: true,
@@ -55,9 +55,9 @@ const getStatusConfig = (status) => {
       };
     case "returning":
       return {
-        bg: "rgba(168,85,247,0.12)",
+        bg: "var(--bg-card)",
         color: "#a855f7",
-        borderColor: "rgba(168,85,247,0.3)",
+        borderColor: "var(--bg-card)",
         label: "RETURNING",
         icon: <Navigation size={12} style={{ transform: "rotate(180deg)" }} />,
         pulse: false,
@@ -65,9 +65,9 @@ const getStatusConfig = (status) => {
       };
     case "offline":
       return {
-        bg: "rgba(107,114,128,0.12)",
+        bg: "var(--bg-card)",
         color: "#6b7280",
-        borderColor: "rgba(107,114,128,0.3)",
+        borderColor: "var(--bg-card)",
         label: "OFFLINE",
         icon: <WifiOff size={12} />,
         pulse: false,
@@ -77,7 +77,7 @@ const getStatusConfig = (status) => {
       return {
         bg: "var(--bg-badge)",
         color: "var(--text-secondary)",
-        borderColor: "var(--border-glass)",
+        borderColor: "transparent",
         label: status?.toUpperCase() || "UNKNOWN",
         icon: <ShieldAlert size={12} />,
         pulse: false,
@@ -91,29 +91,29 @@ const getEquipmentConfig = (level) => {
     case "basic":
       return {
         color: "#64748b",
-        bg: "rgba(100,116,139,0.1)",
-        borderColor: "rgba(100,116,139,0.2)",
+        bg: "var(--bg-card)",
+        borderColor: "var(--bg-card)",
         label: "BASIC LIFE SUPPORT",
       };
     case "advanced":
       return {
         color: "#06b6d4",
-        bg: "rgba(6,182,212,0.1)",
-        borderColor: "rgba(6,182,212,0.2)",
+        bg: "var(--bg-card)",
+        borderColor: "var(--bg-card)",
         label: "ADVANCED LIFE SUPPORT",
       };
     case "critical_care":
       return {
         color: "#ef4444",
-        bg: "rgba(239,68,68,0.1)",
-        borderColor: "rgba(239,68,68,0.2)",
+        bg: "var(--bg-card)",
+        borderColor: "var(--bg-card)",
         label: "CRITICAL CARE UNIT",
       };
     default:
       return {
         color: "var(--text-muted)",
         bg: "var(--bg-badge)",
-        borderColor: "var(--border-glass)",
+        borderColor: "transparent",
         label: "UNKNOWN",
       };
   }
@@ -132,11 +132,10 @@ export default function AmbulanceDispatchCard({
           alignItems: "center",
           gap: "12px",
           padding: "14px",
-          background: "rgba(249,115,22,0.06)",
+          background: "var(--bg-card)",
           borderRadius: "14px",
           color: "#f97316",
-          border: "1px solid rgba(249,115,22,0.15)",
-        }}
+          border: "1px solid var(--bg-card)" }}
       >
         <ShieldAlert size={20} />
         <p style={{ fontSize: "12px", fontWeight: 700 }}>
@@ -159,26 +158,25 @@ export default function AmbulanceDispatchCard({
     <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
       <button
         onClick={onOpenDispatch}
-        className="cursor-pointer"
+        className="neu-button"
         style={{
           width: "100%",
           border: `1px solid ${statusConfig.borderColor}`,
           borderRadius: "14px",
-          background: "var(--bg-glass)",
+          background: "var(--bg-card)",
           padding: "14px",
           display: "flex",
           flexDirection: "column",
           gap: "12px",
           transition: "all 0.2s ease",
           position: "relative",
-          overflow: "hidden",
-        }}
+          overflow: "hidden" }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "var(--bg-glass-hover)";
+          e.currentTarget.style.background = "var(--bg-secondary)";
           e.currentTarget.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "var(--bg-glass)";
+          e.currentTarget.style.background = "var(--bg-card)";
           e.currentTarget.style.transform = "translateY(0)";
         }}
       >
@@ -194,8 +192,7 @@ export default function AmbulanceDispatchCard({
               borderRadius: "50%",
               background: statusConfig.color,
               boxShadow: `0 0 8px ${statusConfig.color}`,
-              animation: "pulse-glow 2s ease-in-out infinite",
-            }}
+              animation: "pulse-glow 2s ease-in-out infinite" }}
           />
         )}
 
@@ -206,16 +203,14 @@ export default function AmbulanceDispatchCard({
             justifyContent: "space-between",
             alignItems: "flex-end",
             paddingBottom: "10px",
-            borderBottom: "1px solid var(--border-glass)",
-          }}
+            borderBottom: "1px solid transparent" }}
         >
           <span
             style={{
               fontSize: "11px",
               color: "var(--text-muted)",
               fontWeight: 700,
-              textTransform: "uppercase",
-            }}
+              textTransform: "uppercase" }}
           >
             Fleet Unit
           </span>
@@ -223,8 +218,7 @@ export default function AmbulanceDispatchCard({
             style={{
               fontSize: "1.25rem",
               fontFamily: "monospace",
-              fontWeight: 900,
-            }}
+              fontWeight: 900 }}
           >
             {ambulance.vehicleNumber}
           </span>
@@ -236,8 +230,7 @@ export default function AmbulanceDispatchCard({
             display: "flex",
             gap: "6px",
             flexWrap: "wrap",
-            alignItems: "center",
-          }}
+            alignItems: "center" }}
         >
           {/* Status Badge */}
           <span
@@ -253,8 +246,7 @@ export default function AmbulanceDispatchCard({
               letterSpacing: "0.08em",
               display: "flex",
               alignItems: "center",
-              gap: "4px",
-            }}
+              gap: "4px" }}
           >
             {statusConfig.icon}
             {statusConfig.label}
@@ -271,8 +263,7 @@ export default function AmbulanceDispatchCard({
               color: equipmentConfig.color,
               border: `1px solid ${equipmentConfig.borderColor}`,
               textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
+              letterSpacing: "0.08em" }}
           >
             {equipmentConfig.label}
           </span>
@@ -285,15 +276,14 @@ export default function AmbulanceDispatchCard({
                 fontWeight: 800,
                 padding: "5px 10px",
                 borderRadius: "8px",
-                background: "rgba(107,114,128,0.12)",
+                background: "var(--bg-card)",
                 color: "#6b7280",
-                border: "1px solid rgba(107,114,128,0.2)",
+                border: "1px solid var(--bg-card)",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
-              }}
+                gap: "4px" }}
             >
               <WifiOff size={10} />
               OFFLINE
@@ -308,15 +298,14 @@ export default function AmbulanceDispatchCard({
                 fontWeight: 800,
                 padding: "5px 10px",
                 borderRadius: "8px",
-                background: "rgba(239,68,68,0.1)",
+                background: "var(--bg-card)",
                 color: "#ef4444",
-                border: "1px solid rgba(239,68,68,0.2)",
+                border: "1px solid var(--bg-card)",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
-              }}
+                gap: "4px" }}
             >
               <Wifi size={10} />
               LIVE
@@ -330,23 +319,18 @@ export default function AmbulanceDispatchCard({
             fontSize: "11px",
             fontWeight: 600,
             color: "var(--text-secondary)",
-            fontStyle: "italic",
-          }}
+            fontStyle: "italic" }}
         >
           {statusConfig.description}
         </p>
 
         {/* Driver Info */}
         <div
-          style={{
-            display: "flex",
+          className="neu-inner" style={{ display: "flex",
             alignItems: "center",
             gap: "8px",
             padding: "8px 10px",
-            background: "var(--bg-glass)",
-            borderRadius: "10px",
-            border: "1px solid var(--border-glass)",
-          }}
+             borderRadius: "14px", padding: "6px" }}
         >
           <User size={14} style={{ color: "var(--text-muted)" }} />
           <p style={{ fontSize: "12px", fontWeight: 700 }}>
@@ -361,8 +345,7 @@ export default function AmbulanceDispatchCard({
                 color: "var(--text-muted)",
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
-              }}
+                gap: "4px" }}
             >
               <Phone size={10} />
               {ambulance.driverPhone}
@@ -375,8 +358,7 @@ export default function AmbulanceDispatchCard({
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: "12px",
-          }}
+            gap: "12px" }}
         >
           <div
             style={{
@@ -385,8 +367,7 @@ export default function AmbulanceDispatchCard({
               borderRadius: "14px",
               textAlign: "center",
               border: `1px solid ${statusConfig.borderColor}`,
-              transition: "all 0.2s ease",
-            }}
+              transition: "all 0.2s ease" }}
           >
             <p
               style={{
@@ -395,8 +376,7 @@ export default function AmbulanceDispatchCard({
                 color: statusConfig.color,
                 textTransform: "uppercase",
                 marginBottom: "4px",
-                letterSpacing: "0.08em",
-              }}
+                letterSpacing: "0.08em" }}
             >
               ETA
             </p>
@@ -404,8 +384,7 @@ export default function AmbulanceDispatchCard({
               style={{
                 fontSize: "1.5rem",
                 fontWeight: 900,
-                color: statusConfig.color,
-              }}
+                color: statusConfig.color }}
             >
               {ambulance.eta || "--"}m
             </p>
@@ -413,11 +392,10 @@ export default function AmbulanceDispatchCard({
           <div
             style={{
               padding: "14px",
-              background: "var(--bg-glass)",
+              background: "var(--bg-card)",
               borderRadius: "14px",
               textAlign: "center",
-              border: "1px solid var(--border-glass)",
-            }}
+              border: "1px solid transparent" }}
           >
             <p
               style={{
@@ -426,8 +404,7 @@ export default function AmbulanceDispatchCard({
                 color: "var(--text-muted)",
                 textTransform: "uppercase",
                 marginBottom: "4px",
-                letterSpacing: "0.08em",
-              }}
+                letterSpacing: "0.08em" }}
             >
               Distance
             </p>
@@ -446,9 +423,8 @@ export default function AmbulanceDispatchCard({
             gap: "6px",
             padding: "8px",
             borderRadius: "10px",
-            background: "rgba(59,130,246,0.06)",
-            border: "1px solid rgba(59,130,246,0.15)",
-          }}
+            background: "var(--bg-card)",
+            border: "1px solid var(--bg-card)" }}
         >
           <Clock size={12} style={{ color: "#93c5fd" }} />
           <p
@@ -458,8 +434,7 @@ export default function AmbulanceDispatchCard({
               color: "#93c5fd",
               textTransform: "uppercase",
               letterSpacing: "0.1em",
-              textAlign: "center",
-            }}
+              textAlign: "center" }}
           >
             Tap for Chat / Call / Cancel
           </p>

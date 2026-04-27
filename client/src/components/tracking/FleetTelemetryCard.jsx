@@ -11,37 +11,37 @@ const getStatusColor = (status) => {
   switch (status) {
     case "available":
       return {
-        bg: "rgba(34,197,94,0.12)",
+        bg: "var(--bg-card)",
         color: "#22c55e",
         label: "AVAILABLE",
       };
     case "dispatched":
       return {
-        bg: "rgba(59,130,246,0.12)",
+        bg: "var(--bg-card)",
         color: "#3b82f6",
         label: "DISPATCHED",
       };
     case "en_route":
       return {
-        bg: "rgba(245,158,11,0.12)",
+        bg: "var(--bg-card)",
         color: "#f59e0b",
         label: "EN ROUTE",
       };
     case "at_scene":
       return {
-        bg: "rgba(251,146,60,0.12)",
+        bg: "var(--bg-card)",
         color: "#fb923c",
         label: "AT SCENE",
       };
     case "returning":
       return {
-        bg: "rgba(168,85,247,0.12)",
+        bg: "var(--bg-card)",
         color: "#a855f7",
         label: "RETURNING",
       };
     case "offline":
       return {
-        bg: "rgba(107,114,128,0.12)",
+        bg: "var(--bg-card)",
         color: "#6b7280",
         label: "OFFLINE",
       };
@@ -81,7 +81,7 @@ export default function FleetTelemetryCard({
   return (
     <>
       <div
-        className="glass-card"
+        className="neu-inner"
         style={{
           padding: "20px",
           flex: 1,
@@ -89,16 +89,14 @@ export default function FleetTelemetryCard({
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
-          borderRadius: "20px",
-        }}
+          borderRadius: "20px" }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "20px",
-          }}
+            marginBottom: "20px" }}
         >
           <h3
             style={{
@@ -109,20 +107,19 @@ export default function FleetTelemetryCard({
               color: "var(--text-muted)",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-            }}
+              gap: "8px" }}
           >
             <Navigation size={14} /> Fleet Telemetry
           </h3>
           <span
+            className="neu-inner"
             style={{
-              background: "var(--bg-badge)",
-              padding: "4px 10px",
-              borderRadius: "6px",
+              padding: "4px 12px",
+              borderRadius: "8px",
               fontSize: "10px",
               fontFamily: "monospace",
-              color: "var(--text-secondary)",
-            }}
+              color: "var(--color-secondary)",
+              fontWeight: 800 }}
           >
             {filteredAmbulances.length} UNITS
           </span>
@@ -134,8 +131,7 @@ export default function FleetTelemetryCard({
             display: "flex",
             flexDirection: "column",
             gap: "10px",
-            paddingRight: "4px",
-          }}
+            paddingRight: "4px" }}
         >
           {filteredAmbulances.length === 0 ? (
             <div
@@ -146,8 +142,7 @@ export default function FleetTelemetryCard({
                 justifyContent: "center",
                 gap: "12px",
                 padding: "40px 20px",
-                textAlign: "center",
-              }}
+                textAlign: "center" }}
             >
               <AlertCircle size={32} style={{ color: "var(--text-muted)" }} />
               <p style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 600 }}>
@@ -164,7 +159,7 @@ export default function FleetTelemetryCard({
               return (
                 <div
                   key={amb._id}
-                  className="glass-card glass-card-hover"
+                  className="neu-card neu-card-hover"
                   onClick={
                     isAssignedToUser
                       ? () => onOpenDispatchPanel(amb._id)
@@ -173,12 +168,7 @@ export default function FleetTelemetryCard({
                   style={{
                     padding: "14px",
                     borderRadius: "14px",
-                    background: "var(--bg-glass)",
                     cursor: isAssignedToUser ? "pointer" : "default",
-                    border: isAssignedToUser
-                      ? "1px solid rgba(37,99,235,0.35)"
-                      : "1px solid var(--border-glass)",
-                    transition: "all 0.2s ease",
                   }}
                 >
                   <div
@@ -186,16 +176,14 @@ export default function FleetTelemetryCard({
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "flex-start",
-                      marginBottom: "10px",
-                    }}
+                      marginBottom: "10px" }}
                   >
                     <div>
                       <p
                         style={{
                           fontSize: "0.875rem",
                           fontWeight: 900,
-                          fontFamily: "monospace",
-                        }}
+                          fontFamily: "monospace" }}
                       >
                         {amb.vehicleNumber}
                       </p>
@@ -203,13 +191,13 @@ export default function FleetTelemetryCard({
                         style={{
                           fontSize: "10px",
                           color: "var(--text-muted)",
-                          fontWeight: 500,
-                        }}
+                          fontWeight: 500 }}
                       >
                         {amb.driverName.toUpperCase()}
                       </p>
                     </div>
                     <div
+                      className="neu-inner"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -217,67 +205,61 @@ export default function FleetTelemetryCard({
                         width: "24px",
                         height: "24px",
                         borderRadius: "50%",
-                        background: statusInfo.bg,
                         color: statusInfo.color,
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
+                        fontSize: "12px",
+                        fontWeight: "bold" }}
                     >
                       {statusIcon}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
                     <span
+                      className="neu-inner"
                       style={{
                         fontSize: "9px",
                         fontWeight: 700,
                         padding: "4px 8px",
                         borderRadius: "6px",
-                        background: statusInfo.bg,
                         color: statusInfo.color,
-                        textTransform: "uppercase",
-                      }}
+                        textTransform: "uppercase" }}
                     >
                       {statusInfo.label}
                     </span>
                     <span
+                      className="neu-inner"
                       style={{
                         fontSize: "9px",
                         fontWeight: 700,
                         padding: "4px 8px",
                         borderRadius: "6px",
-                        background: "var(--bg-badge)",
                         color: "var(--text-secondary)",
-                        textTransform: "uppercase",
-                      }}
+                        textTransform: "uppercase" }}
                     >
                       {amb.equipmentLevel?.replace("_", " ")}
                     </span>
                     {!amb.isActive && (
                       <span
+                        className="neu-inner"
                         style={{
                           fontSize: "9px",
                           fontWeight: 700,
                           padding: "4px 8px",
                           borderRadius: "6px",
-                          background: "rgba(107,114,128,0.12)",
-                          color: "#6b7280",
-                        }}
+                          color: "#6b7280" }}
                       >
                         OFFLINE
                       </span>
                     )}
                     {isAssignedToUser && (
                       <span
+                        className="neu-inner"
                         style={{
                           fontSize: "9px",
                           fontWeight: 700,
                           padding: "4px 8px",
                           borderRadius: "6px",
-                          background: "rgba(37,99,235,0.12)",
-                          color: "#3b82f6",
-                          textTransform: "uppercase",
-                        }}
+                          color: "var(--color-secondary)",
+                          textTransform: "uppercase" }}
                       >
                         ASSIGNED
                       </span>
@@ -290,26 +272,23 @@ export default function FleetTelemetryCard({
                         marginTop: "8px",
                         fontSize: "10px",
                         fontWeight: 800,
-                      color: "#93c5fd",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    Tap to open chat/call/cancel
-                  </p>
-                )}
-              </div>
-            );
-          }))}
+                        color: "var(--color-secondary)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em" }}
+                    >
+                      Tap to open dispatch
+                    </p>
+                  )}
+                </div>
+              );
+            }))}
         </div>
-      </div>
 
-      <div
-        className="glass-card"
-        style={{ padding: "18px", borderRadius: "20px" }}
-      >
         <div
           style={{
+            padding: "18px 0 0",
+            marginTop: "auto",
+            borderTop: "1px solid var(--shadow-dark)",
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "12px",
@@ -317,8 +296,7 @@ export default function FleetTelemetryCard({
             fontWeight: 700,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           {[
             { color: "#22c55e", label: "Available" },
@@ -330,16 +308,14 @@ export default function FleetTelemetryCard({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-              }}
+                gap: "8px" }}
             >
               <div
                 style={{
                   width: "8px",
                   height: "8px",
                   borderRadius: "50%",
-                  background: item.color,
-                }}
+                  background: item.color }}
               />
               {item.label}
             </div>

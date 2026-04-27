@@ -35,8 +35,7 @@ export default function LoginPage() {
     <div className="page-enter" style={{
       minHeight: '100vh', display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '24px', position: 'relative', overflow: 'hidden',
-    }}>
+      padding: '24px', position: 'relative', overflow: 'hidden' }}>
 
       <div style={{ width: '100%', maxWidth: '540px', position: 'relative', zIndex: 10 }}>
 
@@ -45,8 +44,7 @@ export default function LoginPage() {
           <div className="neu-card" style={{
             width: '64px', height: '64px', borderRadius: '20px', margin: '0 auto 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: 'inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)',
-          }}>
+            boxShadow: 'inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light)' }}>
             <Shield size={32} style={{ color: 'var(--color-danger)' }} />
           </div>
           <h1 className="neu-text" style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '8px' }}>
@@ -79,8 +77,7 @@ export default function LoginPage() {
                 <div className="neu-card" style={{
                   width: '52px', height: '52px', borderRadius: '16px', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)',
-                }}>
+                  boxShadow: 'inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light)' }}>
                   <Icon size={26} style={{ color: role.color }} />
                 </div>
 

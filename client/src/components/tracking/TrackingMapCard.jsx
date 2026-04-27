@@ -36,7 +36,7 @@ const hospitalIcon = L.divIcon({
     background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
     border: 2px solid #fff;
     border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    box-shadow: 0 4px 12px var(--bg-card);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -56,7 +56,7 @@ const emergencyIcon = L.divIcon({
     background: #0a0a0f;
     border: 2px solid #f97316;
     border-radius: 10px;
-    box-shadow: 0 0 14px rgba(249,115,22,0.5);
+    box-shadow: 0 0 14px var(--bg-card);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -75,7 +75,7 @@ const assignedHospitalIcon = L.divIcon({
     background: #0a0a0f;
     border: 2px solid #3b82f6;
     border-radius: 10px;
-    box-shadow: 0 0 14px rgba(59,130,246,0.5);
+    box-shadow: 0 0 14px var(--bg-card);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -262,15 +262,15 @@ export default function TrackingMapCard({
 
   return (
     <div
+      className="neu-card"
       style={{
         position: "relative",
         borderRadius: "28px",
         overflow: "hidden",
-        border: "1px solid var(--border-glass)",
-        minHeight: "65vh",
-      }}
+        minHeight: "65vh" }}
     >
       <MapContainer
+        className="neu-inner"
         center={
           focusPoint ? [focusPoint.lat, focusPoint.lng] : [17.385, 78.4867]
         }
@@ -314,8 +314,7 @@ export default function TrackingMapCard({
                       <div
                         style={{
                           padding: "4px",
-                          fontFamily: "var(--font-family)",
-                        }}
+                          fontFamily: "var(--font-family)" }}
                       >
                         <span style={{ fontWeight: 800, color: "#f97316" }}>
                           Your SOS Location
@@ -332,8 +331,7 @@ export default function TrackingMapCard({
                       <div
                         style={{
                           padding: "4px",
-                          fontFamily: "var(--font-family)",
-                        }}
+                          fontFamily: "var(--font-family)" }}
                       >
                         <span style={{ fontWeight: 800, color: "#3b82f6" }}>
                           Destination: {assignedHospital?.name}
@@ -356,8 +354,7 @@ export default function TrackingMapCard({
                     <div
                       style={{
                         padding: "4px",
-                        fontFamily: "var(--font-family)",
-                      }}
+                        fontFamily: "var(--font-family)" }}
                     >
                       <span style={{ fontWeight: 800, color: "#ef4444" }}>
                         {dispAmb.vehicleNumber} •{" "}
@@ -395,8 +392,7 @@ export default function TrackingMapCard({
                         color: routeColor,
                         weight: 4,
                         dashArray: "12, 8",
-                        opacity: 0.7,
-                      }}
+                        opacity: 0.7 }}
                     />
                   );
                 })()}
@@ -424,8 +420,7 @@ export default function TrackingMapCard({
                   style={{
                     padding: "4px",
                     minWidth: "200px",
-                    fontFamily: "var(--font-family)",
-                  }}
+                    fontFamily: "var(--font-family)" }}
                 >
                   {assignedAmbulanceId && amb._id === assignedAmbulanceId && (
                     <div
@@ -435,8 +430,7 @@ export default function TrackingMapCard({
                         fontWeight: 800,
                         letterSpacing: "0.12em",
                         textTransform: "uppercase",
-                        color: "#ef4444",
-                      }}
+                        color: "#ef4444" }}
                     >
                       Linked To Your SOS
                     </div>
@@ -446,15 +440,13 @@ export default function TrackingMapCard({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      marginBottom: "8px",
-                    }}
+                      marginBottom: "8px" }}
                   >
                     <span
                       style={{
                         fontWeight: 900,
                         fontSize: "0.875rem",
-                        color: "#1e293b",
-                      }}
+                        color: "#1e293b" }}
                     >
                       {amb.vehicleNumber}
                     </span>
@@ -468,8 +460,7 @@ export default function TrackingMapCard({
                         background:
                           amb.status === "available" ? "#dcfce7" : "#fee2e2",
                         color:
-                          amb.status === "available" ? "#166534" : "#991b1b",
-                      }}
+                          amb.status === "available" ? "#166534" : "#991b1b" }}
                     >
                       {amb.status}
                     </span>
@@ -480,8 +471,7 @@ export default function TrackingMapCard({
                       paddingTop: "8px",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "4px",
-                    }}
+                      gap: "4px" }}
                   >
                     <div
                       style={{
@@ -489,8 +479,7 @@ export default function TrackingMapCard({
                         alignItems: "center",
                         gap: "6px",
                         fontSize: "12px",
-                        color: "#64748b",
-                      }}
+                        color: "#64748b" }}
                     >
                       <User size={12} /> {amb.driverName}
                     </div>
@@ -500,8 +489,7 @@ export default function TrackingMapCard({
                         alignItems: "center",
                         gap: "6px",
                         fontSize: "12px",
-                        color: "#64748b",
-                      }}
+                        color: "#64748b" }}
                     >
                       <Shield size={12} />{" "}
                       {amb.equipmentLevel?.replace("_", " ")}
@@ -510,7 +498,7 @@ export default function TrackingMapCard({
                     {isUserViewer && amb._id === assignedAmbulanceId && (
                       <button
                         onClick={() => onOpenDispatchPanel(amb._id)}
-                        className="cursor-pointer"
+                        className="neu-button"
                         style={{
                           marginTop: "8px",
                           border: "none",
@@ -524,8 +512,7 @@ export default function TrackingMapCard({
                           alignItems: "center",
                           justifyContent: "center",
                           gap: "6px",
-                          fontFamily: "var(--font-family)",
-                        }}
+                          fontFamily: "var(--font-family)" }}
                       >
                         <MessageSquare size={12} /> Dispatch Interface
                       </button>
@@ -552,8 +539,7 @@ export default function TrackingMapCard({
                   style={{
                     padding: "4px",
                     minWidth: "200px",
-                    fontFamily: "var(--font-family)",
-                  }}
+                    fontFamily: "var(--font-family)" }}
                 >
                   <h4
                     style={{
@@ -561,8 +547,7 @@ export default function TrackingMapCard({
                       color: "#1e293b",
                       borderBottom: "1px solid #f1f5f9",
                       paddingBottom: "6px",
-                      marginBottom: "8px",
-                    }}
+                      marginBottom: "8px" }}
                   >
                     🏥 {hosp.name}
                   </h4>
@@ -570,23 +555,20 @@ export default function TrackingMapCard({
                     style={{
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
-                      gap: "8px",
-                    }}
+                      gap: "8px" }}
                   >
                     <div
+                      className="neu-inner"
                       style={{
-                        background: "#eff6ff",
                         padding: "8px",
-                        borderRadius: "10px",
-                      }}
+                        borderRadius: "10px" }}
                     >
                       <p
                         style={{
                           fontSize: "10px",
                           textTransform: "uppercase",
-                          color: "#2563eb",
-                          fontWeight: 700,
-                        }}
+                          color: "var(--color-secondary)",
+                          fontWeight: 700 }}
                       >
                         Beds
                       </p>
@@ -594,26 +576,23 @@ export default function TrackingMapCard({
                         style={{
                           fontSize: "0.875rem",
                           fontWeight: 900,
-                          color: "#1e3a5f",
-                        }}
+                          color: "var(--text-primary)" }}
                       >
                         {hosp.availableBeds}/{hosp.totalBeds}
                       </p>
                     </div>
                     <div
+                      className="neu-inner"
                       style={{
-                        background: "#fef2f2",
                         padding: "8px",
-                        borderRadius: "10px",
-                      }}
+                        borderRadius: "10px" }}
                     >
                       <p
                         style={{
                           fontSize: "10px",
                           textTransform: "uppercase",
-                          color: "#dc2626",
-                          fontWeight: 700,
-                        }}
+                          color: "var(--color-danger)",
+                          fontWeight: 700 }}
                       >
                         ICU
                       </p>
@@ -621,8 +600,7 @@ export default function TrackingMapCard({
                         style={{
                           fontSize: "0.875rem",
                           fontWeight: 900,
-                          color: "#7f1d1d",
-                        }}
+                          color: "var(--text-primary)" }}
                       >
                         {hosp.icuAvailable}/{hosp.icuTotal}
                       </p>
@@ -638,16 +616,12 @@ export default function TrackingMapCard({
       {isUserViewer && activeEmergency ? (
         <>
           <div
+            className="neu-card"
             style={{
               position: "absolute",
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              background: isDark
-                ? "rgba(10,10,15,0.85)"
-                : "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid var(--border-glass)",
               padding: "12px 16px",
               borderRadius: "14px",
               display: "flex",
@@ -655,34 +629,28 @@ export default function TrackingMapCard({
               gap: "10px",
               fontSize: "12px",
               fontWeight: 700,
-              color: "var(--text-secondary)",
-            }}
+              color: "var(--text-secondary)" }}
           >
             <div
               style={{
                 width: "8px",
                 height: "8px",
                 borderRadius: "50%",
-                background: "#ef4444",
-                boxShadow: "0 0 8px #ef4444",
-                animation: "pulse-glow 2s ease-in-out infinite",
-              }}
+                background: "var(--color-danger)",
+                boxShadow: "0 0 8px var(--color-danger)",
+                animation: "pulse-glow 2s ease-in-out infinite" }}
             />
             <span style={{ color: "var(--text-primary)" }}>
               Emergency Active
             </span>
           </div>
           <div
+            className="neu-card"
             style={{
               position: "absolute",
               bottom: "16px",
               left: "16px",
               zIndex: 1000,
-              background: isDark
-                ? "rgba(10,10,15,0.88)"
-                : "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid var(--border-glass)",
               padding: "10px 12px",
               borderRadius: "12px",
               fontSize: "11px",
@@ -690,8 +658,7 @@ export default function TrackingMapCard({
               color: "var(--text-secondary)",
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-            }}
+              gap: "10px" }}
           >
             <span>🚑 Ambulance</span>
             <span>•</span>
@@ -703,16 +670,12 @@ export default function TrackingMapCard({
       ) : (
         <>
           <div
+            className="neu-card"
             style={{
               position: "absolute",
               top: "20px",
               left: "20px",
               zIndex: 1000,
-              background: isDark
-                ? "rgba(10,10,15,0.85)"
-                : "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid var(--border-glass)",
               padding: "12px 16px",
               borderRadius: "14px",
               display: "flex",
@@ -720,23 +683,18 @@ export default function TrackingMapCard({
               gap: "10px",
               fontSize: "12px",
               fontWeight: 700,
-              color: "var(--text-secondary)",
-            }}
+              color: "var(--text-secondary)" }}
           >
-            <Activity size={14} style={{ color: "#ef4444" }} /> Fleet Health:{" "}
+            <Activity size={14} style={{ color: "var(--color-danger)" }} /> Fleet Health:{" "}
             <span style={{ color: "var(--text-primary)" }}>Optimal</span>
           </div>
           <div
+            className="neu-card"
             style={{
               position: "absolute",
               bottom: "16px",
               left: "16px",
               zIndex: 1000,
-              background: isDark
-                ? "rgba(10,10,15,0.88)"
-                : "rgba(255,255,255,0.9)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid var(--border-glass)",
               padding: "10px 12px",
               borderRadius: "12px",
               fontSize: "11px",
@@ -744,8 +702,7 @@ export default function TrackingMapCard({
               color: "var(--text-secondary)",
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-            }}
+              gap: "10px" }}
           >
             <span>Zoom {zoomLevel.toFixed(1)}</span>
             <span>

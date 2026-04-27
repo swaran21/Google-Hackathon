@@ -403,8 +403,7 @@ export default function SOSPage() {
         justifyContent: "center",
         padding: "24px",
         position: "relative",
-        overflow: "hidden",
-      }}
+        overflow: "hidden" }}
     >
       <div
         style={{
@@ -412,8 +411,7 @@ export default function SOSPage() {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(circle at 50% 0%, rgba(220,38,38,0.08) 0%, transparent 50%)",
-        }}
+            "radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)" }}
       />
 
       {/* IDLE */}
@@ -426,8 +424,7 @@ export default function SOSPage() {
             maxWidth: "420px",
             width: "100%",
             position: "relative",
-            zIndex: 10,
-          }}
+            zIndex: 10 }}
         >
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
             <div
@@ -438,14 +435,13 @@ export default function SOSPage() {
                 padding: "6px 16px",
                 borderRadius: "9999px",
                 marginBottom: "16px",
-                background: "rgba(239,68,68,0.1)",
-                border: "1px solid rgba(239,68,68,0.2)",
+                background: "var(--bg-card)",
+                border: "1px solid var(--bg-card)",
                 color: "#ef4444",
                 fontSize: "10px",
                 fontWeight: 800,
                 textTransform: "uppercase",
-                letterSpacing: "0.2em",
-              }}
+                letterSpacing: "0.2em" }}
             >
               <span
                 style={{
@@ -453,9 +449,8 @@ export default function SOSPage() {
                   height: "8px",
                   borderRadius: "50%",
                   background: "#ef4444",
-                  boxShadow: "0 0 8px rgba(239,68,68,0.6)",
-                  animation: "pulse-glow 2s ease-in-out infinite",
-                }}
+                  boxShadow: "0 0 8px var(--bg-card)",
+                  animation: "pulse-glow 2s ease-in-out infinite" }}
               />
               Emergency Channel Active
             </div>
@@ -464,8 +459,7 @@ export default function SOSPage() {
                 fontSize: "2.8rem",
                 fontWeight: 900,
                 letterSpacing: "-0.04em",
-                marginBottom: "12px",
-              }}
+                marginBottom: "12px" }}
             >
               Direct <span style={{ color: "#dc2626" }}>SOS</span>
             </h1>
@@ -474,8 +468,7 @@ export default function SOSPage() {
                 color: "var(--text-muted)",
                 fontWeight: 500,
                 fontSize: "0.95rem",
-                transition: "color 0.3s",
-              }}
+                transition: "color 0.3s" }}
             >
               Initiate immediate medical dispatch and hospital triage.
             </p>
@@ -485,11 +478,10 @@ export default function SOSPage() {
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "rgba(220,38,38,0.15)",
+                background: "var(--bg-card)",
                 filter: "blur(40px)",
                 borderRadius: "50%",
-                animation: "pulse-glow 3s ease-in-out infinite",
-              }}
+                animation: "pulse-glow 3s ease-in-out infinite" }}
             />
             <button
               onClick={handleSOS}
@@ -500,7 +492,7 @@ export default function SOSPage() {
                 width: "192px",
                 height: "192px",
                 borderRadius: "50%",
-                border: "2px solid rgba(239,68,68,0.5)",
+                border: "2px solid var(--bg-card)",
                 background: "var(--bg-primary)",
                 display: "flex",
                 flexDirection: "column",
@@ -508,8 +500,7 @@ export default function SOSPage() {
                 justifyContent: "center",
                 color: "#fff",
                 transition: "all 0.3s",
-                boxShadow: "0 0 50px rgba(220,38,38,0.35)",
-              }}
+                boxShadow: "0 0 50px var(--bg-card)" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background =
                   "linear-gradient(135deg,#ef4444,#dc2626)";
@@ -517,7 +508,7 @@ export default function SOSPage() {
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "var(--bg-primary)";
-                e.currentTarget.style.borderColor = "rgba(239,68,68,0.5)";
+                e.currentTarget.style.borderColor = "var(--bg-card)";
               }}
             >
               <AlertCircle
@@ -528,8 +519,7 @@ export default function SOSPage() {
                 style={{
                   fontSize: "1.8rem",
                   fontWeight: 900,
-                  letterSpacing: "-0.04em",
-                }}
+                  letterSpacing: "-0.04em" }}
               >
                 SOS
               </span>
@@ -540,31 +530,28 @@ export default function SOSPage() {
                   color: "#ef4444",
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
-                  marginTop: "4px",
-                }}
+                  marginTop: "4px" }}
               >
                 Tap to help
               </span>
             </button>
           </div>
           <div
-            className="glass-card"
+            className="neu-card"
             style={{
               padding: "14px 24px",
               borderRadius: "20px",
               display: "flex",
               alignItems: "center",
-              gap: "14px",
-            }}
+              gap: "14px" }}
           >
             <div
               style={{
                 padding: "8px",
                 borderRadius: "10px",
                 background: geo.loading
-                  ? "rgba(234,179,8,0.1)"
-                  : "rgba(34,197,94,0.1)",
-              }}
+                  ? "var(--bg-card)"
+                  : "var(--bg-card)" }}
             >
               <MapPin
                 size={18}
@@ -579,8 +566,7 @@ export default function SOSPage() {
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
                   color: "var(--text-muted)",
-                  transition: "color 0.3s",
-                }}
+                  transition: "color 0.3s" }}
               >
                 Satellite Lock
               </p>
@@ -590,8 +576,7 @@ export default function SOSPage() {
                   fontFamily: "monospace",
                   fontWeight: 700,
                   lineHeight: 1,
-                  marginTop: "4px",
-                }}
+                  marginTop: "4px" }}
               >
                 {geo.loading
                   ? "Fetching current location..."
@@ -603,19 +588,18 @@ export default function SOSPage() {
           </div>
           <button
             onClick={handleRequestLocation}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               marginTop: "16px",
               padding: "12px 18px",
               borderRadius: "14px",
-              border: "1px solid rgba(59,130,246,0.35)",
-              background: "rgba(59,130,246,0.1)",
+              border: "1px solid var(--bg-card)",
+              background: "var(--bg-card)",
               color: "#93c5fd",
               fontWeight: 800,
               fontFamily: "var(--font-family)",
               letterSpacing: "0.02em",
-              opacity: geo.loading ? 0.7 : 1,
-            }}
+              opacity: geo.loading ? 0.7 : 1 }}
             disabled={geo.loading}
           >
             {geo.loading
@@ -631,14 +615,13 @@ export default function SOSPage() {
                 marginTop: "12px",
                 padding: "10px 12px",
                 borderRadius: "12px",
-                border: "1px solid rgba(239,68,68,0.28)",
-                background: "rgba(239,68,68,0.08)",
+                border: "1px solid var(--bg-card)",
+                background: "var(--bg-card)",
                 color: "#fecaca",
                 fontSize: "12px",
                 fontWeight: 700,
                 maxWidth: "360px",
-                textAlign: "center",
-              }}
+                textAlign: "center" }}
             >
               {locationError || geo.error}
             </div>
@@ -653,8 +636,7 @@ export default function SOSPage() {
             width: "100%",
             maxWidth: "700px",
             position: "relative",
-            zIndex: 10,
-          }}
+            zIndex: 10 }}
           className="page-enter"
         >
           <div
@@ -662,8 +644,7 @@ export default function SOSPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: "32px",
-            }}
+              marginBottom: "32px" }}
           >
             <div>
               <h2
@@ -671,8 +652,7 @@ export default function SOSPage() {
                   fontSize: "1.75rem",
                   fontWeight: 900,
                   letterSpacing: "-0.02em",
-                  marginBottom: "6px",
-                }}
+                  marginBottom: "6px" }}
               >
                 Triage <span style={{ color: "#dc2626" }}>Class</span>
               </h2>
@@ -680,8 +660,7 @@ export default function SOSPage() {
                 style={{
                   color: "var(--text-muted)",
                   fontSize: "0.875rem",
-                  transition: "color 0.3s",
-                }}
+                  transition: "color 0.3s" }}
               >
                 Select the nature of emergency for optimized resource
                 allocation.
@@ -689,24 +668,23 @@ export default function SOSPage() {
             </div>
             <button
               onClick={handleReset}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 padding: "12px",
                 borderRadius: "14px",
-                background: "var(--bg-glass)",
-                border: "1px solid var(--border-glass)",
+                background: "var(--bg-card)",
+                border: "1px solid transparent",
                 color: "var(--text-secondary)",
                 display: "flex",
                 alignItems: "center",
-                transition: "all 0.2s",
-              }}
+                transition: "all 0.2s" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = "var(--text-primary)";
-                e.currentTarget.style.background = "var(--bg-glass-hover)";
+                e.currentTarget.style.background = "var(--bg-secondary)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = "var(--text-secondary)";
-                e.currentTarget.style.background = "var(--bg-glass)";
+                e.currentTarget.style.background = "var(--bg-card)";
               }}
             >
               <ChevronLeft size={20} />
@@ -716,8 +694,7 @@ export default function SOSPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: "16px",
-            }}
+              gap: "16px" }}
           >
             {EMERGENCY_TYPES.map((type) => {
               const c = COLORS[type.color] || "#ef4444";
@@ -725,24 +702,23 @@ export default function SOSPage() {
                 <button
                   key={type.value}
                   onClick={() => setSelectedType(type.value)}
-                  className="glass-card cursor-pointer"
+                  className="neu-card cursor-pointer"
                   style={{
                     padding: "28px 24px",
                     textAlign: "left",
                     borderRadius: "24px",
-                    background: "var(--bg-glass)",
+                    background: "var(--bg-card)",
                     transition: "all 0.3s",
                     position: "relative",
-                    overflow: "hidden",
-                  }}
+                    overflow: "hidden" }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = `${c}40`;
-                    e.currentTarget.style.background = "var(--bg-glass-hover)";
+                    e.currentTarget.style.background = "var(--bg-secondary)";
                     e.currentTarget.style.transform = "translateY(-2px)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border-glass)";
-                    e.currentTarget.style.background = "var(--bg-glass)";
+                    e.currentTarget.style.borderColor = "transparent";
+                    e.currentTarget.style.background = "var(--bg-card)";
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
@@ -756,8 +732,7 @@ export default function SOSPage() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: "20px",
-                    }}
+                      marginBottom: "20px" }}
                   >
                     {type.icon}
                   </div>
@@ -765,8 +740,7 @@ export default function SOSPage() {
                     style={{
                       fontWeight: 700,
                       fontSize: "1.05rem",
-                      marginBottom: "4px",
-                    }}
+                      marginBottom: "4px" }}
                   >
                     {type.label}
                   </h3>
@@ -777,8 +751,7 @@ export default function SOSPage() {
                       textTransform: "uppercase",
                       letterSpacing: "0.15em",
                       color: "var(--text-muted)",
-                      transition: "color 0.3s",
-                    }}
+                      transition: "color 0.3s" }}
                   >
                     Select Unit →
                   </span>
@@ -813,19 +786,17 @@ export default function SOSPage() {
             alignItems: "center",
             gap: "32px",
             position: "relative",
-            zIndex: 10,
-          }}
+            zIndex: 10 }}
         >
           <div style={{ position: "relative" }}>
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "rgba(220,38,38,0.15)",
+                background: "var(--bg-card)",
                 filter: "blur(40px)",
                 borderRadius: "50%",
-                animation: "pulse-glow 2s ease-in-out infinite",
-              }}
+                animation: "pulse-glow 2s ease-in-out infinite" }}
             />
             <div
               style={{
@@ -838,15 +809,13 @@ export default function SOSPage() {
                 animation: "spin 1s linear infinite",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-              }}
+                justifyContent: "center" }}
             >
               <Activity
                 size={40}
                 style={{
                   color: "#dc2626",
-                  animation: "pulse-glow 2s ease-in-out infinite",
-                }}
+                  animation: "pulse-glow 2s ease-in-out infinite" }}
               />
             </div>
           </div>
@@ -856,8 +825,7 @@ export default function SOSPage() {
                 fontSize: "1.5rem",
                 fontWeight: 900,
                 letterSpacing: "-0.02em",
-                marginBottom: "12px",
-              }}
+                marginBottom: "12px" }}
             >
               Calculating Optimal Response
             </h2>
@@ -871,8 +839,7 @@ export default function SOSPage() {
                 color: "var(--text-muted)",
                 fontWeight: 700,
                 textTransform: "uppercase",
-                letterSpacing: "0.15em",
-              }}
+                letterSpacing: "0.15em" }}
             >
               <Loader2
                 size={12}

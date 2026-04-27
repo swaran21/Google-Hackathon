@@ -98,8 +98,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
-        isAuthenticated: !!user,
-      }}
+        isAuthenticated: !!user }}
     >
       {children}
     </AuthContext.Provider>

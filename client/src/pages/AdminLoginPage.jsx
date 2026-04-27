@@ -25,8 +25,8 @@ const inputStyle = {
 };
 
 const focus = (event) => {
-  event.target.style.borderColor = "rgba(239,68,68,0.55)";
-  event.target.style.boxShadow = "0 0 0 3px rgba(239,68,68,0.1)";
+  event.target.style.borderColor = "var(--bg-card)";
+  event.target.style.boxShadow = "0 0 0 3px var(--bg-card)";
 };
 
 const blur = (event) => {
@@ -45,8 +45,7 @@ function Field({ icon: Icon, ...props }) {
           top: "50%",
           transform: "translateY(-50%)",
           color: "var(--text-muted)",
-          pointerEvents: "none",
-        }}
+          pointerEvents: "none" }}
       />
       <input {...props} style={inputStyle} onFocus={focus} onBlur={blur} />
     </div>
@@ -92,8 +91,7 @@ export default function AdminLoginPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "24px",
-        position: "relative",
-      }}
+        position: "relative" }}
     >
       <div
         style={{
@@ -101,8 +99,7 @@ export default function AdminLoginPage() {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(circle at 50% 0%, rgba(239,68,68,0.08) 0%, transparent 50%)",
-        }}
+            "radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)" }}
       />
 
       <div
@@ -110,8 +107,7 @@ export default function AdminLoginPage() {
           width: "100%",
           maxWidth: "440px",
           position: "relative",
-          zIndex: 10,
-        }}
+          zIndex: 10 }}
       >
         <Link
           to="/login"
@@ -123,8 +119,7 @@ export default function AdminLoginPage() {
             fontSize: "0.85rem",
             fontWeight: 600,
             textDecoration: "none",
-            marginBottom: "24px",
-          }}
+            marginBottom: "24px" }}
         >
           <ChevronLeft size={16} /> Back to role selection
         </Link>
@@ -136,12 +131,11 @@ export default function AdminLoginPage() {
               height: "56px",
               borderRadius: "18px",
               margin: "0 auto 14px",
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.25)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-            }}
+              justifyContent: "center" }}
           >
             <Shield size={28} style={{ color: "#ef4444" }} />
           </div>
@@ -150,8 +144,7 @@ export default function AdminLoginPage() {
               fontSize: "1.65rem",
               fontWeight: 900,
               letterSpacing: "-0.03em",
-              marginBottom: "4px",
-            }}
+              marginBottom: "4px" }}
           >
             Admin <span className="gradient-text">Command</span> Login
           </h1>
@@ -166,14 +159,13 @@ export default function AdminLoginPage() {
               padding: "12px 16px",
               borderRadius: "12px",
               marginBottom: "16px",
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.2)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               color: "#fca5a5",
               fontSize: "0.875rem",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-            }}
+              gap: "8px" }}
           >
             <AlertTriangle size={16} /> {error}
           </div>
@@ -181,14 +173,13 @@ export default function AdminLoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="glass-card"
+          className="neu-card"
           style={{
             padding: "28px",
             borderRadius: "22px",
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
-          }}
+            gap: "16px" }}
         >
           <Field
             icon={Mail}
@@ -208,8 +199,7 @@ export default function AdminLoginPage() {
                 top: "50%",
                 transform: "translateY(-50%)",
                 color: "var(--text-muted)",
-                pointerEvents: "none",
-              }}
+                pointerEvents: "none" }}
             />
             <input
               type="password"
@@ -226,7 +216,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="cursor-pointer"
+            className="neu-button"
             style={{
               width: "100%",
               padding: "14px",
@@ -241,9 +231,8 @@ export default function AdminLoginPage() {
               justifyContent: "center",
               gap: "8px",
               fontFamily: "var(--font-family)",
-              boxShadow: "0 6px 24px rgba(239,68,68,0.3)",
-              opacity: loading ? 0.7 : 1,
-            }}
+              boxShadow: "0 6px 24px var(--bg-card)",
+              opacity: loading ? 0.7 : 1 }}
           >
             {loading ? (
               "Signing in..."
@@ -258,8 +247,7 @@ export default function AdminLoginPage() {
             style={{
               textAlign: "center",
               fontSize: "0.82rem",
-              color: "var(--text-muted)",
-            }}
+              color: "var(--text-muted)" }}
           >
             The endpoint is not linked from the public login screen.
           </p>

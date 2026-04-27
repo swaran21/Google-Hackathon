@@ -105,8 +105,7 @@ export default function TrackingPage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: "16px",
-        }}
+          gap: "16px" }}
       >
         <div className="spinner"></div>
         <span
@@ -115,8 +114,7 @@ export default function TrackingPage() {
             fontWeight: 800,
             textTransform: "uppercase",
             letterSpacing: "0.3em",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           Syncing Satellite Data
         </span>
@@ -131,8 +129,7 @@ export default function TrackingPage() {
         minHeight: "100vh",
         padding: "80px 16px 16px",
         display: "flex",
-        flexDirection: "column",
-      }}
+        flexDirection: "column" }}
     >
       <div
         style={{
@@ -141,8 +138,7 @@ export default function TrackingPage() {
           width: "100%",
           flex: 1,
           display: "flex",
-          flexDirection: "column",
-        }}
+          flexDirection: "column" }}
       >
         <div
           style={{
@@ -151,8 +147,7 @@ export default function TrackingPage() {
             justifyContent: "space-between",
             alignItems: "flex-end",
             marginBottom: "20px",
-            gap: "16px",
-          }}
+            gap: "16px" }}
         >
           <div>
             <div
@@ -160,8 +155,7 @@ export default function TrackingPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                marginBottom: "4px",
-              }}
+                marginBottom: "4px" }}
             >
               <div
                 style={{
@@ -170,8 +164,7 @@ export default function TrackingPage() {
                   borderRadius: "50%",
                   background: "#22c55e",
                   boxShadow: "0 0 8px #22c55e",
-                  animation: "pulse-glow 2s ease-in-out infinite",
-                }}
+                  animation: "pulse-glow 2s ease-in-out infinite" }}
               />
               <span
                 style={{
@@ -179,8 +172,7 @@ export default function TrackingPage() {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
-                  color: "#22c55e",
-                }}
+                  color: "#22c55e" }}
               >
                 Live Network Active
               </span>
@@ -189,8 +181,7 @@ export default function TrackingPage() {
               style={{
                 fontSize: "1.75rem",
                 fontWeight: 700,
-                letterSpacing: "-0.02em",
-              }}
+                letterSpacing: "-0.02em" }}
             >
               Geospatial{" "}
               <span style={{ color: "#dc2626", fontStyle: "italic" }}>
@@ -201,36 +192,28 @@ export default function TrackingPage() {
           {/* Filter tabs: hidden for focused user view */}
           {(!isUserViewer || !activeEmergency) && (
             <div
+              className="neu-inner"
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "4px",
-                background: "var(--bg-glass)",
+                padding: "6px",
                 borderRadius: "14px",
-                border: "1px solid var(--border-glass)",
               }}
             >
               {["all", "available", "dispatched"].map((value) => (
                 <button
                   key={value}
                   onClick={() => setFilter(value)}
-                  className="cursor-pointer"
+                  className={filter === value ? "neu-button neu-pressed" : "neu-button"}
                   style={{
-                    padding: "8px 20px",
-                    borderRadius: "10px",
-                    border: "none",
-                    fontSize: "12px",
-                    fontWeight: 700,
+                    padding: "10px 24px",
+                    borderRadius: "12px",
+                    fontSize: "11px",
+                    fontWeight: 800,
                     textTransform: "uppercase",
-                    letterSpacing: "0.02em",
-                    transition: "all 0.2s",
-                    fontFamily: "var(--font-family)",
-                    background: filter === value ? "#dc2626" : "transparent",
-                    color: filter === value ? "#fff" : "var(--text-muted)",
-                    boxShadow:
-                      filter === value
-                        ? "0 4px 16px rgba(220,38,38,0.25)"
-                        : "none",
+                    letterSpacing: "0.1em",
+                    color: filter === value ? "var(--color-danger)" : "var(--text-muted)",
+                    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                   }}
                 >
                   {value}
@@ -242,7 +225,7 @@ export default function TrackingPage() {
 
         {isUserViewer && (
           <div
-            className="glass-card"
+            className="neu-card"
             style={{
               padding: "16px 18px",
               borderRadius: "16px",
@@ -250,8 +233,7 @@ export default function TrackingPage() {
               display: "flex",
               justifyContent: "space-between",
               gap: "12px",
-              flexWrap: "wrap",
-            }}
+              flexWrap: "wrap" }}
           >
             <div>
               <p
@@ -261,8 +243,7 @@ export default function TrackingPage() {
                   textTransform: "uppercase",
                   letterSpacing: "0.12em",
                   color: "var(--text-muted)",
-                  marginBottom: "6px",
-                }}
+                  marginBottom: "6px" }}
               >
                 User Visibility Mode
               </p>
@@ -279,8 +260,7 @@ export default function TrackingPage() {
                     fontSize: "11px",
                     fontWeight: 800,
                     color: "#ef4444",
-                    textTransform: "uppercase",
-                  }}
+                    textTransform: "uppercase" }}
                 >
                   Active SOS {activeEmergency._id?.slice(-6)}
                 </span>
@@ -295,8 +275,7 @@ export default function TrackingPage() {
                       fontSize: "11px",
                       fontWeight: 800,
                       color: "#22c55e",
-                      textTransform: "uppercase",
-                    }}
+                      textTransform: "uppercase" }}
                   >
                     ETA: {etaMinutes} min
                     {routeDistanceKm ? ` • ${routeDistanceKm} km` : ""}
@@ -308,8 +287,7 @@ export default function TrackingPage() {
                       fontSize: "11px",
                       fontWeight: 800,
                       color: "#ef4444",
-                      textTransform: "uppercase",
-                    }}
+                      textTransform: "uppercase" }}
                   >
                     🚑 Ambulance heading to you
                   </span>
@@ -320,8 +298,7 @@ export default function TrackingPage() {
                       fontSize: "11px",
                       fontWeight: 800,
                       color: "#3b82f6",
-                      textTransform: "uppercase",
-                    }}
+                      textTransform: "uppercase" }}
                   >
                     🏥 En route to hospital
                   </span>
@@ -331,8 +308,7 @@ export default function TrackingPage() {
                     style={{
                       fontSize: "11px",
                       color: "var(--text-secondary)",
-                      maxWidth: "340px",
-                    }}
+                      maxWidth: "340px" }}
                   >
                     Care guidance: {userCareTips.slice(0, 2).join(" • ")}
                   </span>
@@ -356,8 +332,7 @@ export default function TrackingPage() {
               isUserViewer && activeEmergency ? "1fr" : "1fr 320px",
             gap: "20px",
             minHeight: 0,
-            marginBottom: "16px",
-          }}
+            marginBottom: "16px" }}
         >
           <TrackingMapCard
             filteredAmbulances={filteredAmbulances}
@@ -380,8 +355,7 @@ export default function TrackingPage() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "16px",
-                overflow: "hidden",
-              }}
+                overflow: "hidden" }}
             >
               <FleetTelemetryCard
                 filteredAmbulances={filteredAmbulances}

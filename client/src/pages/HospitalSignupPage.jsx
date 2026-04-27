@@ -41,8 +41,8 @@ const inputStyle = {
 };
 
 const focusStyle = (e) => {
-  e.target.style.borderColor = "rgba(59,130,246,0.55)";
-  e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)";
+  e.target.style.borderColor = "var(--bg-card)";
+  e.target.style.boxShadow = "0 0 0 3px var(--bg-card)";
 };
 const blurStyle = (e) => {
   e.target.style.borderColor = "var(--border-input)";
@@ -61,8 +61,7 @@ function Field({ icon: Icon, label, suffix, ...props }) {
             color: "var(--text-muted)",
             marginBottom: "6px",
             textTransform: "uppercase",
-            letterSpacing: "0.08em",
-          }}
+            letterSpacing: "0.08em" }}
         >
           {label}
         </label>
@@ -76,8 +75,7 @@ function Field({ icon: Icon, label, suffix, ...props }) {
             top: "50%",
             transform: "translateY(-50%)",
             color: "var(--text-muted)",
-            pointerEvents: "none",
-          }}
+            pointerEvents: "none" }}
         />
         <input
           {...props}
@@ -254,8 +252,7 @@ export default function HospitalSignupPage() {
         border: "none",
         color: "var(--text-muted)",
         cursor: "pointer",
-        padding: 0,
-      }}
+        padding: 0 }}
     >
       {show ? <EyeOff size={16} /> : <Eye size={16} />}
     </button>
@@ -270,8 +267,7 @@ export default function HospitalSignupPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "24px 16px",
-        position: "relative",
-      }}
+        position: "relative" }}
     >
       <div
         style={{
@@ -279,8 +275,7 @@ export default function HospitalSignupPage() {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(circle at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 50%)",
-        }}
+            "radial-gradient(circle at 50% 0%, var(--bg-card) 0%, transparent 50%)" }}
       />
 
       <div
@@ -288,8 +283,7 @@ export default function HospitalSignupPage() {
           width: "100%",
           maxWidth: "500px",
           position: "relative",
-          zIndex: 10,
-        }}
+          zIndex: 10 }}
       >
         {/* Back */}
         <Link
@@ -303,8 +297,7 @@ export default function HospitalSignupPage() {
             fontWeight: 600,
             textDecoration: "none",
             marginBottom: "20px",
-            transition: "color 0.2s",
-          }}
+            transition: "color 0.2s" }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.color = "var(--text-primary)")
           }
@@ -323,12 +316,11 @@ export default function HospitalSignupPage() {
               height: "56px",
               borderRadius: "18px",
               margin: "0 auto 14px",
-              background: "rgba(59,130,246,0.12)",
-              border: "1px solid rgba(59,130,246,0.25)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-            }}
+              justifyContent: "center" }}
           >
             <Building2 size={28} style={{ color: "#3b82f6" }} />
           </div>
@@ -337,8 +329,7 @@ export default function HospitalSignupPage() {
               fontSize: "1.65rem",
               fontWeight: 900,
               letterSpacing: "-0.03em",
-              marginBottom: "4px",
-            }}
+              marginBottom: "4px" }}
           >
             Hospital <span style={{ color: "#3b82f6" }}>Portal</span>
           </h1>
@@ -353,12 +344,11 @@ export default function HospitalSignupPage() {
         <div
           style={{
             display: "flex",
-            background: "var(--bg-glass)",
+            background: "var(--bg-card)",
             borderRadius: "14px",
             padding: "4px",
             marginBottom: "20px",
-            border: "1px solid var(--border-glass)",
-          }}
+            border: "1px solid transparent" }}
         >
           {["signup", "login"].map((t) => (
             <button
@@ -368,13 +358,13 @@ export default function HospitalSignupPage() {
                 setTab(t);
                 setError("");
               }}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 flex: 1,
                 padding: "10px",
                 borderRadius: "10px",
                 border: "none",
-                background: tab === t ? "rgba(59,130,246,0.15)" : "transparent",
+                background: tab === t ? "var(--bg-card)" : "transparent",
                 color: tab === t ? "#3b82f6" : "var(--text-muted)",
                 fontWeight: 700,
                 fontSize: "0.88rem",
@@ -383,8 +373,7 @@ export default function HospitalSignupPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "6px",
-              }}
+                gap: "6px" }}
             >
               {t === "signup" ? (
                 <>
@@ -405,14 +394,13 @@ export default function HospitalSignupPage() {
               padding: "12px 16px",
               borderRadius: "12px",
               marginBottom: "16px",
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.25)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               color: "#fca5a5",
               fontSize: "0.875rem",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-            }}
+              gap: "8px" }}
           >
             <AlertCircle size={16} style={{ flexShrink: 0 }} /> {error}
           </div>
@@ -422,14 +410,13 @@ export default function HospitalSignupPage() {
         {tab === "signup" && (
           <form
             onSubmit={handleSignup}
-            className="glass-card"
+            className="neu-card"
             style={{
               padding: "28px",
               borderRadius: "22px",
               display: "flex",
               flexDirection: "column",
-              gap: "16px",
-            }}
+              gap: "16px" }}
           >
             <Field
               icon={Building2}
@@ -471,8 +458,7 @@ export default function HospitalSignupPage() {
                   color: "var(--text-muted)",
                   marginBottom: "6px",
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
+                  letterSpacing: "0.08em" }}
               >
                 Phone Number
               </label>
@@ -490,8 +476,7 @@ export default function HospitalSignupPage() {
                     padding: "13px 8px",
                     cursor: "pointer",
                     appearance: "none",
-                    textAlign: "center",
-                  }}
+                    textAlign: "center" }}
                 >
                   {COUNTRY_CODES.map(({ code, flag }) => (
                     <option key={code} value={code}>
@@ -508,8 +493,7 @@ export default function HospitalSignupPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--text-muted)",
-                      pointerEvents: "none",
-                    }}
+                      pointerEvents: "none" }}
                   />
                   <input
                     type="tel"
@@ -533,8 +517,7 @@ export default function HospitalSignupPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "6px",
-                }}
+                  marginBottom: "6px" }}
               >
                 <label
                   style={{
@@ -542,8 +525,7 @@ export default function HospitalSignupPage() {
                     fontWeight: 700,
                     color: "var(--text-muted)",
                     textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
+                    letterSpacing: "0.08em" }}
                 >
                   Location (GPS)
                 </label>
@@ -552,8 +534,8 @@ export default function HospitalSignupPage() {
                   onClick={detectLocation}
                   disabled={geoLoading}
                   style={{
-                    background: "rgba(59,130,246,0.1)",
-                    border: "1px solid rgba(59,130,246,0.2)",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--bg-card)",
                     color: "#3b82f6",
                     fontSize: "11px",
                     fontWeight: 700,
@@ -563,8 +545,7 @@ export default function HospitalSignupPage() {
                     fontFamily: "var(--font-family)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px",
-                  }}
+                    gap: "4px" }}
                 >
                   {geoLoading ? (
                     <Loader2
@@ -582,8 +563,7 @@ export default function HospitalSignupPage() {
                   style={{
                     color: "#fca5a5",
                     fontSize: "11px",
-                    marginBottom: "6px",
-                  }}
+                    marginBottom: "6px" }}
                 >
                   {geoError}
                 </p>
@@ -592,8 +572,7 @@ export default function HospitalSignupPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: "8px",
-                }}
+                  gap: "8px" }}
               >
                 <div style={{ position: "relative" }}>
                   <MapPin
@@ -604,8 +583,7 @@ export default function HospitalSignupPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--text-muted)",
-                      pointerEvents: "none",
-                    }}
+                      pointerEvents: "none" }}
                   />
                   <input
                     type="number"
@@ -628,8 +606,7 @@ export default function HospitalSignupPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--text-muted)",
-                      pointerEvents: "none",
-                    }}
+                      pointerEvents: "none" }}
                   />
                   <input
                     type="number"
@@ -652,8 +629,7 @@ export default function HospitalSignupPage() {
                     marginTop: "4px",
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px",
-                  }}
+                    gap: "4px" }}
                 >
                   <CheckCircle2 size={11} /> Location set:{" "}
                   {parseFloat(latitude).toFixed(4)},{" "}
@@ -667,8 +643,7 @@ export default function HospitalSignupPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: "10px",
-              }}
+                gap: "10px" }}
             >
               <div>
                 <label
@@ -679,8 +654,7 @@ export default function HospitalSignupPage() {
                     color: "var(--text-muted)",
                     marginBottom: "6px",
                     textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
+                    letterSpacing: "0.08em" }}
                 >
                   Total Beds
                 </label>
@@ -693,8 +667,7 @@ export default function HospitalSignupPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--text-muted)",
-                      pointerEvents: "none",
-                    }}
+                      pointerEvents: "none" }}
                   />
                   <input
                     type="number"
@@ -718,8 +691,7 @@ export default function HospitalSignupPage() {
                     color: "var(--text-muted)",
                     marginBottom: "6px",
                     textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
+                    letterSpacing: "0.08em" }}
                 >
                   ICU Beds
                 </label>
@@ -732,8 +704,7 @@ export default function HospitalSignupPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "var(--text-muted)",
-                      pointerEvents: "none",
-                    }}
+                      pointerEvents: "none" }}
                   />
                   <input
                     type="number"
@@ -756,8 +727,7 @@ export default function HospitalSignupPage() {
                   style={{
                     color: "#fca5a5",
                     fontSize: "11px",
-                    marginTop: "-8px",
-                  }}
+                    marginTop: "-8px" }}
                 >
                   ICU beds cannot exceed total beds
                 </p>
@@ -773,8 +743,7 @@ export default function HospitalSignupPage() {
                   color: "var(--text-muted)",
                   marginBottom: "6px",
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
+                  letterSpacing: "0.08em" }}
               >
                 Password
               </label>
@@ -787,8 +756,7 @@ export default function HospitalSignupPage() {
                     top: "50%",
                     transform: "translateY(-50%)",
                     color: "var(--text-muted)",
-                    pointerEvents: "none",
-                  }}
+                    pointerEvents: "none" }}
                 />
                 <input
                   type={showPass ? "text" : "password"}
@@ -812,8 +780,7 @@ export default function HospitalSignupPage() {
                   color: "var(--text-muted)",
                   marginBottom: "6px",
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
+                  letterSpacing: "0.08em" }}
               >
                 Confirm Password
               </label>
@@ -826,8 +793,7 @@ export default function HospitalSignupPage() {
                     top: "50%",
                     transform: "translateY(-50%)",
                     color: "var(--text-muted)",
-                    pointerEvents: "none",
-                  }}
+                    pointerEvents: "none" }}
                 />
                 <input
                   type={showConfirm ? "text" : "password"}
@@ -840,15 +806,14 @@ export default function HospitalSignupPage() {
                     paddingRight: "42px",
                     borderColor:
                       confirmPassword && password !== confirmPassword
-                        ? "rgba(239,68,68,0.5)"
-                        : undefined,
-                  }}
+                        ? "var(--bg-card)"
+                        : undefined }}
                   onFocus={focusStyle}
                   onBlur={(e) => {
                     blurStyle(e);
                     e.target.style.borderColor =
                       password !== e.target.value
-                        ? "rgba(239,68,68,0.5)"
+                        ? "var(--bg-card)"
                         : "var(--border-input)";
                   }}
                 />
@@ -859,8 +824,7 @@ export default function HospitalSignupPage() {
                   style={{
                     color: "#fca5a5",
                     fontSize: "11px",
-                    marginTop: "4px",
-                  }}
+                    marginTop: "4px" }}
                 >
                   Passwords do not match
                 </p>
@@ -870,7 +834,7 @@ export default function HospitalSignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 width: "100%",
                 padding: "14px",
@@ -885,10 +849,9 @@ export default function HospitalSignupPage() {
                 justifyContent: "center",
                 gap: "8px",
                 fontFamily: "var(--font-family)",
-                boxShadow: "0 6px 24px rgba(59,130,246,0.3)",
+                boxShadow: "0 6px 24px var(--bg-card)",
                 opacity: loading ? 0.7 : 1,
-                transition: "all 0.2s",
-              }}
+                transition: "all 0.2s" }}
               onMouseEnter={(e) => {
                 if (!loading)
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -915,14 +878,13 @@ export default function HospitalSignupPage() {
         {tab === "login" && (
           <form
             onSubmit={handleLogin}
-            className="glass-card"
+            className="neu-card"
             style={{
               padding: "28px",
               borderRadius: "22px",
               display: "flex",
               flexDirection: "column",
-              gap: "16px",
-            }}
+              gap: "16px" }}
           >
             <Field
               icon={Mail}
@@ -942,8 +904,7 @@ export default function HospitalSignupPage() {
                   color: "var(--text-muted)",
                   marginBottom: "6px",
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}
+                  letterSpacing: "0.08em" }}
               >
                 Password
               </label>
@@ -956,8 +917,7 @@ export default function HospitalSignupPage() {
                     top: "50%",
                     transform: "translateY(-50%)",
                     color: "var(--text-muted)",
-                    pointerEvents: "none",
-                  }}
+                    pointerEvents: "none" }}
                 />
                 <input
                   type={showLoginPass ? "text" : "password"}
@@ -975,7 +935,7 @@ export default function HospitalSignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="cursor-pointer"
+              className="neu-button"
               style={{
                 width: "100%",
                 padding: "14px",
@@ -990,10 +950,9 @@ export default function HospitalSignupPage() {
                 justifyContent: "center",
                 gap: "8px",
                 fontFamily: "var(--font-family)",
-                boxShadow: "0 6px 24px rgba(59,130,246,0.3)",
+                boxShadow: "0 6px 24px var(--bg-card)",
                 opacity: loading ? 0.7 : 1,
-                transition: "all 0.2s",
-              }}
+                transition: "all 0.2s" }}
               onMouseEnter={(e) => {
                 if (!loading)
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -1017,8 +976,7 @@ export default function HospitalSignupPage() {
               style={{
                 textAlign: "center",
                 fontSize: "0.82rem",
-                color: "var(--text-muted)",
-              }}
+                color: "var(--text-muted)" }}
             >
               Not registered?{" "}
               <button
@@ -1033,8 +991,7 @@ export default function HospitalSignupPage() {
                   color: "#3b82f6",
                   fontWeight: 700,
                   cursor: "pointer",
-                  fontFamily: "var(--font-family)",
-                }}
+                  fontFamily: "var(--font-family)" }}
               >
                 Register your hospital
               </button>
@@ -1047,8 +1004,7 @@ export default function HospitalSignupPage() {
             textAlign: "center",
             marginTop: "16px",
             fontSize: "0.82rem",
-            color: "var(--text-muted)",
-          }}
+            color: "var(--text-muted)" }}
         >
           Not a hospital?{" "}
           <Link
@@ -1056,8 +1012,7 @@ export default function HospitalSignupPage() {
             style={{
               color: "#ef4444",
               fontWeight: 700,
-              textDecoration: "none",
-            }}
+              textDecoration: "none" }}
           >
             Go to main login
           </Link>

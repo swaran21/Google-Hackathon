@@ -91,13 +91,12 @@ export default function App() {
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
                 transition: "background 0.3s, color 0.3s",
-                position: "relative",
-              }}
+                position: "relative" }}
             >
               <BackgroundModel />
               <PageLoader />
               <Navbar />
-              <main style={{ paddingTop: "64px" }}>
+              <main style={{ paddingTop: "64px", position: "relative", zIndex: 10 }}>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<LoginPage />} />

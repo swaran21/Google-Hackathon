@@ -83,7 +83,7 @@ export default function BookingsPage() {
       case "cancelled":
         return "rgba(239, 68, 68, 0.1)"; // red
       default:
-        return "var(--bg-glass)";
+        return "var(--bg-card)";
     }
   };
 
@@ -116,8 +116,7 @@ export default function BookingsPage() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "80vh",
-        }}
+          minHeight: "80vh" }}
       >
         <div
           style={{
@@ -126,8 +125,7 @@ export default function BookingsPage() {
             height: "40px",
             border: "3px solid transparent",
             borderTopColor: "#ef4444",
-            borderRadius: "50%",
-          }}
+            borderRadius: "50%" }}
         />
       </div>
     );
@@ -145,8 +143,7 @@ export default function BookingsPage() {
               fontSize: "2.5rem",
               fontWeight: 900,
               letterSpacing: "-0.04em",
-              marginBottom: "8px",
-            }}
+              marginBottom: "8px" }}
           >
             My <span style={{ color: "#ef4444" }}>Bookings</span>
           </h1>
@@ -159,12 +156,11 @@ export default function BookingsPage() {
           <div
             style={{
               padding: "16px",
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.2)",
+              background: "var(--bg-card)",
+              border: "1px solid var(--bg-card)",
               borderRadius: "12px",
               color: "#f87171",
-              marginBottom: "24px",
-            }}
+              marginBottom: "24px" }}
           >
             {error}
           </div>
@@ -172,27 +168,24 @@ export default function BookingsPage() {
 
         {emergencies.length === 0 && !error ? (
           <div
-            className="glass-card"
+            className="neu-card"
             style={{
               padding: "48px",
               textAlign: "center",
-              borderRadius: "24px",
-            }}
+              borderRadius: "24px" }}
           >
             <AlertCircle
               size={48}
               style={{
                 color: "var(--text-muted)",
                 margin: "0 auto 16px",
-                opacity: 0.5,
-              }}
+                opacity: 0.5 }}
             />
             <h3
               style={{
                 fontSize: "1.2rem",
                 fontWeight: 700,
-                marginBottom: "8px",
-              }}
+                marginBottom: "8px" }}
             >
               No Bookings Found
             </h3>
@@ -207,31 +200,28 @@ export default function BookingsPage() {
             {emergencies.map((em) => (
               <div
                 key={em._id}
-                className="glass-card"
+                className="neu-card"
                 style={{
                   borderRadius: "20px",
                   overflow: "hidden",
-                  border: "1px solid var(--border-glass)",
-                }}
+                  border: "1px solid transparent" }}
               >
                 <div
                   style={{
                     padding: "20px 24px",
                     background: getStatusColor(em.status),
-                    borderBottom: "1px solid var(--border-glass)",
+                    borderBottom: "1px solid transparent",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     flexWrap: "wrap",
-                    gap: "12px",
-                  }}
+                    gap: "12px" }}
                 >
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "12px",
-                    }}
+                      gap: "12px" }}
                   >
                     {getStatusIcon(em.status)}
                     <div>
@@ -240,8 +230,7 @@ export default function BookingsPage() {
                           fontSize: "1.1rem",
                           fontWeight: 800,
                           textTransform: "capitalize",
-                          color: getStatusTextColor(em.status),
-                        }}
+                          color: getStatusTextColor(em.status) }}
                       >
                         {em.type.replace("_", " ")} Emergency
                       </h3>
@@ -249,8 +238,7 @@ export default function BookingsPage() {
                         style={{
                           fontSize: "0.85rem",
                           color: "var(--text-muted)",
-                          fontWeight: 500,
-                        }}
+                          fontWeight: 500 }}
                       >
                         {new Date(em.createdAt).toLocaleString()}
                       </span>
@@ -267,8 +255,7 @@ export default function BookingsPage() {
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                       color: getStatusTextColor(em.status),
-                      border: `1px solid ${getStatusTextColor(em.status)}40`,
-                    }}
+                      border: `1px solid ${getStatusTextColor(em.status)}40` }}
                   >
                     {em.status.replace("_", " ")}
                   </div>
@@ -279,16 +266,14 @@ export default function BookingsPage() {
                     padding: "24px",
                     display: "flex",
                     flexDirection: "column",
-                    gap: "20px",
-                  }}
+                    gap: "20px" }}
                 >
                   <div
                     style={{
                       display: "grid",
                       gridTemplateColumns:
                         "repeat(auto-fit, minmax(250px, 1fr))",
-                      gap: "20px",
-                    }}
+                      gap: "20px" }}
                   >
                     <div>
                       <h4
@@ -298,8 +283,7 @@ export default function BookingsPage() {
                           color: "var(--text-muted)",
                           fontWeight: 800,
                           marginBottom: "8px",
-                          letterSpacing: "0.05em",
-                        }}
+                          letterSpacing: "0.05em" }}
                       >
                         Patient Details
                       </h4>
@@ -311,8 +295,7 @@ export default function BookingsPage() {
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                          marginTop: "4px",
-                        }}
+                          marginTop: "4px" }}
                       >
                         <Phone size={14} /> {em.patientPhone}
                       </p>
@@ -325,8 +308,7 @@ export default function BookingsPage() {
                           color: "var(--text-muted)",
                           fontWeight: 800,
                           marginBottom: "8px",
-                          letterSpacing: "0.05em",
-                        }}
+                          letterSpacing: "0.05em" }}
                       >
                         Location
                       </h4>
@@ -337,8 +319,7 @@ export default function BookingsPage() {
                           display: "flex",
                           alignItems: "flex-start",
                           gap: "6px",
-                          marginTop: "4px",
-                        }}
+                          marginTop: "4px" }}
                       >
                         <MapPin
                           size={16}
@@ -354,28 +335,21 @@ export default function BookingsPage() {
                     <div
                       style={{
                         padding: "16px",
-                        background: "var(--bg-glass-hover)",
+                        background: "var(--bg-secondary)",
                         borderRadius: "16px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "16px",
-                      }}
+                        gap: "16px" }}
                     >
                       {em.assignedHospital && (
                         <div
                           style={{
                             display: "flex",
                             alignItems: "flex-start",
-                            gap: "12px",
-                          }}
+                            gap: "12px" }}
                         >
                           <div
-                            style={{
-                              background: "rgba(59,130,246,0.1)",
-                              padding: "8px",
-                              borderRadius: "10px",
-                              color: "#3b82f6",
-                            }}
+                            className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#3b82f6" }}
                           >
                             <Building size={20} />
                           </div>
@@ -386,15 +360,13 @@ export default function BookingsPage() {
                             <p
                               style={{
                                 fontSize: "0.85rem",
-                                color: "var(--text-muted)",
-                              }}
+                                color: "var(--text-muted)" }}
                             >
                               Bed Request:{" "}
                               <span
                                 style={{
                                   fontWeight: 700,
-                                  color: "var(--text-primary)",
-                                }}
+                                  color: "var(--text-primary)" }}
                               >
                                 {em.hospitalRequest?.status}
                               </span>
@@ -404,8 +376,7 @@ export default function BookingsPage() {
                                 fontSize: "0.8rem",
                                 color: "#f59e0b",
                                 marginTop: "4px",
-                                fontWeight: 700,
-                              }}
+                                fontWeight: 700 }}
                             >
                               Hospital Rating:{" "}
                               {renderStars(
@@ -421,16 +392,10 @@ export default function BookingsPage() {
                           style={{
                             display: "flex",
                             alignItems: "flex-start",
-                            gap: "12px",
-                          }}
+                            gap: "12px" }}
                         >
                           <div
-                            style={{
-                              background: "rgba(239,68,68,0.1)",
-                              padding: "8px",
-                              borderRadius: "10px",
-                              color: "#ef4444",
-                            }}
+                            className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#ef4444" }}
                           >
                             <Truck size={20} />
                           </div>
@@ -441,15 +406,13 @@ export default function BookingsPage() {
                             <p
                               style={{
                                 fontSize: "0.85rem",
-                                color: "var(--text-muted)",
-                              }}
+                                color: "var(--text-muted)" }}
                             >
                               Ambulance:{" "}
                               <span
                                 style={{
                                   fontWeight: 700,
-                                  color: "var(--text-primary)",
-                                }}
+                                  color: "var(--text-primary)" }}
                               >
                                 {em.ambulanceBooking?.status}
                               </span>
@@ -461,8 +424,7 @@ export default function BookingsPage() {
                                 fontSize: "0.8rem",
                                 color: "#f59e0b",
                                 marginTop: "4px",
-                                fontWeight: 700,
-                              }}
+                                fontWeight: 700 }}
                             >
                               Driver Rating:{" "}
                               {renderStars(
@@ -482,9 +444,8 @@ export default function BookingsPage() {
                         style={{
                           padding: "14px 16px",
                           borderRadius: "12px",
-                          background: "rgba(34,197,94,0.1)",
-                          border: "1px solid rgba(34,197,94,0.2)",
-                        }}
+                          background: "var(--bg-card)",
+                          border: "1px solid var(--bg-card)" }}
                       >
                         {em.feedback?.isSubmitted ? (
                           <>
@@ -493,8 +454,7 @@ export default function BookingsPage() {
                                 margin: 0,
                                 fontWeight: 800,
                                 color: "#22c55e",
-                                fontSize: "0.9rem",
-                              }}
+                                fontSize: "0.9rem" }}
                             >
                               Thank you for rating this completed service.
                             </p>
@@ -502,8 +462,7 @@ export default function BookingsPage() {
                               style={{
                                 margin: "6px 0 0",
                                 color: "var(--text-secondary)",
-                                fontSize: "0.85rem",
-                              }}
+                                fontSize: "0.85rem" }}
                             >
                               Driver: {renderStars(em.feedback?.driverRating)} •
                               Hospital:{" "}
@@ -519,8 +478,7 @@ export default function BookingsPage() {
                               alignItems: "center",
                               justifyContent: "space-between",
                               gap: "12px",
-                              flexWrap: "wrap",
-                            }}
+                              flexWrap: "wrap" }}
                           >
                             <div>
                               <p
@@ -528,8 +486,7 @@ export default function BookingsPage() {
                                   margin: 0,
                                   fontWeight: 800,
                                   color: "#22c55e",
-                                  fontSize: "0.9rem",
-                                }}
+                                  fontSize: "0.9rem" }}
                               >
                                 Service completed. Please rate your ambulance
                                 driver and hospital.
@@ -538,8 +495,7 @@ export default function BookingsPage() {
                                 style={{
                                   margin: "4px 0 0",
                                   color: "var(--text-muted)",
-                                  fontSize: "0.82rem",
-                                }}
+                                  fontSize: "0.82rem" }}
                               >
                                 Your rating helps improve future dispatch
                                 quality.
@@ -550,12 +506,11 @@ export default function BookingsPage() {
                               style={{
                                 padding: "10px 16px",
                                 borderRadius: "10px",
-                                border: "1px solid rgba(34,197,94,0.35)",
-                                background: "rgba(34,197,94,0.18)",
+                                border: "1px solid var(--bg-card)",
+                                background: "var(--bg-card)",
                                 color: "#166534",
                                 fontWeight: 800,
-                                cursor: "pointer",
-                              }}
+                                cursor: "pointer" }}
                             >
                               Rate Service
                             </button>
@@ -573,10 +528,9 @@ export default function BookingsPage() {
                         display: "flex",
                         justifyContent: "flex-end",
                         gap: "12px",
-                        borderTop: "1px solid var(--border-glass)",
+                        borderTop: "1px solid transparent",
                         paddingTop: "16px",
-                        marginTop: "4px",
-                      }}
+                        marginTop: "4px" }}
                     >
                       {em.hospitalRequest?.status === "accepted" &&
                         !em.assignedAmbulance && (
@@ -590,8 +544,7 @@ export default function BookingsPage() {
                               borderRadius: "12px",
                               fontWeight: 800,
                               cursor: "pointer",
-                              transition: "all 0.2s",
-                            }}
+                              transition: "all 0.2s" }}
                             onMouseEnter={(e) =>
                               (e.currentTarget.style.opacity = "0.9")
                             }
@@ -608,25 +561,24 @@ export default function BookingsPage() {
                         disabled={cancellingId === em._id}
                         style={{
                           padding: "10px 20px",
-                          background: "rgba(239,68,68,0.1)",
+                          background: "var(--bg-card)",
                           color: "#ef4444",
-                          border: "1px solid rgba(239,68,68,0.2)",
+                          border: "1px solid var(--bg-card)",
                           borderRadius: "12px",
                           fontWeight: 700,
                           cursor:
                             cancellingId === em._id ? "not-allowed" : "pointer",
                           opacity: cancellingId === em._id ? 0.7 : 1,
-                          transition: "all 0.2s",
-                        }}
+                          transition: "all 0.2s" }}
                         onMouseEnter={(e) =>
                           !cancellingId &&
                           (e.currentTarget.style.background =
-                            "rgba(239,68,68,0.2)")
+                            "var(--bg-card)")
                         }
                         onMouseLeave={(e) =>
                           !cancellingId &&
                           (e.currentTarget.style.background =
-                            "rgba(239,68,68,0.1)")
+                            "var(--bg-card)")
                         }
                       >
                         {cancellingId === em._id
