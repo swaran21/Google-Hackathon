@@ -288,6 +288,14 @@ export default function HospitalPage() {
     [requests, selectedRequestId],
   );
 
+  const selectedEtaMinutes = Number.isFinite(selectedRequest?.activeRoute?.etaMinutes)
+    ? Math.max(1, Math.round(selectedRequest.activeRoute.etaMinutes))
+    : null;
+  const selectedDistanceKm = Number.isFinite(selectedRequest?.activeRoute?.distanceKm)
+    ? Number(selectedRequest.activeRoute.distanceKm).toFixed(1)
+    : null;
+  const selectedRoleGuidance = selectedRequest?.triageResult?.roleGuidance || {};
+
   const handleDecision = async (emergencyId, decision) => {
     try {
       setActingRequestId(emergencyId);
@@ -825,7 +833,60 @@ export default function HospitalPage() {
                       }
                       icon={<Activity size={14} />}
                     />
+                    <InfoTile
+                      label="ETA"
+                      value={
+                        selectedEtaMinutes !== null
+                          ? `${selectedEtaMinutes} min${selectedDistanceKm ? ` (${selectedDistanceKm} km)` : ""}`
+                          : "awaiting telemetry"
+                      }
+                      icon={<Clock3 size={14} />}
+                    />
                   </div>
+
+                  {(selectedRoleGuidance?.hospitalPrep?.length > 0 ||
+                    selectedRoleGuidance?.requiredDoctorSpecialties?.length > 0 ||
+                    selectedRoleGuidance?.likelyTreatments?.length > 0) && (
+                    <div
+                      style={{
+                        border: "1px solid rgba(59,130,246,0.25)",
+                        background: "rgba(59,130,246,0.08)",
+                        borderRadius: "14px",
+                        padding: "12px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "11px",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          color: "#60a5fa",
+                        }}
+                      >
+                        AI Hospital Prep Suggestions
+                      </p>
+                      {selectedRoleGuidance.hospitalPrep?.length > 0 && (
+                        <p style={{ margin: 0, fontSize: "12px" }}>
+                          Prep: {selectedRoleGuidance.hospitalPrep.join(" • ")}
+                        </p>
+                      )}
+                      {selectedRoleGuidance.requiredDoctorSpecialties?.length > 0 && (
+                        <p style={{ margin: 0, fontSize: "12px" }}>
+                          Doctor: {selectedRoleGuidance.requiredDoctorSpecialties.join(", ")}
+                        </p>
+                      )}
+                      {selectedRoleGuidance.likelyTreatments?.length > 0 && (
+                        <p style={{ margin: 0, fontSize: "12px" }}>
+                          Treatment: {selectedRoleGuidance.likelyTreatments.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div
                     style={{

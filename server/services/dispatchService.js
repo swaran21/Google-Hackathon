@@ -2,6 +2,14 @@ const Ambulance = require("../models/Ambulance");
 const Emergency = require("../models/Emergency");
 const { haversine, calculateETA } = require("../utils/haversine");
 
+const getAmbulanceRatingScore = (ambulance) => {
+  const avg = Number(ambulance?.ratingSummary?.average || 0);
+  const votes = Number(ambulance?.ratingSummary?.totalRatings || 0);
+  const normalized = Math.min(1, Math.max(0, avg / 5));
+  const confidence = Math.min(1, votes / 60);
+  return normalized * confidence;
+};
+
 const getAvailableAmbulances = async (recommendedEquipment = "basic") => {
   let availableAmbulances = await Ambulance.find({
     status: "available",
@@ -46,13 +54,18 @@ const findNearestAmbulance = async (
       const [ambLng, ambLat] = amb.location.coordinates;
       const distance = haversine(lat, lng, ambLat, ambLng);
       const eta = calculateETA(distance);
+      const ratingScore = getAmbulanceRatingScore(amb);
       return {
         ambulance: amb,
         distance: Math.round(distance * 100) / 100,
         eta,
+        score: distance - ratingScore * 0.8,
       };
     })
-    .sort((a, b) => a.distance - b.distance);
+    .sort((a, b) => {
+      if (a.score !== b.score) return a.score - b.score;
+      return a.distance - b.distance;
+    });
 
   return ranked[0];
 };
@@ -89,6 +102,7 @@ const findBestAmbulanceForTransfer = async (
         ambLng,
       );
       const totalDistance = distanceToPatient + patientToHospitalDistance;
+      const ratingScore = getAmbulanceRatingScore(amb);
 
       return {
         ambulance: amb,
@@ -97,11 +111,12 @@ const findBestAmbulanceForTransfer = async (
           Math.round(patientToHospitalDistance * 100) / 100,
         totalDistance: Math.round(totalDistance * 100) / 100,
         eta: calculateETA(distanceToPatient),
+        score: totalDistance - ratingScore * 0.8,
       };
     })
     .sort((a, b) => {
-      if (a.totalDistance !== b.totalDistance) {
-        return a.totalDistance - b.totalDistance;
+      if (a.score !== b.score) {
+        return a.score - b.score;
       }
       return a.distanceToPatient - b.distanceToPatient;
     });

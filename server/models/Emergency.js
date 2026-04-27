@@ -98,6 +98,14 @@ const emergencySchema = new mongoose.Schema(
           default: "",
         },
       },
+      roleGuidance: {
+        userSteps: { type: [String], default: [] },
+        ambulanceChecklist: { type: [String], default: [] },
+        hospitalPrep: { type: [String], default: [] },
+        requiredDoctorSpecialties: { type: [String], default: [] },
+        likelyTreatments: { type: [String], default: [] },
+      },
+      traceId: { type: String, default: "" },
       aiModel: { type: String, default: "" },
     },
     assignedAmbulance: {

@@ -46,6 +46,14 @@ const buildTriageSummary = (emergency) => ({
     treatmentCapabilities: [],
     bedType: "",
   },
+  roleGuidance: emergency.triageResult?.roleGuidance || {
+    userSteps: [],
+    ambulanceChecklist: [],
+    hospitalPrep: [],
+    requiredDoctorSpecialties: [],
+    likelyTreatments: [],
+  },
+  traceId: emergency.triageResult?.traceId || "",
   aiModel: emergency.triageResult?.aiModel || "",
 });
 
@@ -125,6 +133,14 @@ const createEmergency = async (req, res, next) => {
           treatmentCapabilities: [],
           bedType: "",
         },
+        roleGuidance: triage.roleGuidance || {
+          userSteps: [],
+          ambulanceChecklist: [],
+          hospitalPrep: [],
+          requiredDoctorSpecialties: [],
+          likelyTreatments: [],
+        },
+        traceId: triage.traceId || "",
         aiModel: triage.aiModel || "",
       },
       hospitalRequest: {

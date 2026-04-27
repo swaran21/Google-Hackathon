@@ -88,6 +88,13 @@ export default function SOSResult({
       emergency?.ambulanceBooking?.status === "ready_to_book" ||
       hospitalRequestStatus === "accepted");
   const sev = SEV[triage?.severity] || SEV[3];
+  const roleGuidance = triage?.roleGuidance || {};
+  const hasRoleGuidance =
+    (roleGuidance.userSteps || []).length > 0 ||
+    (roleGuidance.ambulanceChecklist || []).length > 0 ||
+    (roleGuidance.hospitalPrep || []).length > 0 ||
+    (roleGuidance.requiredDoctorSpecialties || []).length > 0 ||
+    (roleGuidance.likelyTreatments || []).length > 0;
 
   const handleCancelDispatch = async () => {
     if (!onCancelEmergency || !emergency?._id) return;
@@ -497,6 +504,100 @@ export default function SOSResult({
               </div>
             ))}
           </div>
+
+          {hasRoleGuidance && (
+            <div
+              style={{
+                marginTop: "18px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  borderRadius: "12px",
+                  border: "1px solid rgba(34,197,94,0.25)",
+                  background: "rgba(34,197,94,0.08)",
+                  padding: "10px",
+                }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    fontWeight: 900,
+                    color: "#22c55e",
+                  }}
+                >
+                  For You Now
+                </p>
+                <p style={{ margin: 0, fontSize: "12px", lineHeight: 1.45 }}>
+                  {(roleGuidance.userSteps || []).slice(0, 3).join(" • ") ||
+                    "Stay calm and remain reachable for responder call."}
+                </p>
+              </div>
+
+              <div
+                style={{
+                  borderRadius: "12px",
+                  border: "1px solid rgba(59,130,246,0.25)",
+                  background: "rgba(59,130,246,0.08)",
+                  padding: "10px",
+                }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    fontWeight: 900,
+                    color: "#3b82f6",
+                  }}
+                >
+                  Ambulance Checklist
+                </p>
+                <p style={{ margin: 0, fontSize: "12px", lineHeight: 1.45 }}>
+                  {(roleGuidance.ambulanceChecklist || []).slice(0, 3).join(" • ") ||
+                    "Standard stabilization kit and monitor setup."}
+                </p>
+              </div>
+
+              <div
+                style={{
+                  borderRadius: "12px",
+                  border: "1px solid rgba(249,115,22,0.25)",
+                  background: "rgba(249,115,22,0.08)",
+                  padding: "10px",
+                }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    fontWeight: 900,
+                    color: "#f97316",
+                  }}
+                >
+                  Hospital Preparation
+                </p>
+                <p style={{ margin: 0, fontSize: "12px", lineHeight: 1.45 }}>
+                  {(roleGuidance.hospitalPrep || []).slice(0, 2).join(" • ") ||
+                    "Prepare emergency intake and baseline diagnostics."}
+                </p>
+                {(roleGuidance.requiredDoctorSpecialties || []).length > 0 && (
+                  <p style={{ margin: "6px 0 0", fontSize: "11px" }}>
+                    Doctor: {roleGuidance.requiredDoctorSpecialties.join(", ")}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -66,6 +66,14 @@ export default function TrackingPage() {
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
+  const etaMinutes = Number.isFinite(activeRoute?.etaMinutes)
+    ? Math.max(1, Math.round(activeRoute.etaMinutes))
+    : null;
+  const routeDistanceKm = Number.isFinite(activeRoute?.distanceKm)
+    ? Number(activeRoute.distanceKm).toFixed(1)
+    : null;
+  const userCareTips = activeEmergency?.triageResult?.roleGuidance?.userSteps || [];
+
   const openDispatchPanel = (ambulanceId) => {
     if (!isUserViewer) return;
     if (!assignedAmbulanceId || ambulanceId !== assignedAmbulanceId) return;
@@ -281,6 +289,19 @@ export default function TrackingPage() {
                 >
                   Status: {activeEmergency.status}
                 </span>
+                {etaMinutes !== null && (
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: "#22c55e",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    ETA: {etaMinutes} min
+                    {routeDistanceKm ? ` • ${routeDistanceKm} km` : ""}
+                  </span>
+                )}
                 {activeEmergency.status === "en_route" && (
                   <span
                     style={{
@@ -303,6 +324,17 @@ export default function TrackingPage() {
                     }}
                   >
                     🏥 En route to hospital
+                  </span>
+                )}
+                {userCareTips.length > 0 && (
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--text-secondary)",
+                      maxWidth: "340px",
+                    }}
+                  >
+                    Care guidance: {userCareTips.slice(0, 2).join(" • ")}
                   </span>
                 )}
               </div>

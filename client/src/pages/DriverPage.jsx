@@ -282,6 +282,7 @@ export default function DriverPage() {
   const amb = driverData?.ambulance;
   const em = driverData?.emergency;
   const activeRoute = driverData?.route;
+  const ambulanceGuidance = em?.triageResult?.roleGuidance || {};
 
   const isPhase2 = amb?.status === "at_scene" && em?.assignedHospital;
 
@@ -1267,6 +1268,42 @@ export default function DriverPage() {
                   {em.description ||
                     "No additional description provided by user."}
                 </p>
+
+                {(ambulanceGuidance.ambulanceChecklist?.length > 0 ||
+                  ambulanceGuidance.likelyTreatments?.length > 0) && (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      borderRadius: "12px",
+                      border: "1px solid rgba(59,130,246,0.25)",
+                      background: "rgba(59,130,246,0.08)",
+                      padding: "10px",
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: "0 0 6px",
+                        fontSize: "10px",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        color: "#60a5fa",
+                      }}
+                    >
+                      AI Equipment + Protocol Suggestions
+                    </p>
+                    {ambulanceGuidance.ambulanceChecklist?.length > 0 && (
+                      <p style={{ margin: "0 0 4px", fontSize: "12px" }}>
+                        Checklist: {ambulanceGuidance.ambulanceChecklist.join(" • ")}
+                      </p>
+                    )}
+                    {ambulanceGuidance.likelyTreatments?.length > 0 && (
+                      <p style={{ margin: 0, fontSize: "12px" }}>
+                        Expected Handoff: {ambulanceGuidance.likelyTreatments.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>

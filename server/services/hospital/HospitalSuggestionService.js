@@ -156,6 +156,12 @@ class HospitalSuggestionService {
         ? 0.25
         : 1 / (1 + cheapestTreatmentCost / 100000);
 
+    const hospitalRatingAverage = Number(hospital?.ratingSummary?.average || 0);
+    const hospitalRatingVotes = Number(hospital?.ratingSummary?.totalRatings || 0);
+    const normalizedRating = Math.min(1, Math.max(0, hospitalRatingAverage / 5));
+    const confidenceBoost = Math.min(1, hospitalRatingVotes / 80);
+    const ratingScore = normalizedRating * confidenceBoost;
+
     const triagePreferences = context.triageResult?.hospitalPreferences || {};
     const requiredSpecialties = Array.isArray(triagePreferences.requiredSpecialties)
       ? triagePreferences.requiredSpecialties
@@ -210,7 +216,8 @@ class HospitalSuggestionService {
       0.12 * descriptionScore +
       0.08 * specialtyPreferenceScore +
       0.06 * capabilityPreferenceScore +
-      0.04 * complicationPreparednessScore;
+      0.04 * complicationPreparednessScore +
+      0.06 * ratingScore;
 
     return {
       hospital,
@@ -227,6 +234,7 @@ class HospitalSuggestionService {
       capabilityPreferenceScore: Math.round(capabilityPreferenceScore * 1000) / 1000,
       complicationPreparednessScore:
         Math.round(complicationPreparednessScore * 1000) / 1000,
+      ratingScore: Math.round(ratingScore * 1000) / 1000,
       matchingTreatments,
       cheapestTreatmentCost,
       averageTreatmentCost,
