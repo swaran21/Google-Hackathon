@@ -102,6 +102,8 @@ export default function SOSPage() {
       if (!prev) {
         return {
           emergency: emergencyData,
+          flowType: emergencyData.flowType || "hospital_first",
+          route: emergencyData.route || null,
           ambulance: emergencyData.assignedAmbulance || null,
           selectedHospital: emergencyData.assignedHospital
             ? { hospital: emergencyData.assignedHospital }
@@ -124,6 +126,8 @@ export default function SOSPage() {
       return {
         ...prev,
         emergency: emergencyData,
+        flowType: emergencyData.flowType || prev.flowType || "hospital_first",
+        route: emergencyData.route || prev.route || null,
         ambulance: emergencyData.assignedAmbulance || prev.ambulance || null,
         selectedHospital: emergencyData.assignedHospital
           ? {
