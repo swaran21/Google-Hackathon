@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, MapPin, Shield, Activity, ChevronRight } from 'lucide-react';
+import { AlertCircle, MapPin, Shield, Activity } from 'lucide-react';
 
 // ─── Animated Counter Hook ──────────────────────────────────────
 function useCounter(target, duration = 2000) {
@@ -35,63 +35,46 @@ export default function LandingPage() {
       alignItems: 'center', justifyContent: 'center', padding: '32px 24px',
       position: 'relative', overflow: 'hidden',
     }}>
-      {/* Background glow */}
-      <div style={{
-        position: 'fixed', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(239, 68, 68, 0.07) 0%, transparent 60%)',
-      }} />
 
       {/* Content */}
       <div style={{ maxWidth: '700px', textAlign: 'center', position: 'relative', zIndex: 10 }}>
         {/* Badge */}
-        <div style={{
+        <div className="neu-card" style={{
           display: 'inline-flex', alignItems: 'center', gap: '10px',
           padding: '8px 20px', borderRadius: '9999px', marginBottom: '28px',
-          background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
           fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)',
-          transition: 'all 0.3s',
         }}>
           <div style={{
-            width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e',
-            boxShadow: '0 0 8px #22c55e',
-            animation: 'pulse-glow 2s ease-in-out infinite',
+            width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-secondary)',
+            boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.8), inset -1px -1px 2px rgba(0,0,0,0.2)',
           }} />
           AI + OSRM Powered Emergency Response
         </div>
 
         {/* Headline */}
-        <h1 style={{ fontSize: '3rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '20px' }}>
+        <h1 className="neu-text" style={{ fontSize: '3rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '20px' }}>
           Emergency Response{' '}
-          <span className="gradient-text">Reimagined</span>
-          <span style={{ color: '#ef4444' }}>.</span>
+          <span style={{ color: 'var(--color-secondary)' }}>Reimagined</span>
+          <span style={{ color: 'var(--color-danger)' }}>.</span>
         </h1>
         <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: '550px', margin: '0 auto 40px', transition: 'color 0.3s' }}>
           AI-powered triage, real-time fleet tracking, and optimized hospital allocation—saving lives when every second counts.
         </p>
 
         {/* CTA Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '56px' }}>
-          <Link to="/sos" style={{
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '56px' }}>
+          <Link to="/sos" className="sos-button" style={{
             display: 'inline-flex', alignItems: 'center', gap: '10px',
             padding: '16px 36px', borderRadius: '16px', textDecoration: 'none',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff',
-            fontWeight: 700, fontSize: '1rem', boxShadow: '0 8px 30px rgba(239,68,68,0.3)',
-            transition: 'all 0.2s',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(239,68,68,0.4)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(239,68,68,0.3)'; }}
-          >
+            fontWeight: 700, fontSize: '1rem'
+          }}>
             <AlertCircle size={20} /> Emergency SOS
           </Link>
-          <Link to="/tracking" style={{
+          <Link to="/tracking" className="neu-button" style={{
             display: 'inline-flex', alignItems: 'center', gap: '10px',
             padding: '16px 36px', borderRadius: '16px', textDecoration: 'none',
-            background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
-            color: 'var(--text-primary)', fontWeight: 600, fontSize: '1rem', transition: 'all 0.2s',
-          }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-glass-hover)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-glass)'; e.currentTarget.style.borderColor = 'var(--border-glass)'; }}
-          >
+            fontWeight: 700, fontSize: '1rem',
+          }}>
             <MapPin size={20} /> Live Tracking
           </Link>
         </div>
@@ -99,7 +82,7 @@ export default function LandingPage() {
         {/* Stats Grid */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-          gap: '16px', marginBottom: '40px',
+          gap: '24px', marginBottom: '40px',
         }}>
           {stats.map((s) => (
             <StatBlock key={s.label} {...s} />
@@ -107,21 +90,21 @@ export default function LandingPage() {
         </div>
 
         {/* Features */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
           {[
-            { icon: <Activity size={24} />, title: 'AI Triage', desc: 'Gemini-powered severity analysis in real-time' },
-            { icon: <MapPin size={24} />, title: 'OSRM Routing', desc: 'Optimal ambulance dispatch within seconds' },
-            { icon: <Shield size={24} />, title: 'Smart Allocation', desc: 'Hospital bed matching and priority queuing' },
+            { icon: <Activity size={24} />, title: 'AI Triage', desc: 'Gemini-powered severity analysis in real-time', color: 'var(--color-secondary)' },
+            { icon: <MapPin size={24} />, title: 'OSRM Routing', desc: 'Optimal ambulance dispatch within seconds', color: 'var(--text-primary)' },
+            { icon: <Shield size={24} />, title: 'Smart Allocation', desc: 'Hospital bed matching and priority queuing', color: 'var(--text-primary)' },
           ].map((f) => (
-            <div key={f.title} className="glass-card glass-card-hover" style={{
+            <div key={f.title} className="neu-card neu-card-hover" style={{
               padding: '24px', borderRadius: '20px', textAlign: 'left',
             }}>
-              <div style={{
-                marginBottom: '14px', color: '#ef4444', width: '44px', height: '44px',
-                borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              <div className="neu-card" style={{
+                marginBottom: '16px', color: f.color, width: '48px', height: '48px',
+                borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: 'inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light)'
               }}>{f.icon}</div>
-              <h3 style={{ fontWeight: 700, marginBottom: '6px', fontSize: '1rem' }}>{f.title}</h3>
+              <h3 style={{ fontWeight: 700, marginBottom: '8px', fontSize: '1rem' }}>{f.title}</h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.5, transition: 'color 0.3s' }}>{f.desc}</p>
             </div>
           ))}
@@ -134,11 +117,11 @@ export default function LandingPage() {
 function StatBlock({ label, value, unit }) {
   const count = useCounter(value);
   return (
-    <div className="glass-card" style={{ padding: '20px', borderRadius: '16px', textAlign: 'center' }}>
-      <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-primary)', transition: 'color 0.3s' }}>
-        {count.toLocaleString()}{unit && <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '4px', fontWeight: 700, transition: 'color 0.3s' }}>{unit}</span>}
+    <div className="neu-card" style={{ padding: '24px', borderRadius: '16px', textAlign: 'center' }}>
+      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-primary)', transition: 'color 0.3s' }}>
+        {count.toLocaleString()}{unit && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '4px', fontWeight: 700, transition: 'color 0.3s' }}>{unit}</span>}
       </div>
-      <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-muted)', marginTop: '6px', transition: 'color 0.3s' }}>{label}</p>
+      <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-muted)', marginTop: '8px', transition: 'color 0.3s' }}>{label}</p>
     </div>
   );
 }

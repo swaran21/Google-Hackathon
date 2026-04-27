@@ -9,6 +9,8 @@ import { useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ToastProvider from "./components/Toast";
 import Navbar from "./components/Navbar";
+import PageLoader from "./components/PageLoader";
+import BackgroundModel from "./components/BackgroundModel";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SOSPage from "./pages/SOSPage";
@@ -70,8 +72,11 @@ export default function App() {
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
                 transition: "background 0.3s, color 0.3s",
+                position: "relative",
               }}
             >
+              <BackgroundModel />
+              <PageLoader />
               <Navbar />
               <main style={{ paddingTop: "64px" }}>
                 <Routes>
