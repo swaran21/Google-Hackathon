@@ -87,6 +87,55 @@ const getAllAmbulances = async (req, res, next) => {
 };
 
 /**
+ * @desc    Search ambulance by unique vehicle number
+ * @route   GET /api/ambulance/search?vehicleNumber=&lat=&lng=
+ */
+const searchAmbulanceByVehicleNumber = async (req, res, next) => {
+  try {
+    const vehicleNumber = String(req.query.vehicleNumber || "")
+      .trim()
+      .toUpperCase();
+
+    if (!vehicleNumber) {
+      throw new ApiError(400, "vehicleNumber query parameter is required");
+    }
+
+    const ambulance = await Ambulance.findOne({
+      vehicleNumber,
+      isActive: true,
+    }).populate("currentEmergency");
+
+    if (!ambulance) {
+      throw new ApiError(404, "No active ambulance found for this vehicle number");
+    }
+
+    let route = null;
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      const [ambLng, ambLat] = ambulance.location.coordinates;
+      const routeResult = await getRouteWithFallback(ambLat, ambLng, lat, lng);
+      route = {
+        distanceKm: routeResult.route?.distance ?? null,
+        etaMinutes: routeResult.route?.duration ?? null,
+        path: routeResult.path,
+      };
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ambulance,
+        route,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Get ambulances visible to logged-in user
  *          Includes all available ambulances + ambulance assigned to this user's active SOS
  * @route   GET /api/ambulance/visible
@@ -253,6 +302,7 @@ const updateAmbulanceStatus = async (req, res, next) => {
 module.exports = {
   getNearestAmbulance,
   getAllAmbulances,
+  searchAmbulanceByVehicleNumber,
   getUserVisibleAmbulances,
   updateLocation,
   updateAmbulanceStatus,

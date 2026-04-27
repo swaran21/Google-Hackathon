@@ -90,6 +90,8 @@ const createEmergency = async (req, res, next) => {
       patientName,
       patientPhone,
       vitals,
+      flowType,
+      selectedAmbulanceId,
     } = req.body;
 
     if (!type || !latitude || !longitude || !patientName || !patientPhone) {
@@ -105,11 +107,43 @@ const createEmergency = async (req, res, next) => {
       throw new ApiError(400, "latitude and longitude must be valid numbers");
     }
 
+    const normalizedFlowType =
+      flowType === "ambulance_first" ? "ambulance_first" : "hospital_first";
+
+    let preselectedAmbulance = null;
+    if (normalizedFlowType === "ambulance_first") {
+      if (!selectedAmbulanceId) {
+        throw new ApiError(
+          400,
+          "selectedAmbulanceId is required for ambulance_first flow",
+        );
+      }
+
+      preselectedAmbulance = await Ambulance.findById(selectedAmbulanceId);
+      if (!preselectedAmbulance || !preselectedAmbulance.isActive) {
+        throw new ApiError(
+          404,
+          "Selected ambulance is not active or not found",
+        );
+      }
+
+      if (
+        preselectedAmbulance.status !== "available" ||
+        preselectedAmbulance.currentEmergency
+      ) {
+        throw new ApiError(
+          409,
+          "Selected ambulance is currently unavailable. Please search another ambulance.",
+        );
+      }
+    }
+
     const triage = await classifyEmergency(type, description, { vitals });
     const bedRequirement = getBedRequirementFromSeverity(triage.severity);
 
     const emergency = await Emergency.create({
       type,
+      flowType: normalizedFlowType,
       location: {
         type: "Point",
         coordinates: [lng, lat],
@@ -118,6 +152,8 @@ const createEmergency = async (req, res, next) => {
       patientName,
       patientPhone,
       severity: triage.severity,
+      status:
+        normalizedFlowType === "ambulance_first" ? "dispatched" : "pending",
       reportedBy: req.user ? req.user.id : null,
       triageResult: {
         severityLabel: triage.severityLabel,
@@ -148,16 +184,66 @@ const createEmergency = async (req, res, next) => {
         requiredBedType: bedRequirement.requiredBedType,
       },
       ambulanceBooking: {
-        status: "not_ready",
+        status:
+          normalizedFlowType === "ambulance_first" ? "booked" : "not_ready",
+        bookedAt: normalizedFlowType === "ambulance_first" ? new Date() : null,
       },
       chatThread: [
         {
           senderRole: "system",
           senderName: "ResQNet",
-          message: "Emergency created. Select a hospital to request a bed.",
+          message:
+            normalizedFlowType === "ambulance_first"
+              ? "Emergency created with preselected ambulance. Add hospital selection to continue care routing."
+              : "Emergency created. Select a hospital to request a bed.",
         },
       ],
     });
+
+    let assignedAmbulance = null;
+    let routeData = null;
+
+    if (normalizedFlowType === "ambulance_first" && preselectedAmbulance) {
+      const lockedAmbulance = await Ambulance.findOneAndUpdate(
+        {
+          _id: preselectedAmbulance._id,
+          status: "available",
+          isActive: true,
+          currentEmergency: null,
+        },
+        {
+          status: "dispatched",
+          currentEmergency: emergency._id,
+        },
+        { new: true },
+      );
+
+      if (!lockedAmbulance) {
+        await Emergency.findByIdAndDelete(emergency._id);
+        throw new ApiError(
+          409,
+          "Selected ambulance was booked by another request. Please choose another ambulance.",
+        );
+      }
+
+      assignedAmbulance = lockedAmbulance;
+      emergency.assignedAmbulance = lockedAmbulance._id;
+
+      const [ambLng, ambLat] = lockedAmbulance.location.coordinates;
+      const routeResult = await getRouteWithFallback(ambLat, ambLng, lat, lng);
+      routeData = routeResult?.route || null;
+
+      if (routeData?.duration) {
+        emergency.eta = routeData.duration;
+      }
+
+      emergency.chatThread.push({
+        senderRole: "system",
+        senderName: "ResQNet",
+        message: `Ambulance ${lockedAmbulance.vehicleNumber} linked and dispatched to patient location.`,
+      });
+      await emergency.save();
+    }
 
     const hospitals = await suggestHospitals(lat, lng, type, {
       radiusKm: HOSPITAL_RADIUS_KM,
@@ -174,21 +260,45 @@ const createEmergency = async (req, res, next) => {
         suggestedHospitals: hospitals,
         awaitingHospitalSelection: true,
       });
+
+      if (assignedAmbulance) {
+        io.emit("ambulance:assigned", {
+          emergencyId: emergency._id,
+          ambulance: assignedAmbulance,
+          eta: routeData?.duration ?? null,
+          distance: routeData?.distance ?? null,
+        });
+        io.emit("ambulance:status-change", {
+          ambulanceId: assignedAmbulance._id,
+          status: assignedAmbulance.status,
+        });
+      }
     }
+
+    const populatedEmergency = await Emergency.findById(emergency._id)
+      .populate("assignedAmbulance")
+      .populate("assignedHospital");
 
     res.status(201).json({
       success: true,
       data: {
-        emergency,
+        emergency: populatedEmergency,
         triage,
-        ambulance: null,
+        ambulance: assignedAmbulance
+          ? {
+              ...assignedAmbulance.toObject(),
+              eta: routeData?.duration ?? null,
+              distance: routeData?.distance ?? null,
+            }
+          : null,
         suggestedHospitals: hospitals,
         recommendedHospital: hospitals[0] || null,
         requiresHospitalSelection: true,
         requiresHospitalApproval: false,
         canBookAmbulance: false,
+        flowType: normalizedFlowType,
         searchRadiusKm: HOSPITAL_RADIUS_KM,
-        route: null,
+        route: routeData,
         fullRoute: null,
         notifications: [],
       },
@@ -225,7 +335,10 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       );
     }
 
-    if (emergency.assignedAmbulance) {
+    if (
+      emergency.assignedAmbulance &&
+      emergency.flowType !== "ambulance_first"
+    ) {
       throw new ApiError(
         400,
         "Ambulance already booked for this emergency. Cancel first to re-select hospital.",
@@ -276,10 +389,15 @@ const selectHospitalAndDispatch = async (req, res, next) => {
       allocatedGeneralBeds: 0,
       allocatedIcuBeds: 0,
     };
-    emergency.ambulanceBooking = {
-      status: "not_ready",
-      bookedAt: null,
-    };
+    emergency.ambulanceBooking = emergency.assignedAmbulance
+      ? {
+          status: "booked",
+          bookedAt: emergency.ambulanceBooking?.bookedAt || new Date(),
+        }
+      : {
+          status: "not_ready",
+          bookedAt: null,
+        };
     emergency.eta = null;
     emergency.chatThread.push({
       senderRole: "system",

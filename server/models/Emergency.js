@@ -44,6 +44,11 @@ const emergencySchema = new mongoose.Schema(
       ],
       default: "pending",
     },
+    flowType: {
+      type: String,
+      enum: ["hospital_first", "ambulance_first"],
+      default: "hospital_first",
+    },
     // Who reported this emergency
     reportedBy: {
       type: mongoose.Schema.Types.ObjectId,
