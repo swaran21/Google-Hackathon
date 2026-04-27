@@ -91,5 +91,7 @@ export const getActiveEmergencies = () => api.get("/admin/emergencies");
 export const getAdminAmbulances = () => api.get("/admin/ambulances");
 export const getAdminHospitals = () => api.get("/admin/hospitals");
 export const getNotificationLog = () => api.get("/admin/notifications");
+export const getAdminUsers = () => api.get("/admin/users");
+export const getAdminHealth = () => api.get("/admin/health");
 
 export default api;
