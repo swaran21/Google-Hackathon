@@ -4,6 +4,7 @@ const Ambulance = require("../models/Ambulance");
 const Hospital = require("../models/Hospital");
 const User = require("../models/User");
 const { getNotificationLog } = require("../services/notificationService");
+const { ApiError } = require("../middleware/errorHandler");
 
 const getSystemHealthSnapshot = () => ({
   database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
@@ -271,6 +272,55 @@ const getSystemHealth = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Admin login
+ * @route   POST /api/admin/login
+ */
+const loginAdmin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      throw new ApiError(400, "Email and password are required");
+    }
+
+    const user = await User.findOne({
+      email: String(email).toLowerCase().trim(),
+    }).select("+password");
+
+    if (!user) {
+      throw new ApiError(401, "Invalid admin credentials");
+    }
+
+    if (user.role !== "admin") {
+      throw new ApiError(403, "This endpoint is restricted to admin accounts");
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      throw new ApiError(401, "Invalid admin credentials");
+    }
+
+    const token = user.generateToken();
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+        },
+        token,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   getActiveEmergencies,
@@ -279,4 +329,5 @@ module.exports = {
   getNotifications,
   getUsers,
   getSystemHealth,
+  loginAdmin,
 };

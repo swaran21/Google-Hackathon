@@ -14,6 +14,7 @@ import LoginPage from "./pages/LoginPage";
 import SOSPage from "./pages/SOSPage";
 import TrackingPage from "./pages/TrackingPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import DriverPage from "./pages/DriverPage";
 import HospitalPage from "./pages/HospitalPage";
 import HospitalSignupPage from "./pages/HospitalSignupPage";
@@ -49,6 +50,24 @@ function DriverOnlyRoute({ children }) {
   if (user?.role !== "driver") {
     const roleHome = {
       admin: "/admin",
+      user: "/",
+      hospital: "/hospital",
+    };
+    return <Navigate to={roleHome[user?.role] || "/"} replace />;
+  }
+
+  return children;
+}
+
+function AdminOnlyRoute({ children }) {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) return null;
+  if (!isAuthenticated) return <Navigate to="/admin-login" replace />;
+
+  if (user?.role !== "admin") {
+    const roleHome = {
+      driver: "/driver",
       user: "/",
       hospital: "/hospital",
     };
@@ -94,7 +113,15 @@ export default function App() {
                     }
                   />
                   <Route path="/tracking" element={<TrackingPage />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin-login" element={<AdminLoginPage />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminOnlyRoute>
+                        <AdminDashboard />
+                      </AdminOnlyRoute>
+                    }
+                  />
                   <Route
                     path="/driver"
                     element={

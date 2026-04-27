@@ -9,7 +9,10 @@ const {
   getNotifications,
   getUsers,
   getSystemHealth,
+  loginAdmin,
 } = require("../controllers/adminController");
+
+router.post("/login", loginAdmin);
 
 router.use(protect, authorize("admin"));
 
