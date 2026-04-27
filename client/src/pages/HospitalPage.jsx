@@ -43,22 +43,22 @@ const STATUS_LABELS = {
 
 const STATUS_COLORS = {
   pending: {
-    color: "#facc15",
+    color: "var(--color-warning)",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
   },
   accepted: {
-    color: "#22c55e",
+    color: "var(--color-success)",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
   },
   rejected: {
-    color: "#ef4444",
+    color: "var(--color-danger)",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
   },
   released: {
-    color: "#60a5fa",
+    color: "var(--color-info)",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
   },

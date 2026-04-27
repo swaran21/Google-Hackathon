@@ -60,11 +60,11 @@ const STATUS_LABELS = {
 };
 
 const HEALTH_COLORS = {
-  connected: "#22c55e",
-  ready: "#22c55e",
-  active: "#22c55e",
-  simulated: "#38bdf8",
-  disconnected: "#ef4444",
+  connected: "var(--color-success)",
+  ready: "var(--color-success)",
+  active: "var(--color-success)",
+  simulated: "var(--color-info)",
+  disconnected: "var(--color-danger)",
 };
 
 const createIcon = ({ emoji, color, borderColor, shadowColor, size = 34 }) =>

@@ -162,8 +162,8 @@ export default function TrackingPage() {
                   width: "8px",
                   height: "8px",
                   borderRadius: "50%",
-                  background: "#22c55e",
-                  boxShadow: "0 0 8px #22c55e",
+                  background: "var(--color-success)",
+                  boxShadow: "0 0 8px var(--color-success)",
                   animation: "pulse-glow 2s ease-in-out infinite" }}
               />
               <span
@@ -172,7 +172,7 @@ export default function TrackingPage() {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
-                  color: "#22c55e" }}
+                  color: "var(--color-success)" }}
               >
                 Live Network Active
               </span>
@@ -218,7 +218,7 @@ export default function TrackingPage() {
                     alignItems: "center",
                     gap: "8px",
                     color: filter === value 
-                      ? (value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)')
+                      ? (value === 'available' ? 'var(--color-success)' : value === 'dispatched' ? 'var(--color-info)' : 'var(--color-danger)')
                       : "var(--text-muted)",
                     boxShadow: filter === value ? "none" : undefined,
                     background: filter === value ? "rgba(0,0,0,0.02)" : "transparent"
@@ -229,8 +229,8 @@ export default function TrackingPage() {
                       width: "6px", 
                       height: "6px", 
                       borderRadius: "50%", 
-                      background: value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)',
-                      boxShadow: `0 0 8px ${value === 'available' ? '#22c55e' : value === 'dispatched' ? '#3b82f6' : 'var(--color-danger)'}`
+                      background: value === 'available' ? 'var(--color-success)' : value === 'dispatched' ? 'var(--color-info)' : 'var(--color-danger)',
+                      boxShadow: `0 0 8px ${value === 'available' ? 'var(--color-success)' : value === 'dispatched' ? 'var(--color-info)' : 'var(--color-danger)'}`
                     }} />
                   )}
                   {value}
@@ -314,7 +314,7 @@ export default function TrackingPage() {
                     style={{
                       fontSize: "11px",
                       fontWeight: 800,
-                      color: "#3b82f6",
+                      color: "var(--color-info)",
                       textTransform: "uppercase" }}
                   >
                     🏥 En route to hospital

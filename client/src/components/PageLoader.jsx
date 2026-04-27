@@ -37,8 +37,10 @@ export default function PageLoader() {
       animationDelay: '0.9s' }}>
       <Logo size={100} showText={false} isAnimating={true} />
       
+      <div className="spinner" style={{ marginTop: '20px' }}></div>
+
       <div className="neu-text" style={{ 
-        marginTop: '40px', 
+        marginTop: '20px', 
         fontSize: '1rem', 
         fontWeight: 800, 
         color: 'var(--text-primary)',

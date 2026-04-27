@@ -31,9 +31,8 @@ function UserOnlyRoute({ children }) {
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/user-login" replace />;
 
-  if (user?.role !== "user") {
+  if (user?.role !== "user" && user?.role !== "admin") {
     const roleHome = {
-      admin: "/admin",
       driver: "/driver",
       hospital: "/hospital",
     };
@@ -91,7 +90,8 @@ export default function App() {
                 background: "var(--bg-primary)",
                 color: "var(--text-primary)",
                 transition: "background 0.3s, color 0.3s",
-                position: "relative" }}
+                position: "relative"
+              }}
             >
               <BackgroundModel />
               <PageLoader />

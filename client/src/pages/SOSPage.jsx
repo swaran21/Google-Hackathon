@@ -29,9 +29,9 @@ const COLORS = {
   red: "#ef4444",
   rose: "#f43f5e",
   orange: "#f97316",
-  blue: "#3b82f6",
+  blue: "#2563EB", // Updated for high contrast
   purple: "#a855f7",
-  cyan: "#06b6d4",
+  cyan: "#0891B2", // Updated for high contrast
 };
 
 const EMERGENCY_TYPES = [
@@ -473,66 +473,66 @@ export default function SOSPage() {
               Initiate immediate medical dispatch and hospital triage.
             </p>
           </div>
-          <div style={{ position: "relative", marginBottom: "48px" }}>
+          <div style={{ position: "relative", marginBottom: "64px" }}>
+            {/* Machined Outer Ring */}
             <div
+              className="neu-inner"
               style={{
                 position: "absolute",
-                inset: 0,
-                background: "var(--bg-card)",
-                filter: "blur(40px)",
+                inset: "-20px",
                 borderRadius: "50%",
-                animation: "pulse-glow 3s ease-in-out infinite" }}
+                background: "var(--bg-primary)",
+                border: "2px solid var(--shadow-dark)" }}
             />
+            
             <button
               onClick={handleSOS}
               className="sos-button cursor-pointer"
               style={{
                 position: "relative",
                 zIndex: 10,
-                width: "192px",
-                height: "192px",
+                width: "200px",
+                height: "200px",
                 borderRadius: "50%",
-                border: "2px solid var(--bg-card)",
-                background: "var(--bg-primary)",
+                background: "linear-gradient(145deg, var(--color-danger), #dc2626)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#fff",
-                transition: "all 0.3s",
-                boxShadow: "0 0 50px var(--bg-card)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background =
-                  "linear-gradient(135deg,#ef4444,#dc2626)";
-                e.currentTarget.style.borderColor = "transparent";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--bg-primary)";
-                e.currentTarget.style.borderColor = "var(--bg-card)";
-              }}
+                border: "none",
+                boxShadow: "0 0 40px var(--color-danger)" }}
             >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: "0",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 70%)" }}
+              />
               <AlertCircle
-                size={48}
-                style={{ color: "#ef4444", marginBottom: "8px" }}
+                size={56}
+                style={{ color: "#fff", marginBottom: "8px", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))" }}
               />
               <span
                 style={{
-                  fontSize: "1.8rem",
+                  fontSize: "2.2rem",
                   fontWeight: 900,
-                  letterSpacing: "-0.04em" }}
+                  letterSpacing: "-0.04em",
+                  textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}
               >
                 SOS
               </span>
               <span
                 style={{
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  color: "#ef4444",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "rgba(255,255,255,0.9)",
                   textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  marginTop: "4px" }}
+                  letterSpacing: "0.2em",
+                  marginTop: "6px" }}
               >
-                Tap to help
+                PRESS TO HELP
               </span>
             </button>
           </div>
@@ -555,7 +555,7 @@ export default function SOSPage() {
             >
               <MapPin
                 size={18}
-                style={{ color: geo.loading ? "#eab308" : "#22c55e" }}
+                style={{ color: geo.loading ? "var(--color-warning)" : "var(--color-success)" }}
               />
             </div>
             <div>
@@ -595,7 +595,7 @@ export default function SOSPage() {
               borderRadius: "14px",
               border: "1px solid var(--bg-card)",
               background: "var(--bg-card)",
-              color: "#93c5fd",
+              color: "var(--color-info)",
               fontWeight: 800,
               fontFamily: "var(--font-family)",
               letterSpacing: "0.02em",
@@ -798,26 +798,7 @@ export default function SOSPage() {
                 borderRadius: "50%",
                 animation: "pulse-glow 2s ease-in-out infinite" }}
             />
-            <div
-              style={{
-                position: "relative",
-                width: "128px",
-                height: "128px",
-                borderRadius: "50%",
-                border: "2px solid transparent",
-                borderBottomColor: "#dc2626",
-                animation: "spin 1s linear infinite",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center" }}
-            >
-              <Activity
-                size={40}
-                style={{
-                  color: "#dc2626",
-                  animation: "pulse-glow 2s ease-in-out infinite" }}
-              />
-            </div>
+            <div className="spinner" style={{ width: '80px', height: '80px' }}></div>
           </div>
           <div style={{ textAlign: "center" }}>
             <h2

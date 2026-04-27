@@ -11,17 +11,17 @@ import {
 const getStatusTheme = (status) => {
   switch (status) {
     case "available":
-      return { color: "#22c55e", label: "AVAIL", icon: "✓" };
+      return { color: "var(--color-success)", label: "AVAIL", icon: "✓" };
     case "dispatched":
-      return { color: "#3b82f6", label: "DISP", icon: "→" };
+      return { color: "var(--color-info)", label: "DISP", icon: "→" };
     case "en_route":
-      return { color: "#f59e0b", label: "ROUTE", icon: "🚑" };
+      return { color: "var(--color-warning)", label: "ROUTE", icon: "🚑" };
     case "at_scene":
-      return { color: "#fb923c", label: "SCENE", icon: "⚠" };
+      return { color: "#c2410c", label: "SCENE", icon: "⚠" }; // Orange 700
     case "returning":
-      return { color: "#a855f7", label: "RET", icon: "↩" };
+      return { color: "#7e22ce", label: "RET", icon: "↩" }; // Purple 700
     case "offline":
-      return { color: "#6b7280", label: "OFF", icon: "✕" };
+      return { color: "var(--text-muted)", label: "OFF", icon: "✕" };
     default:
       return { color: "var(--text-secondary)", label: status.toUpperCase().slice(0, 5), icon: "•" };
   }
@@ -76,14 +76,14 @@ export default function FleetTelemetryCard({
               borderRadius: "20px",
               fontSize: "10px",
               fontWeight: 800,
-              color: "#22c55e",
+              color: "var(--color-success)",
               fontFamily: "monospace",
               display: "flex",
               alignItems: "center",
               gap: "6px"
             }}
           >
-            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e" }} />
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--color-success)", boxShadow: "0 0 6px var(--color-success)" }} />
             LIVE
           </div>
         </div>
@@ -92,8 +92,8 @@ export default function FleetTelemetryCard({
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
           {[
             { label: "TOTAL", val: filteredAmbulances.length, color: "var(--text-primary)" },
-            { label: "READY", val: filteredAmbulances.filter(a => a.status === 'available').length, color: "#22c55e" },
-            { label: "ACTIVE", val: filteredAmbulances.filter(a => a.status !== 'available' && a.status !== 'offline').length, color: "#3b82f6" },
+            { label: "READY", val: filteredAmbulances.filter(a => a.status === 'available').length, color: "var(--color-success)" },
+            { label: "ACTIVE", val: filteredAmbulances.filter(a => a.status !== 'available' && a.status !== 'offline').length, color: "var(--color-info)" },
           ].map(stat => (
             <div key={stat.label} className="neu-inner" style={{ padding: "8px", borderRadius: "12px", textAlign: "center" }}>
               <p style={{ fontSize: "8px", fontWeight: 800, color: "var(--text-muted)", marginBottom: "2px" }}>{stat.label}</p>
@@ -209,9 +209,9 @@ export default function FleetTelemetryCard({
       >
         <div style={{ display: "flex", gap: "12px" }}>
           {[
-            { color: "#22c55e", label: "RDY" },
-            { color: "#ef4444", label: "ACT" },
-            { color: "#3b82f6", label: "HSP" },
+            { color: "var(--color-success)", label: "RDY" },
+            { color: "var(--color-danger)", label: "ACT" },
+            { color: "var(--color-info)", label: "HSP" },
           ].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: l.color }} />

@@ -64,7 +64,9 @@ export default function DispatchControlModal({
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between" }}
+            justifyContent: "space-between",
+            position: "relative"
+          }}
         >
           <div>
             <h3 style={{ fontSize: "1.2rem", fontWeight: 900 }}>{title}</h3>
@@ -81,17 +83,23 @@ export default function DispatchControlModal({
             onClick={onClose}
             className="neu-button"
             style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "9999px",
-              border: "1px solid transparent",
-              background: "var(--bg-card)",
-              color: "var(--text-secondary)",
+              position: "absolute",
+              top: "-12px",
+              right: "-12px",
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center" }}
+              justifyContent: "center",
+              color: "#fff",
+              background: "var(--color-danger)", // High intensity crimson
+              border: "3px solid var(--bg-card)",
+              zIndex: 100, // Ensure it's above everything
+              boxShadow: "0 6px 20px rgba(0,0,0,0.3)"
+            }}
           >
-            <X size={16} />
+            <XCircle size={24} strokeWidth={3} />
           </button>
         </div>
 
@@ -108,7 +116,7 @@ export default function DispatchControlModal({
                   borderRadius: "10px",
                   border: "1px solid var(--bg-card)",
                   background: "var(--bg-card)",
-                  color: "#86efac",
+                  color: "var(--color-success)",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
@@ -128,7 +136,7 @@ export default function DispatchControlModal({
                   borderRadius: "10px",
                   border: "1px solid var(--bg-card)",
                   background: "var(--bg-card)",
-                  color: "#93c5fd",
+                  color: "var(--color-info)",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
@@ -148,7 +156,7 @@ export default function DispatchControlModal({
                   borderRadius: "10px",
                   border: "1px solid var(--bg-card)",
                   background: "var(--bg-card)",
-                  color: "#fde68a",
+                  color: "var(--color-warning)",
                   fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
@@ -211,7 +219,7 @@ export default function DispatchControlModal({
                     letterSpacing: "0.06em",
                     marginBottom: "4px",
                     color:
-                      item.from === "user" ? "#93c5fd" : "var(--text-muted)" }}
+                      item.from === "user" ? "var(--color-info)" : "var(--text-muted)" }}
                 >
                   {item.senderName || "Unknown"} • {item.senderRole || "system"}
                 </div>
