@@ -162,9 +162,9 @@ const RESPONSE_LEVEL_ENUM = new Set(["STANDARD", "URGENT", "IMMEDIATE"]);
 
 const TRIAGE_LOG_PREFIX = "[AI-TRIAGE]";
 const DEFAULT_GEMINI_MODEL_CANDIDATES = [
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
-  "gemini-1.5-flash-8b",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.5-pro",
 ];
 
 const shouldDebugLog = () => {
@@ -198,7 +198,9 @@ const triageLog = (level, context, extra = {}) => {
 };
 
 const previewText = (value = "", limit = 220) => {
-  const compact = String(value || "").replace(/\s+/g, " ").trim();
+  const compact = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (compact.length <= limit) return compact;
   return `${compact.slice(0, limit)}...`;
 };
