@@ -48,6 +48,24 @@ const sosLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// ─── Root Route ──────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({
+    name: 'ResQNet AI API',
+    version: '1.0.0',
+    status: 'running',
+    docs: '/api/health',
+    endpoints: [
+      '/api/auth',
+      '/api/emergency',
+      '/api/ambulance',
+      '/api/hospitals',
+      '/api/admin',
+      '/api/driver',
+    ],
+  });
+});
+
 // ─── API Routes ──────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/emergency', sosLimiter, emergencyRoutes);
