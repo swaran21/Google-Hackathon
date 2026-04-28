@@ -5,12 +5,13 @@ import { useTheme } from '../context/ThemeContext';
 import {
   Home, AlertCircle, Navigation, Activity,
   Building2, LayoutDashboard, LogOut, User as UserIcon,
-  Sun, Moon, ClipboardList, X, ShieldAlert
+  Sun, Moon, ClipboardList, X, ShieldAlert, Shield
 } from 'lucide-react';
 import Logo from './Logo';
 
 const NAV_LINKS = [
   { path: '/', label: 'Home', Icon: Home, public: true },
+  { path: '/about', label: 'About', Icon: Shield, public: true },
   { path: '/sos', label: 'SOS', Icon: AlertCircle, roles: ['user'] },
   { path: '/bookings', label: 'My Bookings', Icon: ClipboardList, roles: ['user'] },
   { path: '/tracking', label: 'Live Track', Icon: Navigation, public: true },

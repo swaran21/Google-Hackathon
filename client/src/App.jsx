@@ -12,6 +12,7 @@ import Navbar from "./components/Navbar";
 import PageLoader from "./components/PageLoader";
 import BackgroundModel from "./components/BackgroundModel";
 import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
 import LoginPage from "./pages/LoginPage";
 import SOSPage from "./pages/SOSPage";
 import TrackingPage from "./pages/TrackingPage";
@@ -99,6 +100,7 @@ export default function App() {
               <main style={{ paddingTop: "64px", position: "relative", zIndex: 10 }}>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route
                     path="/sos"
