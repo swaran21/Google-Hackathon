@@ -94,6 +94,8 @@ export default function SOSPage() {
   const [bookingAmbulance, setBookingAmbulance] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackHandledEmergencyId, setFeedbackHandledEmergencyId] =
+    useState(null);
 
   const mergeEmergencyIntoResult = useCallback((emergencyData) => {
     if (!emergencyData?._id) return;
@@ -245,11 +247,16 @@ export default function SOSPage() {
         const res = await getEmergency(activeEmergencyId);
         mergeEmergencyIntoResult(res.data.data);
 
-        // Show feedback form if emergency is resolved or cancelled and feedback not submitted yet
+        // Show feedback form only when emergency is resolved (end of workflow)
+        const emergencyId = res.data.data?._id || null;
+        const isHandled =
+          emergencyId && feedbackHandledEmergencyId === emergencyId;
+
         if (
-          ["resolved", "cancelled"].includes(res.data.data?.status) &&
+          res.data.data?.status === "resolved" &&
           !feedbackSubmitted &&
-          !showFeedbackForm
+          !showFeedbackForm &&
+          !isHandled
         ) {
           setShowFeedbackForm(true);
         }
@@ -265,6 +272,9 @@ export default function SOSPage() {
     result?.ambulance,
     result?.emergency?.hospitalRequest?.status,
     mergeEmergencyIntoResult,
+    feedbackSubmitted,
+    showFeedbackForm,
+    feedbackHandledEmergencyId,
   ]);
 
   useEffect(() => {
@@ -272,12 +282,16 @@ export default function SOSPage() {
     const isFeedbackSubmitted = Boolean(
       result?.emergency?.feedback?.isSubmitted,
     );
+    const emergencyId = result?.emergency?._id || null;
+    const isHandled =
+      emergencyId && feedbackHandledEmergencyId === emergencyId;
 
     if (
       step === "result" &&
-      ["resolved", "cancelled"].includes(status) &&
+      status === "resolved" &&
       !feedbackSubmitted &&
-      !isFeedbackSubmitted
+      !isFeedbackSubmitted &&
+      !isHandled
     ) {
       setShowFeedbackForm(true);
     }
@@ -286,6 +300,7 @@ export default function SOSPage() {
     result?.emergency?.status,
     result?.emergency?.feedback?.isSubmitted,
     feedbackSubmitted,
+    feedbackHandledEmergencyId,
   ]);
 
   const handleRequestLocation = async () => {
@@ -501,6 +516,7 @@ export default function SOSPage() {
     setBookingAmbulance(false);
     setShowFeedbackForm(false);
     setFeedbackSubmitted(false);
+    setFeedbackHandledEmergencyId(null);
   };
 
   return (
@@ -1243,9 +1259,11 @@ export default function SOSPage() {
               onSubmitSuccess={() => {
                 setShowFeedbackForm(false);
                 setFeedbackSubmitted(true);
+                setFeedbackHandledEmergencyId(result.emergency._id);
               }}
               onCancel={() => {
                 setShowFeedbackForm(false);
+                setFeedbackHandledEmergencyId(result.emergency._id);
               }}
             />
           )}
