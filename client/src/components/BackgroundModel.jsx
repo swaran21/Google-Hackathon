@@ -71,20 +71,14 @@ function StarField() {
   }, []);
 
   const shootingStars = React.useMemo(() => {
-    return Array.from({ length: 4 }).map((_, i) => {
-      const isLeftToRight = Math.random() > 0.5;
-      return {
-        id: `ss-${i}`,
-        top: `${Math.random() * 80}%`,
-        left: `${Math.random() * 100}%`,
-        width: `${Math.random() * 150 + 100}px`,
-        duration: `${Math.random() * 2 + 3}s`,
-        delay: `${Math.random() * 60}s`,
-        tx: isLeftToRight ? `${Math.random() * 800 + 400}px` : `-${Math.random() * 800 + 400}px`,
-        ty: `${Math.random() * 600 + 400}px`,
-        angle: isLeftToRight ? '45deg' : '-45deg'
-      };
-    });
+    return Array.from({ length: 4 }).map((_, i) => ({
+      id: `ss-${i}`,
+      top: `${Math.random() * 80}%`,
+      left: `${Math.random() * 100}%`,
+      width: `${Math.random() * 150 + 100}px`,
+      duration: `${Math.random() * 2 + 3}s`,
+      delay: `${Math.random() * 60}s`, // Much longer delay for rarity
+    }));
   }, []);
 
   return (
@@ -113,9 +107,6 @@ function StarField() {
             width: ss.width,
             '--duration': ss.duration,
             '--delay': ss.delay,
-            '--tx': ss.tx,
-            '--ty': ss.ty,
-            '--angle': ss.angle,
           }}
         />
       ))}
