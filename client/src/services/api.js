@@ -2,10 +2,11 @@ import axios from "axios";
 
 /**
  * Axios instance configured for the ResQNet API.
- * In development, Vite proxy forwards /api to localhost:5000.
+ * Uses VITE_API_URL env variable - in production on Vercel, set this to your backend URL
+ * Falls back to /api for local development (Vite proxy)
  */
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
 });
