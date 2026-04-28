@@ -180,6 +180,18 @@ export default function AboutPage() {
             system coordinates users, drivers, hospitals, and admins on a
             single, real-time operational layer.
           </p>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "0.95rem",
+              lineHeight: 1.7,
+              maxWidth: "780px",
+            }}
+          >
+            The AI triage engine uses the Gemini API to analyze the emergency
+            type and description, then produces severity, recommended
+            equipment, and role-based guidance to prioritize the response.
+          </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
             <Link
               to="/sos"
