@@ -73,7 +73,7 @@ export default function Navbar() {
 
   return (
     <>
-      {showLogoutConfirm && <LogoutModal onConfirm={logout} onCancel={() => setShowLogoutConfirm(false)} />}
+      {showLogoutConfirm && <LogoutModal onConfirm={() => { logout(); setShowLogoutConfirm(false); }} onCancel={() => setShowLogoutConfirm(false)} />}
       
       <nav style={{
         position: 'fixed', top: '12px', left: '12px', right: '12px', zIndex: 50,
