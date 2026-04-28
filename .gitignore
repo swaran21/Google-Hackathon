@@ -27,3 +27,5 @@ npm-debug.log*
 
 # Local ambulance GPS simulator workspace (intentionally untracked)
 tools/local-ambulance-sim/
+
+kubernetes/backend-secret.yaml

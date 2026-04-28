@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: resqnet
+
+resources:
+  - namespace.yaml
+  - backend-deployment.yaml
+  - frontend-deployment.yaml
+  - backend-configmap.yaml
+  - backend-secret.yaml
+  - frontend-configmap.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+commonLabels:
+  app.kubernetes.io/name: resqnet
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: us-central1-docker.pkg.dev/resqnet-deployment/resqnet/resqnet-backend
+    newTag: latest
+  - name: us-central1-docker.pkg.dev/resqnet-deployment/resqnet/resqnet-frontend
+    newTag: latest

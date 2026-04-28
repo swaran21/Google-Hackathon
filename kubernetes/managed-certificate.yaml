@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: resqnet-cert
+spec:
+  domains:
+    - YOUR_DOMAIN.com
