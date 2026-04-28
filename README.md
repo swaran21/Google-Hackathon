@@ -49,12 +49,70 @@ Studies show that response times above 10 minutes significantly increase mortali
 
 ## 3. Our Solution: How ResQNet AI Works
 
-### The Journey of an Emergency
+ResQNet AI supports **two parallel emergency response flows** to handle different real-world scenarios. Both flows share the same AI triage, tracking, and communication infrastructure — they differ in the initial dispatch order.
 
-**Step 1: Someone Hits SOS**
-A person experiencing an emergency (or someone on their behalf) opens the ResQNet app and selects the type of emergency: cardiac, accident, fire, breathing difficulty, stroke, flood, or other. They fill in basic information — patient's name, phone number, and a description of what's happening. The app automatically captures the location using GPS.
+---
 
-**Step 2: AI Triage Happens in Milliseconds**
+### Emergency Flow Architecture
+
+ResQNet provides flexibility in how emergencies are handled, supporting two distinct workflows:
+
+| Aspect | Ambulance-First (Default) | Hospital-First (Alternative) |
+|--------|---------------------------|------------------------------|
+| **Trigger** | User enters ambulance ID → Select → Submit details → Alert hospitals | SOS → AI triage → Alert hospitals → Select & dispatch ambulance |
+| **Best For** | Known ambulance (e.g., 108 dispatcher shared ambulance number), direct routing | Unknown ambulance availability, needs hospital acceptance before dispatch |
+| **Dispatch Order** | Ambulance preselected, dispatched immediately after details submitted | Hospital accepts, then ambulance dispatched |
+| **Backend Flag** | `flowType: "ambulance_first"` | `flowType: "hospital_first"` |
+
+**Why Ambulance-First is Default?**
+In real-world emergency scenarios in India, when someone calls 108 (emergency services), the dispatcher often shares the ambulance number that is being sent to them. The caller then uses ResQNet to share this ambulance number and track it. Making Ambulance-First the default aligns with this common workflow and enables faster dispatch.
+
+---
+
+### Flow 1: Ambulance-First (Default)
+
+This is the default flow optimized for the common 108 emergency scenario where the caller receives the ambulance number from a dispatcher. The ambulance is selected first, then details are submitted, enabling immediate dispatch.
+
+**Step 1: User Receives Ambulance Number**
+When calling 108, the dispatcher shares the ambulance number that is being dispatched — for example, "HYD01-001" where "HYD" indicates Hyderabad locality and "001" is the ambulance's sequential number.
+
+**Step 2: User Searches Ambulance by Unique ID**
+On the ResQNet SOS page (which opens by default in Ambulance-First mode), the user enters the ambulance's unique identifier. The system looks up the ambulance by its `vehicleNumber`.
+
+**Step 3: Ambulance Selected with Live Location**
+Once found, the ambulance is selected and the user can see its current live location streaming in real-time. This confirms they're connected to the right ambulance that is being dispatched to them.
+
+**Step 4: Enter Emergency Details**
+Now the user fills in the standard emergency details: type (cardiac, accident, fire, etc.), patient name, phone, and description. The ambulance is already preselected and locked to this emergency.
+
+**Step 5: AI Triage and Hospital Suggestions**
+After submission, AI triage runs and the system analyzes severity, equipment needs, and returns hospital suggestions for the user to select from. This is the same AI triage as Hospital-First.
+
+**Step 6: User Selects Hospital**
+The user picks the best hospital from the suggestions. This hospital will be alerted and can accept or reject the incoming patient.
+
+**Step 7: Ambulance Dispatched Immediately**
+Because the ambulance was already preselected and locked, dispatch happens immediately — no waiting for hospital acceptance first. The ambulance starts moving toward the patient.
+
+**Step 8: Real-Time Tracking**
+The patient tracks the preselected ambulance in real-time on a map. The ambulance's GPS location updates continuously via WebSockets. The hospital sees the incoming patient and prepares based on the AI triage results (severity, equipment needs, recommended specialties).
+
+**Step 9: Resolution and Feedback**
+When the emergency is resolved, patients can provide feedback — rating the ambulance driver, the hospital, and the overall system.
+
+---
+
+### Flow 2: Hospital-First (Alternative)
+
+This alternative flow is for scenarios where the caller doesn't know which ambulance will respond. The system finds and alerts suitable hospitals first, then dispatches an ambulance based on the hospital's acceptance.
+
+**Step 1: User Selects Hospital-First Mode**
+On the SOS page, the user toggles to "Hospital-First" mode (instead of the default Ambulance-First).
+
+**Step 2: Someone Hits SOS**
+A person experiencing an emergency opens the ResQNet app and selects the type of emergency: cardiac, accident, fire, breathing difficulty, stroke, flood, or other. They fill in basic information — patient's name, phone number, and a description of what's happening. The app automatically captures the location using GPS.
+
+**Step 3: AI Triage Happens in Milliseconds**
 The moment the SOS is submitted, our AI triage system immediately analyzes the emergency. It considers:
 - The type of emergency (cardiac emergencies are treated differently than accidents)
 - The description provided (keywords like "not breathing" or "chest pain" indicate higher severity)
@@ -67,37 +125,35 @@ The AI classifies the emergency on a 1-5 severity scale:
 - **Severity 4 (Critical)**: Life-threatening, immediate response needed
 - **Severity 5 (Extreme)**: Immediate life risk, all hands on deck
 
-This classification determines the urgency of response and what kind of ambulance is needed.
+**Step 4: Hospital Matching and Alert**
+ResQNet immediately alerts nearby hospitals that meet the criteria (available beds, required specialties). Hospitals see the emergency details — severity, type, patient condition, ETA — and can accept or reject incoming patients.
 
-**Step 3: Smart Ambulance Dispatch**
-Our dispatch system doesn't just find the nearest ambulance — it finds the **right** ambulance. It considers:
+**Step 5: Hospital Accepts → Ambulance Dispatched**
+Only when a hospital accepts the emergency does the system dispatch an ambulance. This ensures the hospital is prepared before the patient arrives, eliminating the devastating situation of arriving at a hospital that can't help.
+
+**Step 6: Smart Ambulance Dispatch**
+When the hospital accepts, our dispatch system finds the **right** ambulance:
 - **Location**: Which ambulances are closest to the patient?
-- **Equipment Level**: Does the ambulance have basic life support, advanced life support, or critical care equipment? A cardiac emergency needs critical care, while a minor injury might only need basic support.
+- **Equipment Level**: Does the ambulance have basic, advanced, or critical care equipment?
 - **Availability**: Is the ambulance currently free?
-- **Current Status**: Is the ambulance already dispatched to another emergency?
 
-The system ranks all available ambulances and automatically dispatches the best match.
+**Step 7: Real-Time Tracking**
+Once an ambulance is dispatched, everyone can track it in real-time on a map. The ambulance's GPS location is updated continuously via WebSockets. ETA calculations use OSRM routing.
 
-**Step 4: Hospital Matching**
-At the same time, ResQNet checks nearby hospitals for:
-- **Bed Availability**: Does the hospital have open beds (general or ICU)?
-- **Required Specialties**: For a cardiac emergency, does the hospital have a cardiology department? For stroke, does it have neurology?
-- **Distance**: How far is the hospital from the patient's location?
+**Step 8: Resolution and Feedback**
+When the emergency is resolved, patients can provide feedback — rating the ambulance driver, the hospital, and the overall system.
 
-This ensures patients are routed directly to facilities that can actually help them, avoiding the devastating situation of being turned away.
+---
 
-**Step 5: Real-Time Tracking Begins**
-Once an ambulance is dispatched, everyone can track it in real-time on a map. The ambulance's GPS location is updated continuously and broadcast via WebSockets to the patient, the hospital, and the admin dashboard. ETA calculations are updated based on actual traffic and road conditions using OSRM (Open Source Routing Machine).
+### Shared Infrastructure Across Both Flows
 
-**Step 6: Connected Communication**
-Throughout the emergency, all parties can communicate through the app:
-- The patient can see when the ambulance is coming
-- The driver can see the best route and access patient details
-- The hospital can prepare for arrival (alert the ER team, prepare an ICU bed)
-- The family can see status updates without clogging up phone lines
+**AI Triage**: Both flows use the same AI triage engine — severity classification, equipment recommendations, hospital preferences, and role-specific guidance are identical.
 
-**Step 7: Resolution and Feedback**
-When the emergency is resolved, patients can provide feedback on their experience — rating the ambulance driver, the hospital, and the overall system. This data helps improve future responses.
+**Real-Time Tracking**: Once dispatched, both flows use the same GPS tracking and WebSocket infrastructure.
+
+**Hospital Acceptance**: In both flows, hospitals can accept or reject incoming emergencies. The only difference is timing: in Hospital First, ambulance dispatch waits for hospital acceptance; in Ambulance First, the ambulance is already locked but hospital acceptance still gates the final routing.
+
+**Chat and Notifications**: All real-time chat threads, status updates, and notifications work identically in both flows.
 
 ---
 
@@ -139,16 +195,54 @@ Once an ambulance is dispatched, its location is tracked continuously. This is a
 
 **Multi-Party Visibility**: Not just the patient — the hospital staff preparing for arrival and the admin monitoring the system also see the ambulance's location and ETA.
 
-### Hospital Coordination System
+### Ambulance-First Dispatch System (Default)
 
-One of ResQNet's most innovative features is hospital-first dispatch. In this flow:
+The default Ambulance-First flow is designed for the common 108 emergency scenario where the dispatcher shares the ambulance number with the caller. This enables faster dispatch by preselecting the ambulance before emergency details are submitted.
+
+**Unique Locality-Coded IDs**: Each ambulance has a unique identifier structured as `{LOCALITY}{ZONE}-{SEQUENCE}`, for example `HYD01-001` for the first ambulance in Hyderabad zone 01. This makes ambulance IDs:
+- Easy to share verbally (over phone, in person)
+- Quick to look up in the system
+- Region-specific for better fleet management
+
+**Search by Vehicle Number**: The user searches for the ambulance by its `vehicleNumber`. The backend supports `GET /api/ambulance/search?vehicleNumber=HYD01-001&lat=...&lng=...` which:
+- Validates the ambulance exists
+- Returns current location and status
+- Recalculates distance from user's location
+- Enables live location streaming confirmation
+
+**Preselected Ambulance Locking**: Once selected, the ambulance is locked to this emergency. The `flowType` is set to `"ambulance_first"` and `assignedAmbulance` is set at creation time. The ambulance is immediately dispatched after emergency details are submitted.
+
+**Live Location Streaming**: After selection, the user's UI shows the ambulance's real-time GPS location as it updates. This confirms they're tracking the correct ambulance that is en route to them.
+
+**Seeded Ambulance Data**: The seed script generates locality-coded ambulance IDs (HYD01-001 through HYD03-010, etc.) with random locations for testing. Each ambulance has:
+- Unique `vehicleNumber` (e.g., `HYD01-001`)
+- Linked `driver` and `linkedHospital`
+- Random initial location within Hyderabad bounds
+- Random equipment level and status
+
+### Hospital Coordination System (Ambulance-First Flow)
+
+In the Ambulance-First flow, hospital coordination happens after dispatch:
+
+1. After the user submits emergency details with a preselected ambulance, AI triage runs
+2. The system returns hospital suggestions based on proximity, available beds, and required specialties
+3. The user selects a hospital from the suggestions
+4. The selected hospital receives an alert with emergency details — severity, type, patient condition, ETA
+5. The hospital can accept or reject the incoming patient
+6. If accepted, the hospital prepares (ER team, ICU bed, required specialists) before patient arrival
+
+This approach means the ambulance is already moving while hospital coordination happens in parallel, reducing overall response time.
+
+### Hospital-First Alternative Flow
+
+In this alternative flow:
 
 1. When an SOS comes in, the system immediately alerts nearby hospitals that meet the criteria (available beds, required specialties)
 2. Hospitals see the emergency details — severity, type, patient condition, ETA
 3. The hospital can accept or reject the incoming patient
 4. If accepted, the ambulance is dispatched with the hospital already prepared
 
-This "receive first, then dispatch" approach means hospitals aren't caught off-guard, and patients don't arrive at facilities that can't help them.
+This "receive first, then dispatch" approach means hospitals aren't caught off-guard, and patients don't arrive at facilities that can't help them. However, it takes longer than Ambulance-First since dispatch waits for hospital acceptance.
 
 ### Smart Ambulance Dispatch
 
@@ -287,24 +381,45 @@ The ResQNet system consists of three main layers:
 
 ### Data Flow Example: Creating an Emergency
 
-Here's what happens when a patient creates an SOS:
+#### Ambulance-First Flow (Default)
 
-1. **User submits SOS form** in React app (e.g., React Router sends POST to `/api/emergency`)
-2. **Axios sends request** to `VITE_API_URL/api/emergency`
-3. **Express receives request** at `POST /api/emergency`
-4. **Rate limiter checks** if user has exceeded 100 requests in 15 minutes
-5. **Auth middleware verifies** JWT token is valid
-6. **Emergency controller creates** emergency document in MongoDB
-7. **Triage service is called** — Gemini AI or rule-based fallback generates severity
-8. **Dispatch service runs** — finds nearest appropriate ambulance
-9. **Hospital service runs** — finds hospitals with available beds
-10. **Socket.io broadcasts** `emergency:created` event to all connected clients
-11. **Response returns** to user with emergency details and assigned resources
+Here's what happens when a patient creates an SOS using the Ambulance-First flow (e.g., ambulance ID "HYD01-001" was shared by the 108 dispatcher):
 
-Meanwhile:
-- **Driver app** receives push notification via Socket.io
-- **Hospital dashboard** sees new incoming emergency
-- **Admin panel** updates with new emergency on map
+1. **User receives ambulance number** from 108 dispatcher
+2. **User searches ambulance** by vehicle number "HYD01-001" via `GET /api/ambulance/search`
+3. **User sees** ambulance details with live location, confirms selection
+4. **User submits SOS form** with preselected ambulance ID
+5. **Axios sends POST** to `/api/emergency` with `flowType: "ambulance_first"` and `selectedAmbulanceId: "HYD01-001"`
+6. **Express receives request**, rate limiter and auth check pass
+7. **Emergency controller creates** emergency with `assignedAmbulance` already set, `status: "dispatched"`
+8. **Triage service runs** — Gemini AI or rule-based fallback generates severity, equipment, hospital preferences
+9. **Hospital suggestions returned** to user (hospitals not alerted yet)
+10. **User selects hospital** via `POST /api/emergency/:id/select-hospital`
+11. **Selected hospital receives alert**, can accept/reject
+12. **Ambulance dispatched immediately** (was already preselected)
+13. **Socket.io broadcasts** `emergency:created` and status updates to all parties
+14. **Driver app** receives dispatch notification immediately
+15. **Response returns** to user with ambulance details and hospital suggestions
+
+**Key Advantage**: The ambulance starts moving immediately after emergency submission. Hospital acceptance happens in parallel, so the ambulance is already en route while the hospital prepares.
+
+#### Hospital-First Flow (Alternative)
+
+Here's what happens when a patient creates an SOS using the Hospital-First flow:
+
+1. **User submits SOS form** in React app (type: "cardiac", location, patient info) with `flowType: "hospital_first"`
+2. **Axios sends POST** to `/api/emergency`
+3. **Express receives request**, rate limiter and auth check pass
+4. **Emergency controller creates** emergency with `status: "pending"` and `assignedAmbulance: null`
+5. **Triage service runs** — generates severity, equipment, hospital preferences
+6. **Hospital service finds** matching hospitals (available beds, required specialties)
+7. **Socket.io broadcasts** `emergency:created` to hospital dashboards
+8. **Hospital accepts** via `PATCH /api/hospitals/me/requests/:id/decision`
+9. **Dispatch service finds** and assigns appropriate ambulance
+10. **Emergency status updates** to "dispatched", Socket.io notifies all parties
+11. **Response returns** to user with assigned ambulance and hospital
+
+**Key Difference**: Hospital acceptance gates ambulance dispatch. The Ambulance-First flow is faster (immediate dispatch) but Hospital-First ensures hospital readiness before ambulance moves.
 
 ---
 
@@ -317,6 +432,8 @@ We use a single User collection with a role field (user/driver/hospital/admin) r
 
 **Emergencies Collection**
 The Emergency model is the heart of our system. It's designed as a state machine tracking the emergency from creation to resolution. The document includes:
+- **flowType**: `"ambulance_first"` (default) or `"hospital_first"` — determines dispatch order
+- **assignedAmbulance**: Set immediately in ambulance-first flow at creation time, or after hospital acceptance in hospital-first flow
 - Location stored as GeoJSON for geospatial queries
 - Full triage result from AI (structured JSON with severity, equipment, guidance)
 - Links to assigned ambulance and hospital
@@ -356,15 +473,28 @@ We verify the password against the stored hash, then generate a JWT token valid 
 ### Emergency Endpoints
 
 **POST /api/emergency (Create SOS)**
-This is the most complex endpoint. It:
+This is the most complex endpoint, handling both flows:
+
+For **Ambulance-First** (default, `flowType: "ambulance_first"`):
+1. Validates input including preselected ambulance ID
+2. Runs AI triage
+3. Saves the emergency with preselected ambulance already assigned
+4. Immediately sets status to "dispatched" and notifies driver
+5. Returns hospital suggestions for user to select (hospitals not alerted yet)
+6. Broadcasts via Socket.io
+
+For **Hospital-First** (`flowType: "hospital_first"`):
 1. Validates input (type, location, patient info)
 2. Runs AI triage
 3. Saves the emergency with triage results
-4. Optionally triggers ambulance dispatch based on flow type
-5. Optionally alerts hospitals
+4. Finds matching hospitals and alerts them
+5. Waits for hospital acceptance before dispatching ambulance
 6. Broadcasts via Socket.io
 
 The endpoint is rate-limited (100 requests per 15 minutes per IP) to prevent abuse.
+
+**POST /api/emergency/:id/select-hospital**
+Used in Ambulance-First flow to select a hospital after emergency creation. The ambulance is already dispatched, but this step alerts the selected hospital so they can prepare.
 
 **PATCH /api/emergency/:id/status**
 Status transitions follow a strict flow:
@@ -374,8 +504,15 @@ Status transitions follow a strict flow:
 
 ### Ambulance Endpoints
 
+**GET /api/ambulance/search**
+Search for a specific ambulance by its unique vehicle number. This is the **entry point for the Ambulance-First flow**. Supports optional location for distance calculation:
+```
+GET /api/ambulance/search?vehicleNumber=HYD01-001&lat=17.36&lng=78.47
+```
+Returns ambulance details including current location, status, equipment level, and distance from the provided coordinates.
+
 **GET /api/ambulance/nearest**
-Uses MongoDB's geospatial query to find ambulances within a radius, sorted by distance. Filters by equipment level and availability.
+Uses MongoDB's geospatial query to find ambulances within a radius, sorted by distance. Filters by equipment level and availability. Used primarily by Hospital-First flow for dispatch assignment.
 
 ### Hospital Endpoints
 
