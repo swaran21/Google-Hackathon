@@ -459,7 +459,7 @@ export default function HospitalPage() {
       >
         <Loader2
           size={34}
-          style={{ color: "#22c55e", animation: "spin 1s linear infinite" }}
+          style={{ color: "#166534", animation: "spin 1s linear infinite" }}
         />
         <span
           style={{
@@ -505,7 +505,7 @@ export default function HospitalPage() {
                 fontSize: "10px",
                 textTransform: "uppercase",
                 letterSpacing: "0.14em",
-                color: "#22c55e",
+                color: "#166534",
                 fontWeight: 800,
                 marginBottom: "5px" }}
             >
@@ -838,7 +838,7 @@ export default function HospitalPage() {
                           fontWeight: 900,
                           textTransform: "uppercase",
                           letterSpacing: "0.08em",
-                          color: "#60a5fa" }}
+                          color: "#1d4ed8" }}
                       >
                         AI Hospital Prep Suggestions
                       </p>
@@ -1147,7 +1147,7 @@ export default function HospitalPage() {
                           style={{
                             margin: "4px 0 0",
                             fontSize: "12px",
-                            color: "#86efac",
+                            color: "#10b981",
                             fontWeight: 700 }}
                         >
                           Avg Cost:{" "}
@@ -1354,7 +1354,7 @@ function actionButtonStyle(kind, disabled = false) {
       ...base,
       border: "1px solid var(--bg-card)",
       background: "var(--bg-card)",
-      color: "#86efac",
+      color: "#10b981",
     };
   }
 
@@ -1372,7 +1372,7 @@ function actionButtonStyle(kind, disabled = false) {
       ...base,
       border: "1px solid var(--bg-card)",
       background: "var(--bg-card)",
-      color: "#fcd34d",
+      color: "#d97706",
     };
   }
 
@@ -1390,7 +1390,7 @@ const createMiniIcon = (emoji, color) =>
   });
 const miniAmbIcon = createMiniIcon("🚑", "#ef4444");
 const miniPatientIcon = createMiniIcon("🆘", "#f97316");
-const miniHospIcon = createMiniIcon("🏥", "#3b82f6");
+const miniHospIcon = createMiniIcon("🏥", "#1e40af");
 
 function HospitalTrackingMap({
   ambulance,
@@ -1422,7 +1422,7 @@ function HospitalTrackingMap({
   const routeColor =
     (activeRoute?.phase || (isPhase2 ? "to_hospital" : "to_patient")) ===
     "to_hospital"
-      ? "#3b82f6"
+      ? "#1e40af"
       : "#ef4444";
 
   const tileUrl = isDark

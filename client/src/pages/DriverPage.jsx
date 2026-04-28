@@ -38,7 +38,7 @@ const createMarkerIcon = (emoji, color, glowing = false) =>
   });
 const ambIcon = createMarkerIcon("🚑", "#ef4444", true);
 const emIcon = createMarkerIcon("🆘", "#f97316", true);
-const hospIcon = createMarkerIcon("🏥", "#3b82f6");
+const hospIcon = createMarkerIcon("🏥", "#1e40af");
 
 function RecenterMap({ center }) {
   const map = useMap();
@@ -313,7 +313,7 @@ export default function DriverPage() {
     if (Array.isArray(activeRoute?.path) && activeRoute.path.length > 1) {
       return {
         positions: activeRoute.path,
-        color: activeRoute.phase === "to_hospital" ? "#3b82f6" : "#ef4444",
+        color: activeRoute.phase === "to_hospital" ? "#1e40af" : "#ef4444",
         label:
           activeRoute.phase === "to_hospital" ? "To Hospital" : "To Patient",
       };
@@ -322,7 +322,7 @@ export default function DriverPage() {
     if (isPhase2 && coords.hosp) {
       return {
         positions: [coords.amb, coords.hosp],
-        color: "#3b82f6",
+        color: "#1e40af",
         label: "To Hospital",
       };
     }
@@ -368,7 +368,7 @@ export default function DriverPage() {
     if (amb.status === "dispatched")
       return {
         label: "AWAITING ACCEPT",
-        color: "#facc15",
+        color: "#ca8a04",
         bg: "var(--bg-card)",
       };
     if (amb.status === "en_route")
@@ -380,7 +380,7 @@ export default function DriverPage() {
     if (amb.status === "at_scene" && em.assignedHospital)
       return {
         label: "PHASE 2: TRANSPORTING TO HOSPITAL",
-        color: "#3b82f6",
+        color: "#1e40af",
         bg: "var(--bg-card)",
       };
     if (amb.status === "at_scene")
@@ -573,7 +573,7 @@ export default function DriverPage() {
                 gap: "10px",
                 borderRadius: "14px" }}
             >
-              <Activity size={16} style={{ color: "#22c55e" }} />
+              <Activity size={16} style={{ color: "#166534" }} />
               <span
                 style={{
                   fontSize: "11px",
@@ -596,7 +596,7 @@ export default function DriverPage() {
                 background: amb?.isActive
                   ? "var(--bg-card)"
                   : "var(--bg-card)",
-                color: amb?.isActive ? "#22c55e" : "#ef4444",
+                color: amb?.isActive ? "#166534" : "#ef4444",
                 fontSize: "11px",
                 fontWeight: 800,
                 textTransform: "uppercase",
@@ -835,7 +835,7 @@ export default function DriverPage() {
                       style={{
                         fontSize: "10px",
                         fontWeight: 800,
-                        color: "#f59e0b",
+                        color: "#b45309",
                         textTransform: "uppercase",
                         letterSpacing: "0.08em" }}
                     >
@@ -952,7 +952,7 @@ export default function DriverPage() {
                       actionBtn(
                         () => setShowDispatchPanel(true),
                         "var(--bg-card)",
-                        "#93c5fd",
+                        "#1d4ed8",
                         <Truck size={16} />,
                         "OPEN CHAT & CALL",
                         { border: "1px solid var(--bg-card)" },
@@ -962,7 +962,7 @@ export default function DriverPage() {
                       gpsStreaming
                         ? "var(--bg-card)"
                         : "var(--bg-card)",
-                      gpsStreaming ? "#86efac" : "#fcd34d",
+                      gpsStreaming ? "#10b981" : "#d97706",
                       gpsStreaming ? <Pause size={16} /> : <Play size={16} />,
                       gpsStreaming ? "STOP LIVE GPS" : "START LIVE GPS",
                       {
@@ -980,7 +980,7 @@ export default function DriverPage() {
                               { ambulanceId: amb._id },
                               "Mission Accepted",
                             ),
-                          "#16a34a",
+                          "#14532d",
                           "#fff",
                           <CheckCircle2 size={16} />,
                           "ACCEPT DISPATCH",
@@ -1005,7 +1005,7 @@ export default function DriverPage() {
                       <>
                         {actionBtn(
                           simulating ? stopSimulation : startSimulation,
-                          simulating ? "var(--bg-card)" : "#2563eb",
+                          simulating ? "var(--bg-card)" : "#1e3a8a",
                           simulating ? "#eab308" : "#fff",
                           simulating ? <Pause size={16} /> : <Play size={16} />,
                           simulating ? "PAUSE GPS" : "NAVIGATE TO PATIENT",
@@ -1032,7 +1032,7 @@ export default function DriverPage() {
                       <>
                         {actionBtn(
                           simulating ? stopSimulation : startSimulation,
-                          simulating ? "var(--bg-card)" : "#3b82f6",
+                          simulating ? "var(--bg-card)" : "#1e40af",
                           simulating ? "#eab308" : "#fff",
                           simulating ? <Pause size={16} /> : <Play size={16} />,
                           simulating ? "PAUSE GPS" : "NAVIGATE TO HOSPITAL",
@@ -1047,7 +1047,7 @@ export default function DriverPage() {
                               { ambulanceId: amb._id, status: "available" },
                               "Emergency Resolved — Patient Delivered",
                             ),
-                          "#16a34a",
+                          "#14532d",
                           "#fff",
                           <Shield size={16} />,
                           "COMPLETE MISSION",
@@ -1063,7 +1063,7 @@ export default function DriverPage() {
                             { ambulanceId: amb._id, status: "available" },
                             "Emergency Resolved",
                           ),
-                        "#16a34a",
+                        "#14532d",
                         "#fff",
                         <Shield size={16} />,
                         "COMPLETE MISSION & RETURN",
@@ -1231,7 +1231,7 @@ export default function DriverPage() {
                         fontWeight: 900,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        color: "#60a5fa" }}
+                        color: "#1d4ed8" }}
                     >
                       AI Equipment + Protocol Suggestions
                     </p>

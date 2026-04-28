@@ -33,7 +33,7 @@ const hospitalIcon = L.divIcon({
   html: `<div style="
     width: 30px;
     height: 30px;
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     border: 2px solid #fff;
     border-radius: 50%;
     box-shadow: 0 4px 12px var(--bg-card);
@@ -73,7 +73,7 @@ const assignedHospitalIcon = L.divIcon({
     width: 34px;
     height: 34px;
     background: #0a0a0f;
-    border: 2px solid #3b82f6;
+    border: 2px solid #1e40af;
     border-radius: 10px;
     box-shadow: 0 0 14px var(--bg-card);
     display: flex;
@@ -333,7 +333,7 @@ export default function TrackingMapCard({
                           padding: "4px",
                           fontFamily: "var(--font-family)" }}
                       >
-                        <span style={{ fontWeight: 800, color: "#3b82f6" }}>
+                        <span style={{ fontWeight: 800, color: "#1e40af" }}>
                           Destination: {assignedHospital?.name}
                         </span>
                       </div>
@@ -382,7 +382,7 @@ export default function TrackingMapCard({
                     (activeRoute?.phase ||
                       (isPhase2 ? "to_hospital" : "to_patient")) ===
                     "to_hospital"
-                      ? "#3b82f6"
+                      ? "#1e40af"
                       : "#ef4444";
 
                   return (
@@ -689,8 +689,8 @@ export default function TrackingMapCard({
               letterSpacing: "0.05em",
               color: "var(--text-secondary)" }}
           >
-            <Activity size={14} style={{ color: "#22c55e" }} /> 
-            FLEET HEALTH: <span style={{ color: "#22c55e" }}>OPTIMAL</span>
+            <Activity size={14} style={{ color: "#166534" }} /> 
+            FLEET HEALTH: <span style={{ color: "#166534" }}>OPTIMAL</span>
           </div>
           <div
             className="neu-card"

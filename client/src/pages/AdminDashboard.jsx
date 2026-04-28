@@ -97,15 +97,15 @@ const emergencyIcon = createIcon({
 
 const ambulanceIcon = createIcon({
   emoji: "🚑",
-  color: "linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)",
+  color: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
   borderColor: "#bfdbfe",
   shadowColor: "rgba(59, 130, 246, 0.45)",
 });
 
 const hospitalIcon = createIcon({
   emoji: "🏥",
-  color: "linear-gradient(135deg, #15803d 0%, #22c55e 100%)",
-  borderColor: "#bbf7d0",
+  color: "linear-gradient(135deg, #15803d 0%, #166534 100%)",
+  borderColor: "#6ee7b7",
   shadowColor: "rgba(34, 197, 94, 0.45)",
 });
 
@@ -338,12 +338,12 @@ function EmergencyRow({ emergency }) {
           justifyContent: "flex-end" }}
       >
         {emergency.eta != null && (
-          <StatusPill color="#60a5fa" background="var(--bg-card)">
+          <StatusPill color="#1d4ed8" background="var(--bg-card)">
             ETA {formatETA(emergency.eta)}
           </StatusPill>
         )}
         {emergency.assignedAmbulance && (
-          <StatusPill color="#93c5fd" background="var(--bg-card)">
+          <StatusPill color="#1d4ed8" background="var(--bg-card)">
             🚑 {emergency.assignedAmbulance.vehicleNumber}
           </StatusPill>
         )}
@@ -385,7 +385,7 @@ function HospitalRow({ hospital }) {
             {hospital.address}
           </div>
         </div>
-        <StatusPill color="#4ade80" background="var(--bg-card)">
+        <StatusPill color="#15803d" background="var(--bg-card)">
           {formatPercent(readiness)} ready
         </StatusPill>
       </div>
@@ -405,7 +405,7 @@ function HospitalRow({ hospital }) {
           </div>
           <ProgressBar
             value={bedPct}
-            color="linear-gradient(90deg, #22c55e 0%, #4ade80 100%)"
+            color="linear-gradient(90deg, #166534 0%, #15803d 100%)"
           />
         </div>
         <div>
@@ -501,28 +501,28 @@ function SystemHealthCard({ health }) {
             Core services and runtime status
           </div>
         </div>
-        <ShieldCheck size={18} style={{ color: "#22c55e" }} />
+        <ShieldCheck size={18} style={{ color: "#166534" }} />
       </div>
       <div style={{ display: "grid", gap: "2px" }}>
         <HealthRow
           label="Database"
           value={health.database}
-          tone={HEALTH_COLORS[health.database] || "#60a5fa"}
+          tone={HEALTH_COLORS[health.database] || "#1d4ed8"}
         />
         <HealthRow
           label="Socket room"
           value={health.socketio}
-          tone={HEALTH_COLORS[health.socketio] || "#60a5fa"}
+          tone={HEALTH_COLORS[health.socketio] || "#1d4ed8"}
         />
         <HealthRow
           label="Triage"
           value={health.triage}
-          tone={HEALTH_COLORS[health.triage] || "#60a5fa"}
+          tone={HEALTH_COLORS[health.triage] || "#1d4ed8"}
         />
         <HealthRow
           label="Routing"
           value={health.routing}
-          tone={HEALTH_COLORS[health.routing] || "#60a5fa"}
+          tone={HEALTH_COLORS[health.routing] || "#1d4ed8"}
         />
         <HealthRow
           label="Notifications"
@@ -638,10 +638,10 @@ function EmergencyMapCard({ emergencies, ambulances, hospitals }) {
             flexWrap: "wrap",
             justifyContent: "flex-end" }}
         >
-          <StatusPill color="#60a5fa" background="var(--bg-card)">
+          <StatusPill color="#1d4ed8" background="var(--bg-card)">
             {emergencies.length} incidents
           </StatusPill>
-          <StatusPill color="#22c55e" background="var(--bg-card)">
+          <StatusPill color="#166534" background="var(--bg-card)">
             {ambulances.length} ambulances
           </StatusPill>
           <StatusPill color="#f97316" background="var(--bg-card)">
@@ -1009,7 +1009,7 @@ export default function AdminDashboard() {
             label="Available Ambulances"
             value={formatNumber(ambulanceTotals.available)}
             sub={`${formatNumber(ambulanceTotals.total)} fleet size`}
-            color="#3b82f6"
+            color="#1e40af"
             accent="var(--bg-card)"
           />
           <StatCard
@@ -1017,7 +1017,7 @@ export default function AdminDashboard() {
             label="Beds Available"
             value={formatNumber(hospitalTotals.availableBeds)}
             sub={`${formatNumber(hospitalTotals.totalBeds)} total capacity`}
-            color="#22c55e"
+            color="#166534"
             accent="var(--bg-card)"
           />
           <StatCard
@@ -1196,7 +1196,7 @@ export default function AdminDashboard() {
               subtitle="Status, equipment level, and rating-aware fleet signal for the whole response layer."
               icon={Activity}
               right={
-                <StatusPill color="#60a5fa" background="var(--bg-card)">
+                <StatusPill color="#1d4ed8" background="var(--bg-card)">
                   {ambulances.length} units
                 </StatusPill>
               }
@@ -1314,7 +1314,7 @@ export default function AdminDashboard() {
               subtitle="Bed and ICU balance across the network, weighted for fast triage decisions."
               icon={Building2}
               right={
-                <StatusPill color="#4ade80" background="var(--bg-card)">
+                <StatusPill color="#15803d" background="var(--bg-card)">
                   {hospitals.length} hospitals
                 </StatusPill>
               }
@@ -1515,7 +1515,7 @@ export default function AdminDashboard() {
               subtitle="Recent dispatch messages and simulated notification events."
               icon={BellRing}
               right={
-                <StatusPill color="#60a5fa" background="var(--bg-card)">
+                <StatusPill color="#1d4ed8" background="var(--bg-card)">
                   {notificationFeed.length} recent
                 </StatusPill>
               }
@@ -1702,7 +1702,7 @@ export default function AdminDashboard() {
             subtitle="Capacity-aware routing view for the entire care network."
             icon={Building2}
             right={
-              <StatusPill color="#22c55e" background="var(--bg-card)">
+              <StatusPill color="#166534" background="var(--bg-card)">
                 {hospitalTotals.availableBeds} beds open
               </StatusPill>
             }

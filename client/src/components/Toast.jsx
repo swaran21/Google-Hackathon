@@ -21,10 +21,10 @@ export default function ToastProvider({ children }) {
   const removeToast = (id) => { setToasts((prev) => prev.filter((t) => t.id !== id)); };
 
   const config = {
-    success: { icon: <CheckCircle2 size={18} />, color: '#4ade80', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
+    success: { icon: <CheckCircle2 size={18} />, color: '#15803d', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
     error:   { icon: <XCircle size={18} />,      color: '#fca5a5', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
-    warning: { icon: <AlertTriangle size={18} />, color: '#facc15', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
-    info:    { icon: <Info size={18} />,          color: '#60a5fa', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
+    warning: { icon: <AlertTriangle size={18} />, color: '#ca8a04', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
+    info:    { icon: <Info size={18} />,          color: '#1d4ed8', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
     dispatch:{ icon: <Navigation size={18} />,    color: '#fb923c', bg: 'var(--bg-card)', border: 'var(--bg-card)' },
   };
 

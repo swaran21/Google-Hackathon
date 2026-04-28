@@ -15,7 +15,7 @@ const getStatusTheme = (status) => {
     case "dispatched":
       return { color: "var(--color-info)", label: "DISP", icon: "→" };
     case "en_route":
-      return { color: "#f59e0b", label: "ROUTE", icon: "🚑" };
+      return { color: "#b45309", label: "ROUTE", icon: "🚑" };
     case "at_scene":
       return { color: "#fb923c", label: "SCENE", icon: "⚠" };
     case "returning":

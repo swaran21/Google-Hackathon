@@ -23,21 +23,21 @@ const HIGHLIGHTS = [
     body:
       "Routes ambulances using live distance and ETA instead of straight-line guesses.",
     icon: <Navigation size={22} />,
-    color: "#2563eb",
+    color: "#1e3a8a",
   },
   {
     title: "Capacity-aware hospitals",
     body:
       "Matches hospitals by beds, ICU capacity, and specialty fit.",
     icon: <Building2 size={22} />,
-    color: "#22c55e",
+    color: "#166534",
   },
 ];
 
 const FLOW_CARDS = [
   {
     title: "Ambulance-first flow",
-    tone: "#22c55e",
+    tone: "#166534",
     steps: [
       "Caller receives ambulance vehicle number",
       "Vehicle is verified in SOS console",
@@ -48,7 +48,7 @@ const FLOW_CARDS = [
   },
   {
     title: "Hospital-first flow",
-    tone: "#2563eb",
+    tone: "#1e3a8a",
     steps: [
       "User shares emergency type and location",
       "AI triage suggests required care level",

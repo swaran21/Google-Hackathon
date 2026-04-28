@@ -322,7 +322,7 @@ export default function HospitalSignupPage() {
               alignItems: "center",
               justifyContent: "center" }}
           >
-            <Building2 size={28} style={{ color: "#3b82f6" }} />
+            <Building2 size={28} style={{ color: "#1e40af" }} />
           </div>
           <h1
             style={{
@@ -331,7 +331,7 @@ export default function HospitalSignupPage() {
               letterSpacing: "-0.03em",
               marginBottom: "4px" }}
           >
-            Hospital <span style={{ color: "#3b82f6" }}>Portal</span>
+            Hospital <span style={{ color: "#1e40af" }}>Portal</span>
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>
             {tab === "signup"
@@ -365,7 +365,7 @@ export default function HospitalSignupPage() {
                 borderRadius: "10px",
                 border: "none",
                 background: tab === t ? "var(--bg-card)" : "transparent",
-                color: tab === t ? "#3b82f6" : "var(--text-muted)",
+                color: tab === t ? "#1e40af" : "var(--text-muted)",
                 fontWeight: 700,
                 fontSize: "0.88rem",
                 fontFamily: "var(--font-family)",
@@ -536,7 +536,7 @@ export default function HospitalSignupPage() {
                   style={{
                     background: "var(--bg-card)",
                     border: "1px solid var(--bg-card)",
-                    color: "#3b82f6",
+                    color: "#1e40af",
                     fontSize: "11px",
                     fontWeight: 700,
                     padding: "4px 10px",
@@ -625,7 +625,7 @@ export default function HospitalSignupPage() {
                 <p
                   style={{
                     fontSize: "11px",
-                    color: "#22c55e",
+                    color: "#166534",
                     marginTop: "4px",
                     display: "flex",
                     alignItems: "center",
@@ -840,7 +840,7 @@ export default function HospitalSignupPage() {
                 padding: "14px",
                 borderRadius: "14px",
                 border: "none",
-                background: "linear-gradient(135deg,#3b82f6,#2563eb)",
+                background: "linear-gradient(135deg,#1e40af,#1e3a8a)",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "0.95rem",
@@ -941,7 +941,7 @@ export default function HospitalSignupPage() {
                 padding: "14px",
                 borderRadius: "14px",
                 border: "none",
-                background: "linear-gradient(135deg,#3b82f6,#2563eb)",
+                background: "linear-gradient(135deg,#1e40af,#1e3a8a)",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "0.95rem",
@@ -988,7 +988,7 @@ export default function HospitalSignupPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#3b82f6",
+                  color: "#1e40af",
                   fontWeight: 700,
                   cursor: "pointer",
                   fontFamily: "var(--font-family)" }}

@@ -30,7 +30,7 @@ const COLORS = {
   red: "#ef4444",
   rose: "#f43f5e",
   orange: "#f97316",
-  blue: "#2563EB", // Updated for high contrast
+  blue: "#1e3a8a", // Updated for high contrast
   purple: "#a855f7",
   cyan: "#0891B2", // Updated for high contrast
 };
@@ -658,7 +658,7 @@ export default function SOSPage() {
                       : "transparent",
                   color:
                     flowMode === "ambulance_first"
-                      ? "#bbf7d0"
+                      ? "#6ee7b7"
                       : "var(--text-muted)",
                   fontWeight: 800,
                   fontSize: "11px",
@@ -690,7 +690,7 @@ export default function SOSPage() {
                     fontWeight: 800,
                     textTransform: "uppercase",
                     letterSpacing: "0.12em",
-                    color: "#bbf7d0",
+                    color: "#6ee7b7",
                     marginBottom: "8px",
                   }}
                 >
@@ -723,7 +723,7 @@ export default function SOSPage() {
                     style={{
                       borderRadius: "12px",
                       border: "none",
-                      background: "#16a34a",
+                      background: "#14532d",
                       color: "#dcfce7",
                       padding: "10px 12px",
                       fontWeight: 800,
@@ -767,7 +767,7 @@ export default function SOSPage() {
                       <p
                         style={{
                           fontSize: "11px",
-                          color: "#86efac",
+                          color: "#10b981",
                           marginTop: "4px",
                           fontWeight: 700,
                         }}
@@ -1141,7 +1141,7 @@ export default function SOSPage() {
                   fontWeight: 800,
                   textTransform: "uppercase",
                   letterSpacing: "0.12em",
-                  color: "#bbf7d0",
+                  color: "#6ee7b7",
                   marginBottom: "4px",
                 }}
               >

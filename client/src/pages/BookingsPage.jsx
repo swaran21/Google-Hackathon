@@ -61,9 +61,9 @@ export default function BookingsPage() {
       case "dispatched":
       case "en_route":
       case "at_scene":
-        return <Activity size={20} color="#3b82f6" />;
+        return <Activity size={20} color="#1e40af" />;
       case "resolved":
-        return <CheckCircle size={20} color="#22c55e" />;
+        return <CheckCircle size={20} color="#166534" />;
       case "cancelled":
         return <XCircle size={20} color="#ef4444" />;
       default:
@@ -349,7 +349,7 @@ export default function BookingsPage() {
                             gap: "12px" }}
                         >
                           <div
-                            className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#3b82f6" }}
+                            className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#1e40af" }}
                           >
                             <Building size={20} />
                           </div>
@@ -374,7 +374,7 @@ export default function BookingsPage() {
                             <p
                               style={{
                                 fontSize: "0.8rem",
-                                color: "#f59e0b",
+                                color: "#b45309",
                                 marginTop: "4px",
                                 fontWeight: 700 }}
                             >
@@ -422,7 +422,7 @@ export default function BookingsPage() {
                             <p
                               style={{
                                 fontSize: "0.8rem",
-                                color: "#f59e0b",
+                                color: "#b45309",
                                 marginTop: "4px",
                                 fontWeight: 700 }}
                             >
@@ -457,10 +457,10 @@ export default function BookingsPage() {
                             </div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "12px" }}>
                               <div className="neu-card" style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "12px", fontWeight: 700 }}>
-                                Driver: <span style={{ color: "#f59e0b" }}>{renderStars(em.feedback?.driverRating)}</span>
+                                Driver: <span style={{ color: "#b45309" }}>{renderStars(em.feedback?.driverRating)}</span>
                               </div>
                               <div className="neu-card" style={{ padding: "8px 12px", borderRadius: "10px", fontSize: "12px", fontWeight: 700 }}>
-                                Hospital: <span style={{ color: "#f59e0b" }}>{renderStars(em.feedback?.hospitalRating)}</span>
+                                Hospital: <span style={{ color: "#b45309" }}>{renderStars(em.feedback?.hospitalRating)}</span>
                               </div>
                             </div>
                           </>
@@ -515,7 +515,7 @@ export default function BookingsPage() {
                             onClick={() => (window.location.href = "/sos")}
                             style={{
                               padding: "10px 20px",
-                              background: "#22c55e",
+                              background: "#166534",
                               color: "#052e16",
                               border: "none",
                               borderRadius: "12px",

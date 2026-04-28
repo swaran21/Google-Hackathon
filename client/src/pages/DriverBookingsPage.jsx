@@ -15,11 +15,11 @@ const EMERGENCY_LABELS = {
 };
 
 const STATUS_COLORS = {
-  pending: { color: "#facc15", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Pending" },
-  dispatched: { color: "#60a5fa", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Dispatched" },
-  en_route: { color: "#3b82f6", bg: "var(--bg-card)", border: "var(--bg-card)", label: "En Route" },
+  pending: { color: "#ca8a04", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Pending" },
+  dispatched: { color: "#1d4ed8", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Dispatched" },
+  en_route: { color: "#1e40af", bg: "var(--bg-card)", border: "var(--bg-card)", label: "En Route" },
   at_scene: { color: "#a855f7", bg: "var(--bg-card)", border: "var(--bg-card)", label: "At Scene" },
-  completed: { color: "#22c55e", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Completed" },
+  completed: { color: "#166534", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Completed" },
   cancelled: { color: "#ef4444", bg: "var(--bg-card)", border: "var(--bg-card)", label: "Cancelled" },
 };
 
@@ -71,7 +71,7 @@ export default function DriverBookingsPage() {
     return (
       <div className="page-enter" style={{ minHeight: "100vh", padding: "100px 20px", display: "flex", justifyContent: "center", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-          <Activity size={32} style={{ color: "#3b82f6", animation: "pulse 2s infinite" }} />
+          <Activity size={32} style={{ color: "#1e40af", animation: "pulse 2s infinite" }} />
           <span style={{ color: "var(--text-muted)", fontSize: "0.875rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Loading Your Dispatches...</span>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function DriverBookingsPage() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", background: "var(--bg-card)", padding: "16px", borderRadius: "16px", border: "1px solid transparent" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-            <div className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#3b82f6"  }}><User size={18} /></div>
+            <div className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#1e40af"  }}><User size={18} /></div>
             <div>
               <p style={{ fontWeight: 700, fontSize: "0.9rem" }}>Patient: {em.patientName}</p>
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}><Phone size={12} /> {em.patientPhone || "N/A"}</p>
@@ -113,7 +113,7 @@ export default function DriverBookingsPage() {
           </div>
           
           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-            <div className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#22c55e"  }}><Building2 size={18} /></div>
+            <div className="neu-inner" style={{  padding: "8px", borderRadius: "10px", color: "#166534"  }}><Building2 size={18} /></div>
             <div>
               <p style={{ fontWeight: 700, fontSize: "0.9rem" }}>{em.assignedHospital ? em.assignedHospital.name : "No Hospital"}</p>
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px" }}><BedStatus status={em.hospitalRequest?.status} /></p>
@@ -123,7 +123,7 @@ export default function DriverBookingsPage() {
         
         {["pending", "dispatched", "en_route", "at_scene"].includes(em.status) && (
           <div style={{ display: "flex", justifyContent: "flex-end", borderTop: "1px solid transparent", paddingTop: "16px", marginTop: "4px" }}>
-            <Link to="/driver" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#3b82f6", color: "#fff", textDecoration: "none", borderRadius: "12px", fontWeight: 800, transition: "all 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
+            <Link to="/driver" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "#1e40af", color: "#fff", textDecoration: "none", borderRadius: "12px", fontWeight: 800, transition: "all 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}>
               <Navigation size={18} /> Resume Mission
             </Link>
           </div>
@@ -137,7 +137,7 @@ export default function DriverBookingsPage() {
       <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
         
         <div style={{ marginBottom: "32px", display: "flex", alignItems: "center", gap: "16px" }}>
-          <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "var(--bg-card)", border: "1px solid var(--bg-card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#3b82f6" }}>
+          <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "var(--bg-card)", border: "1px solid var(--bg-card)", display: "flex", alignItems: "center", justifyContent: "center", color: "#1e40af" }}>
             <Truck size={32} />
           </div>
           <div>
@@ -159,7 +159,7 @@ export default function DriverBookingsPage() {
             {/* Ongoing Section */}
             {ongoing.length > 0 && (
               <div>
-                <h2 style={{ fontSize: "1rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#60a5fa", display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}><Activity size={18} /> Active Missions ({ongoing.length})</h2>
+                <h2 style={{ fontSize: "1rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#1d4ed8", display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}><Activity size={18} /> Active Missions ({ongoing.length})</h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {ongoing.map(renderEmergencyCard)}
                 </div>
@@ -169,7 +169,7 @@ export default function DriverBookingsPage() {
             {/* Completed Section */}
             {completed.length > 0 && (
               <div>
-                <h2 style={{ fontSize: "1rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#22c55e", display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}><CheckCircle2 size={18} /> Completed Missions ({completed.length})</h2>
+                <h2 style={{ fontSize: "1rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.15em", color: "#166534", display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}><CheckCircle2 size={18} /> Completed Missions ({completed.length})</h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {completed.map(renderEmergencyCard)}
                 </div>
@@ -195,8 +195,8 @@ export default function DriverBookingsPage() {
 }
 
 const BedStatus = ({ status }) => {
-  if (status === "accepted") return <span style={{ color: "#22c55e" }}>Bed Confirmed</span>;
+  if (status === "accepted") return <span style={{ color: "#166534" }}>Bed Confirmed</span>;
   if (status === "rejected") return <span style={{ color: "#ef4444" }}>Bed Rejected</span>;
-  if (status === "pending") return <span style={{ color: "#facc15" }}>Awaiting Bed</span>;
+  if (status === "pending") return <span style={{ color: "#ca8a04" }}>Awaiting Bed</span>;
   return <span>Hospital Notified</span>;
 };

@@ -1,4 +1,4 @@
-import { PhoneCall, Send, X, ShieldCheck, Activity, XCircle } from "lucide-react";
+import { PhoneCall, Send, X, Activity, XCircle } from "lucide-react";
 import useEmergencyChat from "../../hooks/useEmergencyChat";
 import { useAuth } from "../../context/AuthContext";
 
@@ -49,30 +49,6 @@ export default function DispatchControlModal({
         padding: "16px",
         zIndex: 9999 }}
     >
-      {/* Floating Close Button */}
-      <button
-        onClick={onClose}
-        className="neu-button"
-        style={{
-          position: "fixed",
-          top: "40px",
-          right: "40px",
-          width: "56px",
-          height: "56px",
-          borderRadius: "18px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--color-danger)",
-          color: "#fff",
-          border: "4px solid var(--bg-card)",
-          zIndex: 10000,
-          boxShadow: "0 10px 40px rgba(220, 38, 38, 0.5)"
-        }}
-      >
-        <X size={28} strokeWidth={4} />
-      </button>
-
       <div
         className="neu-card"
         style={{
@@ -101,9 +77,24 @@ export default function DispatchControlModal({
               {subtitle}
             </p>
           </div>
-          <div className="neu-card" style={{ padding: "12px", borderRadius: "16px", color: "var(--color-info)" }}>
-            <ShieldCheck size={24} />
-          </div>
+          <button
+            onClick={onClose}
+            className="neu-button"
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "var(--color-danger)",
+              color: "#fff",
+              border: "2px solid var(--bg-card)",
+              boxShadow: "0 8px 18px rgba(220, 38, 38, 0.35)",
+            }}
+          >
+            <X size={22} strokeWidth={3} />
+          </button>
         </div>
 
         {/* Action Tray */}

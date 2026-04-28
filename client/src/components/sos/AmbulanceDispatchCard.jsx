@@ -16,7 +16,7 @@ const getStatusConfig = (status) => {
     case "available":
       return {
         bg: "var(--bg-card)",
-        color: "#22c55e",
+        color: "#166534",
         borderColor: "var(--bg-card)",
         label: "AVAILABLE",
         icon: <Activity size={12} />,
@@ -26,7 +26,7 @@ const getStatusConfig = (status) => {
     case "dispatched":
       return {
         bg: "var(--bg-card)",
-        color: "#3b82f6",
+        color: "#1e40af",
         borderColor: "var(--bg-card)",
         label: "DISPATCHED",
         icon: <Navigation size={12} />,
@@ -36,7 +36,7 @@ const getStatusConfig = (status) => {
     case "en_route":
       return {
         bg: "var(--bg-card)",
-        color: "#f59e0b",
+        color: "#b45309",
         borderColor: "var(--bg-card)",
         label: "EN ROUTE",
         icon: <Zap size={12} />,
@@ -426,12 +426,12 @@ export default function AmbulanceDispatchCard({
             background: "var(--bg-card)",
             border: "1px solid var(--bg-card)" }}
         >
-          <Clock size={12} style={{ color: "#93c5fd" }} />
+          <Clock size={12} style={{ color: "#1d4ed8" }} />
           <p
             style={{
               fontSize: "11px",
               fontWeight: 800,
-              color: "#93c5fd",
+              color: "#1d4ed8",
               textTransform: "uppercase",
               letterSpacing: "0.1em",
               textAlign: "center" }}

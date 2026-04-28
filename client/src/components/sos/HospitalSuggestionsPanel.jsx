@@ -86,7 +86,7 @@ export default function HospitalSuggestionsPanel({
             fontWeight: 900,
             textTransform: "uppercase",
             letterSpacing: "0.15em",
-            color: "#22c55e" }}
+            color: "#166534" }}
         >
           Hospitals Within 5km Radius
         </h3>
@@ -97,7 +97,7 @@ export default function HospitalSuggestionsPanel({
               borderRadius: "9999px",
               background: "var(--bg-card)",
               border: "1px solid var(--bg-card)",
-              color: "#22c55e",
+              color: "#166534",
               fontSize: "10px",
               fontWeight: 800,
               textTransform: "uppercase",
@@ -233,7 +233,7 @@ export default function HospitalSuggestionsPanel({
                             padding: "3px 8px",
                             borderRadius: "9999px",
                             background: "var(--bg-card)",
-                            color: "#22c55e" }}
+                            color: "#166534" }}
                         >
                           Best Match
                         </span>
@@ -316,7 +316,7 @@ export default function HospitalSuggestionsPanel({
                       style={{
                         fontSize: "12px",
                         fontWeight: 800,
-                        color: "#3b82f6" }}
+                        color: "#1e40af" }}
                     >
                       {entry.distance} km
                     </span>
@@ -324,7 +324,7 @@ export default function HospitalSuggestionsPanel({
                       style={{
                         fontSize: "11px",
                         fontWeight: 700,
-                        color: lowestCost ? "#22c55e" : "var(--text-muted)" }}
+                        color: lowestCost ? "#166534" : "var(--text-muted)" }}
                     >
                       {lowestCost ? `From ${lowestCost}` : "Cost unavailable"}
                     </span>
@@ -338,7 +338,7 @@ export default function HospitalSuggestionsPanel({
                         padding: "10px 14px",
                         borderRadius: "12px",
                         border: "none",
-                        background: "#2563eb",
+                        background: "#1e3a8a",
                         color: "#fff",
                         fontWeight: 700,
                         fontSize: "12px",

@@ -14,19 +14,19 @@ import HospitalSuggestionsPanel from "./sos/HospitalSuggestionsPanel";
 
 const SEV = {
   1: {
-    color: "#4ade80",
+    color: "#15803d",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
     label: "LOW",
   },
   2: {
-    color: "#60a5fa",
+    color: "#1d4ed8",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
     label: "MODERATE",
   },
   3: {
-    color: "#facc15",
+    color: "#ca8a04",
     bg: "var(--bg-card)",
     border: "var(--bg-card)",
     label: "HIGH",
@@ -160,7 +160,7 @@ export default function SOSResult({
             boxShadow: "0 0 40px var(--bg-card)",
           }}
         >
-          <CheckCircle2 size={36} style={{ color: "#22c55e" }} />
+          <CheckCircle2 size={36} style={{ color: "#166534" }} />
         </div>
         <h2
           style={{
@@ -243,7 +243,7 @@ export default function SOSResult({
             borderRadius: "18px",
             border: "1px solid var(--bg-card)",
             background: "var(--bg-card)",
-            color: "#bbf7d0",
+            color: "#6ee7b7",
             fontWeight: 700,
           }}
         >
@@ -259,7 +259,7 @@ export default function SOSResult({
             borderRadius: "18px",
             border: "1px solid var(--bg-card)",
             background: "var(--bg-card)",
-            color: "#fde68a",
+            color: "#d97706",
             fontWeight: 700,
           }}
         >
@@ -298,7 +298,7 @@ export default function SOSResult({
             flexWrap: "wrap",
           }}
         >
-          <span style={{ color: "#bbf7d0", fontWeight: 800 }}>
+          <span style={{ color: "#6ee7b7", fontWeight: 800 }}>
             Hospital accepted your bed request. Book ambulance now.
           </span>
           <button
@@ -309,7 +309,7 @@ export default function SOSResult({
               padding: "10px 14px",
               borderRadius: "10px",
               border: "none",
-              background: "#22c55e",
+              background: "#166534",
               color: "#052e16",
               fontWeight: 900,
               fontFamily: "var(--font-family)",
@@ -347,7 +347,7 @@ export default function SOSResult({
                   padding: "10px",
                   borderRadius: "14px",
                   background: "rgba(59,130,246,0.14)",
-                  color: "#60a5fa",
+                  color: "#1d4ed8",
                   display: "flex",
                 }}
               >
@@ -360,7 +360,7 @@ export default function SOSResult({
                     fontWeight: 900,
                     textTransform: "uppercase",
                     letterSpacing: "0.16em",
-                    color: "#93c5fd",
+                    color: "#1d4ed8",
                   }}
                 >
                   Live Pickup Route
@@ -522,7 +522,7 @@ export default function SOSResult({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.12em",
-                color: "#93c5fd",
+                color: "#1d4ed8",
               }}
             >
               {ambulance ? "Booked Ambulance" : "Hospital Coordination"}
@@ -715,7 +715,7 @@ export default function SOSResult({
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 900,
-                    color: "#22c55e",
+                    color: "#166534",
                   }}
                 >
                   For You Now
@@ -741,7 +741,7 @@ export default function SOSResult({
                     textTransform: "uppercase",
                     letterSpacing: "0.1em",
                     fontWeight: 900,
-                    color: "#3b82f6",
+                    color: "#1e40af",
                   }}
                 >
                   Ambulance Checklist
@@ -813,7 +813,7 @@ export default function SOSResult({
                 padding: "12px",
                 borderRadius: "14px",
                 background: "var(--bg-card)",
-                color: "#3b82f6",
+                color: "#1e40af",
                 display: "flex",
               }}
             >
@@ -825,7 +825,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
-                color: "#3b82f6",
+                color: "#1e40af",
               }}
             >
               Unit Deployment
@@ -856,7 +856,7 @@ export default function SOSResult({
                 padding: "12px",
                 borderRadius: "14px",
                 background: "var(--bg-card)",
-                color: "#22c55e",
+                color: "#166534",
                 display: "flex",
               }}
             >
@@ -868,7 +868,7 @@ export default function SOSResult({
                 fontWeight: 900,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
-                color: "#22c55e",
+                color: "#166534",
               }}
             >
               Facility Triage
@@ -915,7 +915,7 @@ export default function SOSResult({
                     style={{
                       fontSize: "1.25rem",
                       fontWeight: 900,
-                      color: "#22c55e",
+                      color: "#166534",
                     }}
                   >
                     {topHospital.availableBeds}
@@ -943,7 +943,7 @@ export default function SOSResult({
                       fontSize: "1.25rem",
                       fontWeight: 900,
                       color:
-                        topHospital.icuAvailable > 0 ? "#22c55e" : "#ef4444",
+                        topHospital.icuAvailable > 0 ? "#166534" : "#ef4444",
                     }}
                   >
                     {topHospital.icuAvailable}
@@ -1007,7 +1007,7 @@ export default function SOSResult({
                       width: "6px",
                       height: "6px",
                       borderRadius: "50%",
-                      background: "#22c55e",
+                      background: "#166534",
                     }}
                   />
                   <span
@@ -1068,7 +1068,7 @@ export default function SOSResult({
             className="neu-button"
             style={{
               padding: "14px 28px",
-              background: "#2563eb",
+              background: "#1e3a8a",
               color: "#fff",
               borderRadius: "16px",
               fontWeight: 700,

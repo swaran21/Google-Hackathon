@@ -291,7 +291,7 @@ export default function TrackingPage() {
                     style={{
                       fontSize: "11px",
                       fontWeight: 800,
-                      color: "#22c55e",
+                      color: "#166534",
                       textTransform: "uppercase" }}
                   >
                     ETA: {etaMinutes} min

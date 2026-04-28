@@ -6,9 +6,9 @@
   --color-primary: #FFFFFF;
   --color-secondary: #dc2626; 
   --color-danger: #dc2626;  /* Red 600 */
-  --color-success: #064e3b; /* Emerald 900 for Light Mode readability */
-  --color-info: #1e3a8a;    /* Blue 900 for Light Mode readability */
-  --color-warning: #92400e; /* Amber 800 for Light Mode readability */
+  --color-success: #14532d; /* Darker green for text emphasis */
+  --color-info: #1e3a8a;    /* Darker blue for text emphasis */
+  --color-warning: #78350f; /* Darker amber for text emphasis */
   
   /* ── Light Mode (Neumorphic default) ──── */
   --bg-primary: #E7E5E4;
@@ -35,9 +35,9 @@
 }
 
 [data-theme="dark"] {
-  --color-success: #10b981; /* Vibrant Emerald for Dark Mode */
-  --color-info: #3b82f6;    /* Vibrant Blue for Dark Mode */
-  --color-warning: #f59e0b; /* Vibrant Amber for Dark Mode */
+  --color-success: #047857; /* Darker emerald for text emphasis */
+  --color-info: #1d4ed8;    /* Darker blue for text emphasis */
+  --color-warning: #b45309; /* Darker amber for text emphasis */
   --bg-primary: #050505;
   --bg-secondary: #0A0A0A;
   --bg-card: #0A0A0A;
